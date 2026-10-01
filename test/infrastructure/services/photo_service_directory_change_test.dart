@@ -232,6 +232,23 @@ class MockPlaylistStrategy implements PlaylistStrategy {
   }
 }
 
+/// Hands out the photos in order, so history navigation can be tested.
+class CyclingPlaylistStrategy implements PlaylistStrategy {
+  int _calls = 0;
+
+  @override
+  String get id => 'cycling';
+
+  @override
+  String get name => 'Cycling Strategy';
+
+  @override
+  PhotoEntry? nextPhoto(List<PhotoEntry> photos) {
+    if (photos.isEmpty) return null;
+    return photos[_calls++ % photos.length];
+  }
+}
+
 class MockSyncProvider implements SyncProvider {
   int syncCallCount = 0;
   
@@ -388,8 +405,8 @@ void main() {
       // Act - Add a new file to the new directory
       await File('${tempDir2.path}/photo6.jpg').create();
       
-      // Wait for file watcher
-      await Future.delayed(const Duration(seconds: 1));
+      // Wait for file watcher (a new file is published once it stopped growing)
+      await Future.delayed(const Duration(seconds: 3));
       
       // Assert
       expect(repository.photos.length, 4);
@@ -413,6 +430,84 @@ void main() {
       expect(changeCount, greaterThanOrEqualTo(1));
       
       await subscription.cancel();
+    });
+  });
+
+  group('Photos Disappearing From The Folder', () {
+    late FileSystemPhotoRepository ownRepository;
+    late PhotoService ownService;
+
+    setUp(() async {
+      ownRepository = FileSystemPhotoRepository(
+        storageProvider: storageProvider,
+        metadataProvider: MockMetadataProvider(),
+      );
+      ownService = PhotoService(
+        syncProviderFactory: () => mockSyncProvider,
+        playlistStrategy: CyclingPlaylistStrategy(),
+        repository: ownRepository,
+        configProvider: configProvider,
+        storageProvider: storageProvider,
+      );
+    });
+
+    tearDown(() {
+      ownService.dispose();
+    });
+
+    test('refresh picks up a picture that arrived in the folder', () async {
+      await ownService.initialize();
+      expect(ownRepository.photos.length, 2);
+
+      await File('${tempDir1.path}/photo3.jpg').create();
+      await ownService.refreshPhotos();
+
+      expect(ownRepository.photos.length, 3);
+      expect(
+        ownRepository.photos.any((p) => p.file.path.contains('photo3.jpg')),
+        isTrue,
+      );
+    });
+
+    test('refresh removes pictures that were deleted from the folder',
+        () async {
+      await ownService.initialize();
+
+      // Build up a history that contains the photo we are about to delete.
+      final first = ownService.nextPhoto();
+      final second = ownService.nextPhoto();
+      expect(first!.file.path.contains('photo1.jpg'), isTrue);
+      expect(second!.file.path.contains('photo2.jpg'), isTrue);
+
+      await File('${tempDir1.path}/photo1.jpg').delete();
+      await ownService.refreshPhotos();
+
+      expect(ownRepository.photos.length, 1);
+      expect(
+        ownRepository.photos.any((p) => p.file.path.contains('photo1.jpg')),
+        isFalse,
+      );
+
+      // Walking back in the history must not resurrect the deleted file.
+      final back = ownService.previousPhoto();
+      expect(back, isNotNull);
+      expect(back!.file.path.contains('photo1.jpg'), isFalse);
+
+      // And the slideshow keeps running.
+      expect(ownService.nextPhoto(), isNotNull);
+    });
+
+    test('deleting every photo empties the list and the history', () async {
+      await ownService.initialize();
+      ownService.nextPhoto();
+
+      await File('${tempDir1.path}/photo1.jpg').delete();
+      await File('${tempDir1.path}/photo2.jpg').delete();
+      await ownService.refreshPhotos();
+
+      expect(ownRepository.photos, isEmpty);
+      expect(ownService.nextPhoto(), isNull);
+      expect(ownService.previousPhoto(), isNull);
     });
   });
 

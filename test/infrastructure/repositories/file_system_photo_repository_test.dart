@@ -37,6 +37,11 @@ class MockMetadataProvider implements MetadataProvider {
   Future<ExifMetadata> getExifMetadata(File file) async => const ExifMetadata();
 }
 
+/// A new file is only published once it stopped growing (it may still be
+/// copied in), so watcher-driven updates need a moment longer than the
+/// debounce interval.
+const _watchLatency = Duration(seconds: 3);
+
 void main() {
   late Directory tempDir;
   late FileSystemPhotoRepository repository;
@@ -91,7 +96,7 @@ void main() {
     await file.create();
 
     // Wait for watcher (it's async)
-    await Future.delayed(const Duration(seconds: 1));
+    await Future.delayed(_watchLatency);
 
     // Assert
     expect(repository.photos.length, 1);
@@ -109,7 +114,7 @@ void main() {
     await file.create();
 
     // Wait for watcher (it's async)
-    await Future.delayed(const Duration(seconds: 1));
+    await Future.delayed(_watchLatency);
 
     // Assert
     expect(repository.photos.length, 1);
@@ -125,7 +130,7 @@ void main() {
     await file.create();
 
     // Wait for watcher
-    await Future.delayed(const Duration(seconds: 1));
+    await Future.delayed(_watchLatency);
 
     // Assert
     expect(repository.photos.length, 0);
@@ -143,7 +148,7 @@ void main() {
     final jpgFile = await partFile.rename('${tempDir.path}/image.jpg');
 
     // Wait for watcher
-    await Future.delayed(const Duration(seconds: 1));
+    await Future.delayed(_watchLatency);
 
     // Assert
     expect(repository.photos.length, 1);
@@ -160,7 +165,7 @@ void main() {
     await file.create();
 
     // Wait for watcher
-    await Future.delayed(const Duration(seconds: 1));
+    await Future.delayed(_watchLatency);
 
     // Assert
     expect(repository.photos.length, 0);

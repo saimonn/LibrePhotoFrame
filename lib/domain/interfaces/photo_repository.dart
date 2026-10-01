@@ -14,6 +14,11 @@ abstract class PhotoRepository {
   /// Clears current state and rescans from the new directory.
   Future<void> reinitialize();
 
+  /// Forces a re-check of the photo source without changing the configuration.
+  /// Used to pick up files that appeared in a watched folder while no file
+  /// system event was delivered (or while the app was in the background).
+  Future<void> refresh();
+
   /// Cleans up resources (e.g. file watchers).
   void dispose();
 }

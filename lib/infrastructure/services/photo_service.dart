@@ -71,6 +71,20 @@ class PhotoService extends ChangeNotifier {
         _storageProvider = storageProvider;
 
   Stream<void> get onPhotosChanged => _repository.onPhotosChanged;
+
+  /// Re-checks the photo source immediately.
+  ///
+  /// In local folder mode this re-reads the directory, so pictures that
+  /// appeared or disappeared there are shown/removed without waiting for the
+  /// next periodic refresh. Called e.g. when the app comes back to the
+  /// foreground, because file system events are unreliable while suspended.
+  Future<void> refreshPhotos() async {
+    try {
+      await _repository.refresh();
+    } catch (e, stackTrace) {
+      _log.warning("Manual photo refresh failed", e, stackTrace);
+    }
+  }
   
   /// Returns true if a sync is currently in progress
   bool get isSyncing => _isSyncing;
@@ -265,6 +279,11 @@ class PhotoService extends ChangeNotifier {
   }
 
   PhotoEntry? nextPhoto() {
+    // Photos can vanish from the list at any time (deleted from a local
+    // folder). Drop them from the history first, otherwise walking forward
+    // through the history could return a file that no longer exists.
+    _pruneHistory();
+
     // 1. If we are in the past, move forward in history
     if (_historyIndex < _history.length - 1) {
       _historyIndex++;
@@ -290,12 +309,45 @@ class PhotoService extends ChangeNotifier {
   }
 
   PhotoEntry? previousPhoto() {
+    _pruneHistory();
+
     if (_historyIndex > 0) {
       _historyIndex--;
       return _history[_historyIndex];
     }
     // If we are at the start, stay there
     return _history.isNotEmpty ? _history[_historyIndex] : null;
+  }
+
+  /// Removes history entries whose files are no longer part of the photo list
+  /// and keeps [_historyIndex] on a valid position.
+  void _pruneHistory() {
+    if (_history.isEmpty) return;
+
+    final current = (_historyIndex >= 0 && _historyIndex < _history.length)
+        ? _history[_historyIndex]
+        : null;
+
+    final available = {for (final photo in _repository.photos) photo.file.path};
+    final before = _history.length;
+    _history.removeWhere((photo) => !available.contains(photo.file.path));
+    if (_history.length == before) return;
+
+    _log.info(
+      "Pruned ${before - _history.length} photo(s) that left the photo list "
+      "from the slideshow history",
+    );
+    if (_history.isEmpty) {
+      _historyIndex = -1;
+      return;
+    }
+
+    // Continue from the new end of the history, unless the photo we were on
+    // is still available.
+    final newIndex = current == null
+        ? -1
+        : _history.indexWhere((photo) => identical(photo, current));
+    _historyIndex = newIndex == -1 ? _history.length - 1 : newIndex;
   }
   
   /// Check if a photo is still in the current photo list
