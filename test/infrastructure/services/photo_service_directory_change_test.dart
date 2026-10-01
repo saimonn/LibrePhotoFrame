@@ -460,6 +460,9 @@ void main() {
       expect(ownRepository.photos.length, 2);
 
       await File('${tempDir1.path}/photo3.jpg').create();
+      // Two passes: the first sees the new file, the second confirms it is
+      // fully written and publishes it.
+      await ownService.refreshPhotos();
       await ownService.refreshPhotos();
 
       expect(ownRepository.photos.length, 3);

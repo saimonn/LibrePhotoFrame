@@ -79,6 +79,14 @@ class FileSystemPhotoScanner {
   /// Paths seen on disk but not published yet because they may still grow.
   final Set<String> _pendingPaths = {};
 
+  /// When a pending file was first seen, used to stop waiting after [settleAge]
+  /// so a file can never stay invisible forever.
+  final Map<String, DateTime> _pendingSince = {};
+
+  /// Whether at least one scan of the current folder succeeded. Until then
+  /// there is no baseline to judge "still being written" against.
+  bool _hasBaseline = false;
+
   StreamSubscription<FileSystemEvent>? _watcher;
   String? _watchedPath;
   Timer? _pollTimer;
@@ -123,6 +131,10 @@ class FileSystemPhotoScanner {
     _settleDelay = settleRecheckInterval;
     _observedSizes.clear();
     _pendingPaths.clear();
+    _pendingSince.clear();
+    // A different folder is scanned from scratch, so the next scan is a first
+    // scan again and publishes everything it finds.
+    _hasBaseline = false;
     await _cancelWatcher();
   }
 
@@ -196,6 +208,7 @@ class FileSystemPhotoScanner {
     final previous = {for (final photo in _photos) photo.file.path: photo};
     final observed = <String, int>{};
     final stillPending = <String>{};
+    final stillPendingSince = <String, DateTime>{};
     final next = <PhotoEntry>[];
 
     for (final file in files) {
@@ -224,6 +237,8 @@ class FileSystemPhotoScanner {
       // New file, or an existing one whose content changed.
       if (!_hasSettled(path, stat, now)) {
         stillPending.add(path);
+        stillPendingSince[path] = _pendingSince[path] ?? now;
+        // Keep showing the previous version until the new one is complete.
         if (existing != null) next.add(existing);
         continue;
       }
@@ -243,6 +258,10 @@ class FileSystemPhotoScanner {
     _pendingPaths
       ..clear()
       ..addAll(stillPending);
+    _pendingSince
+      ..clear()
+      ..addAll(stillPendingSince);
+    _hasBaseline = true;
 
     if (stillPending.isNotEmpty) {
       _log.fine(
@@ -263,12 +282,26 @@ class FileSystemPhotoScanner {
     }
   }
 
-  /// A file counts as complete when it was not touched for [settleAge] (it is
-  /// either an old file or the copy already finished) or when its size did not
-  /// change since the previous scan.
+  /// Decides whether a file that is new to the list (or whose content changed)
+  /// can be shown right away.
+  ///
+  /// The very first scan of a folder is always trusted: there is no previous
+  /// observation to compare against, and holding the whole slideshow back for
+  /// [settleAge] on every start would be far more noticeable than briefly
+  /// showing a photo that another app happens to be writing at that moment.
+  ///
+  /// Afterwards a file counts as complete when it was not touched for
+  /// [settleAge] (an old file, or the copy already finished) or when its size
+  /// did not change since the previous scan. A file that keeps changing for
+  /// longer than [settleAge] is published anyway so it cannot stay invisible
+  /// forever; the next scan then replaces it with the finished version.
   bool _hasSettled(String path, FileStat stat, DateTime now) {
+    if (!_hasBaseline) return true;
     if (now.difference(stat.modified) >= settleAge) return true;
-    return _observedSizes[path] == stat.size;
+    if (_observedSizes[path] == stat.size) return true;
+
+    final firstSeen = _pendingSince[path];
+    return firstSeen != null && now.difference(firstSeen) >= settleAge;
   }
 
   void _scheduleSettleRecheck(bool hasPendingFiles) {
