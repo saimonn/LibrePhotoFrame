@@ -105,8 +105,14 @@ class FileSystemPhotoScanner {
   Stream<void> get onPhotosChanged => _changedController.stream;
 
   /// Performs the initial scan and arms the watcher plus the periodic rescan.
+  ///
+  /// Calling it again (for instance via [initialize]) reloads the folder from
+  /// scratch: everything present is published, and the settle check only
+  /// applies to files that turn up afterwards.
   Future<void> start() async {
     if (_disposed) return;
+
+    _hasBaseline = false;
 
     final dir = await _resolveDirectory();
     if (dir != null) {
@@ -132,9 +138,6 @@ class FileSystemPhotoScanner {
     _observedSizes.clear();
     _pendingPaths.clear();
     _pendingSince.clear();
-    // A different folder is scanned from scratch, so the next scan is a first
-    // scan again and publishes everything it finds.
-    _hasBaseline = false;
     await _cancelWatcher();
   }
 
@@ -403,12 +406,14 @@ class FileSystemPhotoScanner {
 
   bool _affectsPhotoList(FileSystemEvent event) {
     if (event.isDirectory) return true;
-    if (_isIncomplete(event.path)) return false;
     if (event is FileSystemMoveEvent) {
+      // For a move the interesting path is the destination: a finished
+      // download is renamed *from* .part *to* an image extension and has to
+      // trigger a scan, while a rename *to* .part is an in-progress download.
       final destination = event.destination;
-      if (destination != null && _isIncomplete(destination)) return false;
+      return destination == null || !_isIncomplete(destination);
     }
-    return true;
+    return !_isIncomplete(event.path);
   }
 
   static bool _isImage(String path) {
