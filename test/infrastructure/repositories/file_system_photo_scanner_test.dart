@@ -185,8 +185,12 @@ void main() {
       final before = scanner.photos.single;
 
       await file.writeAsString('a completely different, longer image');
+      // First scan sees a changed size and keeps the old entry; the second one
+      // confirms the size is stable and publishes the new version.
       await scanner.scan();
+      expect(identical(scanner.photos.single, before), isTrue);
 
+      await scanner.scan();
       final after = scanner.photos.single;
       expect(identical(before, after), isFalse);
       expect(after.sizeBytes, greaterThan(before.sizeBytes));
