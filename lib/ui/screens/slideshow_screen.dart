@@ -156,6 +156,11 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
           _applyScheduleState();
         }
         
+        // Re-read the photo folder: file system events are not delivered
+        // while the app was suspended, so new incoming pictures would only
+        // show up on the next periodic refresh otherwise.
+        unawaited(context.read<PhotoService>().refreshPhotos());
+        
         // Resume slideshow if it was paused
         _resumeSlideshow();
         break;
@@ -448,6 +453,9 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
       // Re-apply configured screen orientation
       final config = context.read<ConfigProvider>();
       SystemChrome.setPreferredOrientations(_getDeviceOrientations(config.screenOrientation));
+      
+      // Pick up photos that arrived in the folder while settings were open
+      unawaited(context.read<PhotoService>().refreshPhotos());
       
       // Restart timer when returning from settings
       _startTimer();

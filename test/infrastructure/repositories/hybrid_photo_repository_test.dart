@@ -274,7 +274,9 @@ void main() {
       await nestedFile.parent.create(recursive: true);
       await nestedFile.writeAsString('new image');
 
-      await Future.delayed(const Duration(seconds: 1));
+      // A new file is published once it stopped growing, so give the scanner
+      // a moment longer than the debounce interval.
+      await Future.delayed(const Duration(seconds: 3));
 
       expect(repository.photos.length, 1);
       expect(repository.photos.first.file.path, nestedFile.path);

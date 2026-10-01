@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:logging/logging.dart';
 import 'package:photo_manager/photo_manager.dart';
 
@@ -8,6 +7,7 @@ import '../../domain/interfaces/metadata_provider.dart';
 import '../../domain/interfaces/storage_provider.dart';
 import '../../domain/interfaces/config_provider.dart';
 import '../../domain/models/photo_entry.dart';
+import 'file_system_photo_scanner.dart';
 
 const PermissionRequestOption _devicePhotoPermissionRequest =
     PermissionRequestOption(
@@ -22,17 +22,24 @@ const PermissionRequestOption _devicePhotoPermissionRequest =
 /// - For 'app_folder' and 'local_folder': Uses FileSystem scanning
 /// - For 'device_photos': Uses Android MediaStore API
 class HybridPhotoRepository implements PhotoRepository {
+  // ignore: unused_field
   final StorageProvider _storageProvider;
+  // ignore: unused_field
   final MetadataProvider _metadataProvider;
   final ConfigProvider _config;
   final _log = Logger('HybridPhotoRepository');
 
-  List<PhotoEntry> _photos = [];
+  /// Scans the photo folder, watches it for changes and re-checks it
+  /// periodically so new/removed files are picked up even when the platform
+  /// delivers no file system event.
+  final FileSystemPhotoScanner _scanner;
+
+  /// Photo list of the MediaStore source. In filesystem mode the list is owned
+  /// by [_scanner].
+  List<PhotoEntry> _mediaStorePhotos = [];
   final _photosController = StreamController<void>.broadcast();
-  
-  // FileSystem mode resources
-  StreamSubscription? _dirWatcher;
-  
+  StreamSubscription<void>? _scannerSubscription;
+
   // MediaStore mode resources
   String? _selectedAlbumId;
   bool _mediaStoreListenerRegistered = false;
@@ -43,10 +50,22 @@ class HybridPhotoRepository implements PhotoRepository {
     required ConfigProvider configProvider,
   })  : _storageProvider = storageProvider,
         _metadataProvider = metadataProvider,
-        _config = configProvider;
+        _config = configProvider,
+        _scanner = FileSystemPhotoScanner(storageProvider: storageProvider) {
+    // Expose a single, stable stream. The scanner is only active in filesystem
+    // mode while the source can change at runtime (settings), and consumers
+    // subscribe once - so forward the scanner events instead of exposing its
+    // stream directly.
+    _scannerSubscription = _scanner.onPhotosChanged.listen((_) {
+      _notifyChanged();
+    });
+  }
 
   @override
-  List<PhotoEntry> get photos => List.unmodifiable(_photos);
+  List<PhotoEntry> get photos {
+    if (!_useMediaStore) return _scanner.photos;
+    return List.unmodifiable(_mediaStorePhotos);
+  }
 
   @override
   Stream<void> get onPhotosChanged => _photosController.stream;
@@ -67,17 +86,27 @@ class HybridPhotoRepository implements PhotoRepository {
     await _cleanup();
     
     // 2. Clear photo list
-    _photos = [];
+    _mediaStorePhotos = [];
     
     // 3. Scan with new configuration
     await _scan();
   }
+
+  @override
+  Future<void> refresh() async {
+    if (_useMediaStore) {
+      await _scanMediaStore();
+    } else {
+      // Re-check the folder right now, e.g. after the app was in the
+      // background and file system events were missed.
+      await _scanner.scan();
+    }
+  }
   
-  /// Clean up all resources (watchers, listeners)
+  /// Clean up all resources (watchers, timers, listeners)
   Future<void> _cleanup() async {
-    // Stop FileSystem watcher
-    await _dirWatcher?.cancel();
-    _dirWatcher = null;
+    // Stop FileSystem watcher, poll timer and settle re-checks
+    await _scanner.stop();
     
     // Remove MediaStore listener
     if (_mediaStoreListenerRegistered) {
@@ -92,93 +121,8 @@ class HybridPhotoRepository implements PhotoRepository {
       await _scanMediaStore();
       _setupMediaStoreListener();
     } else {
-      await _scanFileSystem();
-      _setupFileWatcher();
-    }
-  }
-
-  // ============================================================
-  // FileSystem Mode (App Folder / Local Folder)
-  // ============================================================
-
-  void _setupFileWatcher() async {
-    try {
-      final localDir = await _storageProvider.getPhotoDirectory();
-      _dirWatcher = localDir.watch(
-        events: FileSystemEvent.all,
-        recursive: true,
-      ).listen((event) {
-        bool shouldScan = false;
-        
-        if (event is FileSystemMoveEvent) {
-          if (event.destination != null && !_isPartFile(event.destination!)) {
-            shouldScan = true;
-          }
-          if (!_isPartFile(event.path)) {
-            shouldScan = true;
-          }
-        } else {
-          if (!_isPartFile(event.path)) {
-            shouldScan = true;
-          }
-        }
-
-        if (shouldScan) {
-          _log.info("File change detected: ${event.type} ${event.path}");
-          _scanFileSystem();
-        }
-      });
-    } catch (e) {
-      _log.warning("File watching not supported or failed", e);
-    }
-  }
-
-  bool _isPartFile(String path) => path.endsWith('.part');
-
-  Future<void> _scanFileSystem() async {
-    try {
-      final localDir = await _storageProvider.getPhotoDirectory();
-      _log.fine("Scanning photos in: ${localDir.path}");
-      
-      if (!await localDir.exists()) {
-        _log.info("Photo directory does not exist yet.");
-        _photos = [];
-        _photosController.add(null);
-        return;
-      }
-
-      final files = localDir
-          .listSync(recursive: true, followLinks: false)
-          .whereType<File>()
-          .toList()
-        ..sort((left, right) => left.path.compareTo(right.path));
-      final newPhotos = <PhotoEntry>[];
-
-      for (var file in files) {
-        if (_isImage(file.path) && !file.path.endsWith('.part')) {
-          // Preserve existing PhotoEntry instances to maintain runtime state
-          final existingIndex = _photos.indexWhere((p) => p.file.path == file.path);
-
-          if (existingIndex != -1) {
-            newPhotos.add(_photos[existingIndex]);
-          } else {
-            // Only get file stats (EXIF loaded lazily when displayed)
-            final stat = await file.stat();
-            newPhotos.add(PhotoEntry(
-              file: file,
-              date: stat.modified,  // File date for shuffle algorithm
-              sizeBytes: stat.size,
-            ));
-          }
-        }
-      }
-      
-      _photos = newPhotos;
-      _log.info("Scanned ${_photos.length} photos from filesystem.");
-      _photosController.add(null);
-      
-    } catch (e) {
-      _log.severe("Error scanning photos from filesystem", e);
+      // Scans the folder, watches it and arms the periodic rescan.
+      await _scanner.start();
     }
   }
 
@@ -206,8 +150,7 @@ class HybridPhotoRepository implements PhotoRepository {
       );
       if (!permission.hasAccess) {
         _log.warning("Photo permission not granted");
-        _photos = [];
-        _photosController.add(null);
+        _publishMediaStorePhotos(const []);
         return;
       }
       
@@ -253,8 +196,7 @@ class HybridPhotoRepository implements PhotoRepository {
           } else {
             // Album is empty
             _log.info("Selected album is empty");
-            _photos = [];
-            _photosController.add(null);
+            _publishMediaStorePhotos(const []);
             return;
           }
         } else {
@@ -277,10 +219,10 @@ class HybridPhotoRepository implements PhotoRepository {
         if (file == null) continue;
         
         // Preserve existing PhotoEntry instances
-        final existingIndex = _photos.indexWhere((p) => p.file.path == file.path);
+        final existingIndex = _mediaStorePhotos.indexWhere((p) => p.file.path == file.path);
         
         if (existingIndex != -1) {
-          newPhotos.add(_photos[existingIndex]);
+          newPhotos.add(_mediaStorePhotos[existingIndex]);
         } else {
           // Get GPS coordinates from AssetEntity if available (fast - no file I/O)
           final latLng = await asset.latlngAsync();
@@ -302,13 +244,29 @@ class HybridPhotoRepository implements PhotoRepository {
         }
       }
       
-      _photos = newPhotos;
-      _log.info("Scanned ${_photos.length} photos from MediaStore.");
-      _photosController.add(null);
+      _publishMediaStorePhotos(newPhotos);
       
     } catch (e) {
       _log.severe("Error scanning photos from MediaStore", e);
     }
+  }
+  
+  /// Replaces the MediaStore photo list and notifies listeners when it changed
+  void _publishMediaStorePhotos(List<PhotoEntry> next) {
+    final changed = !_samePaths(_mediaStorePhotos, next);
+    _mediaStorePhotos = next;
+    if (!changed) return;
+
+    _log.info("Scanned ${next.length} photos from MediaStore.");
+    _notifyChanged();
+  }
+  
+  bool _samePaths(List<PhotoEntry> left, List<PhotoEntry> right) {
+    if (left.length != right.length) return false;
+    for (var i = 0; i < left.length; i++) {
+      if (left[i].file.path != right[i].file.path) return false;
+    }
+    return true;
   }
   
   /// Helper to get all photos from MediaStore
@@ -357,17 +315,17 @@ class HybridPhotoRepository implements PhotoRepository {
   // Common
   // ============================================================
 
-  bool _isImage(String path) {
-    final lower = path.toLowerCase();
-    return lower.endsWith('.jpg') || 
-           lower.endsWith('.jpeg') || 
-           lower.endsWith('.png') || 
-           lower.endsWith('.webp');
+  void _notifyChanged() {
+    if (_photosController.isClosed) return;
+    _photosController.add(null);
   }
 
   @override
   void dispose() {
-    _cleanup();
-    _photosController.close();
+    unawaited(_cleanup());
+    unawaited(_scannerSubscription?.cancel());
+    _scannerSubscription = null;
+    _scanner.dispose();
+    unawaited(_photosController.close());
   }
 }
