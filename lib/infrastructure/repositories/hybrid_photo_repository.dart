@@ -71,17 +71,20 @@ class HybridPhotoRepository implements PhotoRepository {
     configProvider.addListener(_onConfigChanged);
   }
 
-  /// Applies the folder watching setting as soon as it is toggled, so no
+  /// Applies the photo change watching setting as soon as it is toggled, so no
   /// restart is needed.
   void _onConfigChanged() {
-    if (_useMediaStore) return;
     if (_watchPhotoFolder == _config.watchPhotoFolder) return;
-
     _watchPhotoFolder = _config.watchPhotoFolder;
-    _scanner.watchForChanges = _watchPhotoFolder;
-    // Re-scan right away: enabling the watcher has to pick up the changes that
-    // happened while it was off.
-    unawaited(_scanner.scan());
+
+    if (_useMediaStore) {
+      _setMediaStoreListener(_watchPhotoFolder);
+    } else {
+      _scanner.watchForChanges = _watchPhotoFolder;
+      // Re-scan right away: enabling the watcher has to pick up the changes
+      // that happened while it was off.
+      unawaited(_scanner.scan());
+    }
   }
 
   @override
@@ -130,19 +133,16 @@ class HybridPhotoRepository implements PhotoRepository {
   Future<void> _cleanup() async {
     // Stop FileSystem watcher, poll timer and settle re-checks
     await _scanner.stop();
-    
+
     // Remove MediaStore listener
-    if (_mediaStoreListenerRegistered) {
-      PhotoManager.removeChangeCallback(_onMediaStoreChanged);
-      _mediaStoreListenerRegistered = false;
-    }
+    _setMediaStoreListener(false);
   }
-  
+
   /// Scan photos based on current configuration
   Future<void> _scan() async {
     if (_useMediaStore) {
       await _scanMediaStore();
-      _setupMediaStoreListener();
+      _setMediaStoreListener(_watchPhotoFolder);
     } else {
       // Scans the folder, watches it and arms the periodic rescan.
       await _scanner.start();
@@ -152,12 +152,18 @@ class HybridPhotoRepository implements PhotoRepository {
   // ============================================================
   // MediaStore Mode (Device Photos)
   // ============================================================
-  
-  void _setupMediaStoreListener() {
-    if (!_mediaStoreListenerRegistered) {
+
+  /// Registers or removes the MediaStore change callback, which is what
+  /// watches for new photos when the MediaStore source is selected.
+  void _setMediaStoreListener(bool enabled) {
+    if (enabled == _mediaStoreListenerRegistered) return;
+
+    if (enabled) {
       PhotoManager.addChangeCallback(_onMediaStoreChanged);
-      _mediaStoreListenerRegistered = true;
+    } else {
+      PhotoManager.removeChangeCallback(_onMediaStoreChanged);
     }
+    _mediaStoreListenerRegistered = enabled;
   }
   
   void _onMediaStoreChanged(dynamic call) {
