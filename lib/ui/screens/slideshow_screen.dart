@@ -641,20 +641,23 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
     });
   }
 
-  /// Drops the partner of the photo on screen when it no longer fits the frame,
-  /// e.g. after the frame was rotated or before its real size is known.
+  /// Re-pairs the photo on screen after the frame changed shape, e.g. after a
+  /// rotation or when coming back from the settings.
   ///
-  /// A landscape frame pairs portrait photos, a portrait frame pairs landscape
-  /// photos. A partner picked for the previous frame shape would otherwise keep
-  /// a wrong pair on screen until the next slide.
-  void _dropIncompatiblePartner() {
+  /// A partner picked for the previous frame shape is dropped right away: a
+  /// landscape frame shows one landscape photo or two portrait photos, a
+  /// portrait frame one portrait photo or two landscape photos. A photo left
+  /// alone is then paired again, so the frame does not stay half empty until
+  /// the next slide.
+  void _refitCurrentPartner() {
     final photo = _currentPhoto;
-    final partner = _currentPartner;
     final size = _screenSize;
-    if (photo == null || partner == null || size == null) return;
+    if (photo == null || size == null) return;
 
     final pairing = PhotoPairLayout.forScreen(size.width, size.height);
-    if (PhotoPairLayout.accepts(pairing, photo) &&
+    final partner = _currentPartner;
+    if (partner != null &&
+        PhotoPairLayout.accepts(pairing, photo) &&
         PhotoPairLayout.accepts(pairing, partner)) {
       return;
     }
@@ -665,6 +668,43 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
         slide.partner = null;
       }
     }
+
+    // A photo that does not fit the frame itself is shown alone.
+    if (!PhotoPairLayout.accepts(pairing, photo)) return;
+
+    final id = _transitionId;
+    unawaited(() async {
+      final found = await _findPartner(photo, id);
+      if (found == null || !mounted || id != _transitionId) return;
+      if (_currentPhoto?.file.path != photo.file.path) return;
+      // The frame changed again while looking for a partner: the refit started
+      // by that change decides what fits now.
+      if (_screenSize != size) return;
+
+      // Decode with the box size PhotoSlide asks for, so the photo of the new
+      // pair is ready when it appears instead of popping in.
+      try {
+        await _preloadImage(
+          PhotoSlide.createOptimizedProvider(
+            found.file,
+            PhotoSlide.cellSize(size, pairing),
+          ),
+        );
+      } catch (e) {
+        print('Failed to preload image: $e');
+      }
+      if (!mounted || id != _transitionId) return;
+      if (_currentPhoto?.file.path != photo.file.path) return;
+
+      setState(() {
+        _currentPartner = found;
+        for (final slide in _slides) {
+          if (slide.photo.file.path == photo.file.path) {
+            slide.partner = found;
+          }
+        }
+      });
+    }());
   }
 
   /// Loads EXIF metadata lazily and logs it
@@ -784,9 +824,9 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
         print('Screen size changed: ${_screenSize?.width?.toInt()}x${_screenSize?.height?.toInt()} -> ${physicalSize.width.toInt()}x${physicalSize.height.toInt()} (logical: ${mediaQuerySize.width.toInt()}x${mediaQuerySize.height.toInt()}, dpr: $devicePixelRatio)');
       }
       _screenSize = physicalSize;
-      // The pair on screen was picked for the previous frame shape, so it can
-      // no longer fit: two landscape photos must not share a landscape frame.
-      _dropIncompatiblePartner();
+      // The pair on screen was picked for the previous frame shape: it may no
+      // longer fit, or a photo left alone may be pairable again.
+      _refitCurrentPartner();
     }
     final config = context.watch<ConfigProvider>();
     
