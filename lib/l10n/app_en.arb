@@ -11,8 +11,10 @@
   "pairPhotos": "Split Screen",
   "pairPhotosSubtitle": "Show two photos at once when they match the screen shape",
   "photoOrder": "Photo Order",
-  "photoOrderSmart": "Smart shuffle",
   "photoOrderRandom": "Random order",
+  "photoOrderExif": "By capture time (EXIF)",
+  "photoOrderCreation": "By file creation time",
+  "photoOrderModification": "By file modification time",
   "unitMinutes": "min",
   "unitSeconds": "sec",
   

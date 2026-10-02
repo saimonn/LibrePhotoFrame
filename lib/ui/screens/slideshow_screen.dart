@@ -627,6 +627,9 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
       _slides.add(newItem);
     });
 
+    // Let the photo order know what the frame is showing now.
+    context.read<PhotoService>().noteDisplayed(photo, partner);
+
     // Start animation
     controller.forward().then((_) {
       // When finished, remove all slides below this one to save memory
@@ -704,6 +707,10 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
           }
         }
       });
+
+      // The frame shows a pair now, so the photo order gets both photos at the
+      // same rank.
+      context.read<PhotoService>().noteDisplayed(photo, found);
     }());
   }
 

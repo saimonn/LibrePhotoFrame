@@ -37,10 +37,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get photoOrder => 'Photo Order';
 
   @override
-  String get photoOrderSmart => 'Smart shuffle';
+  String get photoOrderRandom => 'Random order';
 
   @override
-  String get photoOrderRandom => 'Random order';
+  String get photoOrderExif => 'By capture time (EXIF)';
+
+  @override
+  String get photoOrderCreation => 'By file creation time';
+
+  @override
+  String get photoOrderModification => 'By file modification time';
 
   @override
   String get unitMinutes => 'min';

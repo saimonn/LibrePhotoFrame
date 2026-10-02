@@ -52,7 +52,7 @@ class FakeConfigProvider extends ChangeNotifier implements ConfigProvider {
   set pairPhotosEnabled(bool value) {}
 
   @override
-  String get photoOrder => 'weighted_freshness';
+  String get photoOrder => 'random';
 
   @override
   set photoOrder(String value) {}
