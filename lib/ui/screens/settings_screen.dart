@@ -129,6 +129,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
   bool _deviceAdminEnabled = false;
   
   // Screen orientation setting
+  late String _photoOrder;
   late String _screenOrientation;
 
   bool _isTestingConnection = false;
@@ -177,6 +178,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     _transitionDurationSeconds = (config.transitionDurationMs / 1000.0).clamp(0.5, 5.0);
     _blurBorders = config.blurBorders;
     _pairPhotos = config.pairPhotosEnabled;
+    _photoOrder = config.photoOrder;
     _watchPhotoFolder = config.watchPhotoFolder;
     // Default sync type: app_folder on Android, local_folder on Desktop
     final defaultSyncType = Platform.isAndroid ? 'app_folder' : 'local_folder';
@@ -367,6 +369,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     config.transitionDurationMs = (_transitionDurationSeconds * 1000).round();
     config.blurBorders = _blurBorders;
     config.pairPhotosEnabled = _pairPhotos;
+    config.photoOrder = _photoOrder;
     config.watchPhotoFolder = _watchPhotoFolder;
     // app_folder and local_folder both use empty activeSourceType (no sync)
     final isLocalMode = _syncType == 'local_folder' || _syncType == 'app_folder';
@@ -524,6 +527,11 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
               setState(() => _pairPhotos = value);
             },
           ),
+          
+          const SizedBox(height: 16),
+          
+          // Photo Order
+          _buildPhotoOrderSelector(),
           
           const SizedBox(height: 16),
           
@@ -1901,6 +1909,58 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
           color: Colors.grey,
         ),
         textAlign: TextAlign.center,
+      ),
+    );
+  }
+  
+  Widget _buildPhotoOrderSelector() {
+    final l10n = AppLocalizations.of(context)!;
+
+    String getPhotoOrderLabel(String value) {
+      switch (value) {
+        case 'random':
+          return l10n.photoOrderRandom;
+        default:
+          return l10n.photoOrderSmart;
+      }
+    }
+
+    return ListTile(
+      leading: const Icon(Icons.shuffle),
+      title: Text(l10n.photoOrder),
+      subtitle: Text(getPhotoOrderLabel(_photoOrder)),
+      trailing: DropdownButton<String>(
+        value: _photoOrder,
+        underline: const SizedBox(),
+        items: [
+          DropdownMenuItem(
+            value: 'weighted_freshness',
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.auto_awesome, size: 20),
+                const SizedBox(width: 8),
+                Text(l10n.photoOrderSmart),
+              ],
+            ),
+          ),
+          DropdownMenuItem(
+            value: 'random',
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.casino, size: 20),
+                const SizedBox(width: 8),
+                Text(l10n.photoOrderRandom),
+              ],
+            ),
+          ),
+        ],
+        onChanged: (value) {
+          if (value != null) {
+            setState(() => _photoOrder = value);
+          }
+        },
       ),
     );
   }
