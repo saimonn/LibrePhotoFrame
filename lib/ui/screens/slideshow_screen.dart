@@ -641,6 +641,32 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
     });
   }
 
+  /// Drops the partner of the photo on screen when it no longer fits the frame,
+  /// e.g. after the frame was rotated or before its real size is known.
+  ///
+  /// A landscape frame pairs portrait photos, a portrait frame pairs landscape
+  /// photos. A partner picked for the previous frame shape would otherwise keep
+  /// a wrong pair on screen until the next slide.
+  void _dropIncompatiblePartner() {
+    final photo = _currentPhoto;
+    final partner = _currentPartner;
+    final size = _screenSize;
+    if (photo == null || partner == null || size == null) return;
+
+    final pairing = PhotoPairLayout.forScreen(size.width, size.height);
+    if (PhotoPairLayout.accepts(pairing, photo) &&
+        PhotoPairLayout.accepts(pairing, partner)) {
+      return;
+    }
+
+    _currentPartner = null;
+    for (final slide in _slides) {
+      if (slide.photo.file.path == photo.file.path) {
+        slide.partner = null;
+      }
+    }
+  }
+
   /// Loads EXIF metadata lazily and logs it
   Future<void> _logPhotoMetadata(PhotoEntry photo) async {
     final config = context.read<ConfigProvider>();
@@ -758,6 +784,9 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
         print('Screen size changed: ${_screenSize?.width?.toInt()}x${_screenSize?.height?.toInt()} -> ${physicalSize.width.toInt()}x${physicalSize.height.toInt()} (logical: ${mediaQuerySize.width.toInt()}x${mediaQuerySize.height.toInt()}, dpr: $devicePixelRatio)');
       }
       _screenSize = physicalSize;
+      // The pair on screen was picked for the previous frame shape, so it can
+      // no longer fit: two landscape photos must not share a landscape frame.
+      _dropIncompatiblePartner();
     }
     final config = context.watch<ConfigProvider>();
     
@@ -942,7 +971,7 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
 class _SlideItem {
   final PhotoEntry photo;
   /// Second photo shown alongside [photo], or null when the frame shows one.
-  final PhotoEntry? partner;
+  PhotoEntry? partner;
   final AnimationController controller;
   final SlideDirection? slideDirection; // null = fade, left/right = slide
 
