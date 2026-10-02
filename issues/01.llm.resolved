@@ -1,6 +1,7 @@
 # Issue 01 - analysis and actions
 
-Status: testing (code shipped and installed, last device test running)
+Status: resolved (the round trip refits the split pair, proven on the device
+against a build without the fix)
 
 ## Diagnosis
 
@@ -57,17 +58,41 @@ removed files without a watcher`).
 - Split pair survives the settings round trip on `dev-0096`
   (`pair=P3+P1` before and after) with the frame orientation set to `auto` and
   the system rotation forced.
+- Round trip with a **forced** frame orientation, the trigger that was still
+  missing: the frame locked to `landscapeLeft` on a device held in portrait.
+  The settings screen frees the orientation, so the window turns portrait
+  (1080x2246) and comes back landscape (2246x1080). Test photos: three
+  landscape (L1 L2 L3) and three portrait (P1 P2 P3), the frame is classified
+  from the screenshot bands, a landscape frame with two portrait photos reads
+  `pair=P#+P# OK`, a lone portrait photo reads `single P#` and is the reported
+  bug.
 
-Still to do:
+| build | before settings | in settings | after settings | result |
+|---|---|---|---|---|
+| `dev-0091` (`04f97c2`, fix absent) | `pair=P1+P2 OK` | 1080x2246 | `pair=P1 single P1` | bug reproduced |
+| `dev-0103` (`93443bd`) | `pair=P2+P2 OK` | 1080x2246 | `pair=P2+P1 OK` | fixed |
 
-- The reported "single portrait photo after coming back from the settings" does
-  **not** reproduce that way: `dev-0091` (drop only) behaves the same as
-  `dev-0096` when the frame orientation is `auto`, because the window never
-  changes size. The trigger needs a *forced* frame orientation: the settings
-  screen frees it (`settings_screen.dart:174`
-  `setPreferredOrientations(DeviceOrientation.values)`) and the slideshow
-  re-applies it on return (`slideshow_screen.dart:476`), so a frame locked to
-  `landscapeLeft` on a portrait device rotates to portrait and back. Rerun the
-  round trip with a forced orientation on both builds, then restore the device
-  config and delete the test photos.
+The fix is `_refitCurrentPartner()` in `slideshow_screen.dart:655`, called from
+`build` whenever `_screenSize` changes (line 836). It keeps the photo on screen
+and re-picks its partner for the frame shape that came back, which the rule in
+`photo_pair_layout.dart` covers ("a primary of the wrong shape is shown alone",
+"two photos of the frame shape never share the frame"). The same path serves a
+device rotation while the slideshow is showing: on `dev-0091` a plain rotation
+left a landscape photo alone on a portrait frame, the same missing refit.
+
+## Not done
+
+- The mirror case (frame locked to `portraitUp` on a landscape device) was not
+  run: the app's forced portrait did not take effect reliably on this device
+  (the display stayed landscape, once for minutes, with
+  `SCREEN_ORIENTATION_PORTRAIT` requested), and the device then locked itself
+  after a reboot, which hides every third party activity from the package
+  manager until it is unlocked again. The code path is the same for both, only
+  the frame shape differs.
+- Device state to restore once it can be launched again: push
+  `config-backup-now.json`, delete the six test photos from
+  `/sdcard/Android/data/io.github.saimonn.librephotoframe/files/photos` and set
+  `accelerometer_rotation` back to 1. The rotation was forced to 0 and the three
+  animation scales, set to 0 while chasing the stuck rotation animations, are
+  back to 1.0.
 
