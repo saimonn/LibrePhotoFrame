@@ -222,7 +222,7 @@
   "enable": "Aktivieren",
   
   "about": "Über",
-  "aboutSubtitle": "LibreFrame v{version}",
+  "aboutSubtitle": "LibrePhotoFrame v{version}",
   "@aboutSubtitle": {
     "placeholders": {
       "version": {

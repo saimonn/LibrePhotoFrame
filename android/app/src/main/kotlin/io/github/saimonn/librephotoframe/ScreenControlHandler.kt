@@ -1,4 +1,4 @@
-package io.github.saimonn.libreframe
+package io.github.saimonn.librephotoframe
 
 import android.app.AlarmManager
 import android.app.PendingIntent
@@ -23,9 +23,9 @@ import io.flutter.plugin.common.MethodChannel
 class ScreenControlHandler(private val context: Context) {
     companion object {
         private const val TAG = "ScreenControlHandler"
-        private const val CHANNEL = "io.github.saimonn.libreframe/screen_control"
-        private const val WAKE_ACTION = "io.github.saimonn.libreframe.WAKE_SCREEN"
-        private const val WAKE_LOCK_TAG = "LibreFrame:WakeUp"
+        private const val CHANNEL = "io.github.saimonn.librephotoframe/screen_control"
+        private const val WAKE_ACTION = "io.github.saimonn.librephotoframe.WAKE_SCREEN"
+        private const val WAKE_LOCK_TAG = "LibrePhotoFrame:WakeUp"
     }
 
     private val devicePolicyManager: DevicePolicyManager by lazy {
@@ -104,7 +104,7 @@ class ScreenControlHandler(private val context: Context) {
             putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, adminComponent)
             putExtra(
                 DevicePolicyManager.EXTRA_ADD_EXPLANATION,
-                "LibreFrame needs Device Admin permission to turn off the screen at night and wake it up in the morning."
+                "LibrePhotoFrame needs Device Admin permission to turn off the screen at night and wake it up in the morning."
             )
             // Note: Do NOT add FLAG_ACTIVITY_NEW_TASK - DeviceAdminAdd rejects it
         }

@@ -53,18 +53,18 @@ void main() async {
   final initializationResult = await appInitializer.initialize();
 
   runApp(
-    LibreFrameApp(
+    LibrePhotoFrameApp(
       configProvider: configService,
       initialConfigLoadResult: initializationResult.configLoadResult,
     ),
   );
 }
 
-class LibreFrameApp extends StatelessWidget {
+class LibrePhotoFrameApp extends StatelessWidget {
   final JsonConfigService configProvider;
   final ConfigLoadResult initialConfigLoadResult;
 
-  const LibreFrameApp({
+  const LibrePhotoFrameApp({
     super.key,
     required this.configProvider,
     this.initialConfigLoadResult = const ConfigLoadResult.clean(),
@@ -158,7 +158,7 @@ class LibreFrameApp extends StatelessWidget {
       ],
       child: MaterialApp(
         navigatorKey: appNavigatorKey,
-        title: 'LibreFrame',
+        title: 'LibrePhotoFrame',
         localizationsDelegates: const [
           AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,

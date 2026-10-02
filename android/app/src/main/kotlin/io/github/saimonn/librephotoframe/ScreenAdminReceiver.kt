@@ -1,4 +1,4 @@
-package io.github.saimonn.libreframe
+package io.github.saimonn.librephotoframe
 
 import android.app.admin.DeviceAdminReceiver
 import android.content.Context

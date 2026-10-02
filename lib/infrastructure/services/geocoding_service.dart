@@ -16,7 +16,7 @@ class GeocodingService {
   final Map<String, DateTime> _cacheTimestamps = {};
   
   /// User-Agent required by Nominatim usage policy
-  static const String _userAgent = 'LibreFrame/1.0';
+  static const String _userAgent = 'LibrePhotoFrame/1.0';
   
   /// Prefix for SharedPreferences keys
   static const String _prefsPrefix = 'geocache_';

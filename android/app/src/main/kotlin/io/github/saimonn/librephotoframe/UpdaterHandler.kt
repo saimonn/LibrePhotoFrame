@@ -1,4 +1,4 @@
-package io.github.saimonn.libreframe
+package io.github.saimonn.librephotoframe
 
 import android.app.PendingIntent
 import android.app.admin.DevicePolicyManager
@@ -24,8 +24,8 @@ import java.io.File
 class UpdaterHandler(private val context: Context) {
     companion object {
         private const val TAG = "UpdaterHandler"
-        private const val CHANNEL = "io.github.saimonn.libreframe/updater"
-        private const val INSTALL_ACTION = "io.github.saimonn.libreframe.INSTALL_STATUS"
+        private const val CHANNEL = "io.github.saimonn.librephotoframe/updater"
+        private const val INSTALL_ACTION = "io.github.saimonn.librephotoframe.INSTALL_STATUS"
     }
 
     private val devicePolicyManager: DevicePolicyManager by lazy {

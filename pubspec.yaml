@@ -1,4 +1,4 @@
-name: libre_frame
+name: libre_photo_frame
 description: "Turn an old Android tablet into a digital photo frame."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.

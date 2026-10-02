@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:libre_frame/domain/models/photo_entry.dart';
-import 'package:libre_frame/domain/services/photo_pair_layout.dart';
+import 'package:libre_photo_frame/domain/models/photo_entry.dart';
+import 'package:libre_photo_frame/domain/services/photo_pair_layout.dart';
 
 PhotoEntry entry(String name, {int? width, int? height}) {
   return PhotoEntry(

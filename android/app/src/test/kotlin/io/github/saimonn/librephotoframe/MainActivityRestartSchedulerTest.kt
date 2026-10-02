@@ -1,4 +1,4 @@
-package io.github.saimonn.libreframe
+package io.github.saimonn.librephotoframe
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull

@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// This service prevents the app from being killed by the system's low memory
 /// killer by running a foreground service with a persistent notification.
 class KeepAliveService {
-  static const _channel = MethodChannel('io.github.saimonn.libreframe/keep_alive');
+  static const _channel = MethodChannel('io.github.saimonn.librephotoframe/keep_alive');
   static const String _keepAliveKey = 'keep_alive_enabled';
 
   /// Save keep alive setting to SharedPreferences.

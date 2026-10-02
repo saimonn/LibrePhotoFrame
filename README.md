@@ -1,12 +1,12 @@
-# LibreFrame
+# LibrePhotoFrame
 
 <p align="center">
-  <img src="assets/icon.png" alt="LibreFrame Icon" width="128" height="128">
+  <img src="assets/icon.png" alt="LibrePhotoFrame Icon" width="128" height="128">
 </p>
 
 **Turn your old Android tablet into a beautiful digital photo frame.**
 
-LibreFrame is a free, open-source slideshow app that syncs photos from your private cloud (Nextcloud) or local storage. No ads, no subscriptions, no nag screens – just your photos.
+LibrePhotoFrame is a free, open-source slideshow app that syncs photos from your private cloud (Nextcloud) or local storage. No ads, no subscriptions, no nag screens – just your photos.
 
 ## ✨ Features
 
@@ -17,14 +17,14 @@ LibreFrame is a free, open-source slideshow app that syncs photos from your priv
 - **🌙 Always On** – Designed to run 24/7 as a dedicated photo frame
 - **🔒 Privacy First** – Your photos stay on your server, no third-party cloud required
 
-## 🚀 Why LibreFrame?
+## 🚀 Why LibrePhotoFrame?
 
 Existing apps like *Fotoo* or *PhotoCloud Frame Slideshow* are either:
 - Riddled with **ads and nag screens**
 - Require **paid subscriptions** for basic features
 - Force you to use **public cloud services** (Google Photos, etc.)
 
-LibreFrame is different:
+LibrePhotoFrame is different:
 - ✅ **100% Free & Open Source** (GPLv3)
 - ✅ **No ads, no in-app purchases, no tracking**
 - ✅ **Works with your self-hosted Nextcloud**
@@ -44,7 +44,7 @@ flutter run -d linux
 
 ## 🔄 Automatic Updates
 
-LibreFrame can update itself from GitHub releases. It is **opt-in** and **off by default** — enable it at the bottom of **Settings → Automatic updates**. This is only for installs from GitHub; if you installed via F-Droid, leave it off and update through F-Droid instead.
+LibrePhotoFrame can update itself from GitHub releases. It is **opt-in** and **off by default** — enable it at the bottom of **Settings → Automatic updates**. This is only for installs from GitHub; if you installed via F-Droid, leave it off and update through F-Droid instead.
 
 When enabled, the app checks the latest GitHub release roughly every 8 hours:
 
@@ -56,13 +56,13 @@ When enabled, the app checks the latest GitHub release roughly every 8 hours:
 Device Owner is Android's device-management mode. It is what lets the app install updates without any confirmation dialog. It can only be set on a device with **no accounts** (e.g. right after a factory reset), via ADB:
 
 ```bash
-adb shell dpm set-device-owner io.github.saimonn.libreframe/.ScreenAdminReceiver
+adb shell dpm set-device-owner io.github.saimonn.librephotoframe/.ScreenAdminReceiver
 ```
 
 Then enable **Settings → Automatic updates → Install without confirmation**. To remove it again later:
 
 ```bash
-adb shell dpm remove-active-admin io.github.saimonn.libreframe/.ScreenAdminReceiver
+adb shell dpm remove-active-admin io.github.saimonn.librephotoframe/.ScreenAdminReceiver
 ```
 
 > Updates only install over an existing app when signed with the same key. The project's reproducible builds ensure the GitHub APKs match the F-Droid signing key, so switching between them keeps your data.
@@ -76,8 +76,8 @@ adb shell dpm remove-active-admin io.github.saimonn.libreframe/.ScreenAdminRecei
 ### Build & Run
 ```bash
 # Clone the repository
-git clone https://github.com/saimonn/LibreFrame.git
-cd LibreFrame
+git clone https://github.com/saimonn/LibrePhotoFrame.git
+cd LibrePhotoFrame
 
 # Get dependencies
 flutter pub get

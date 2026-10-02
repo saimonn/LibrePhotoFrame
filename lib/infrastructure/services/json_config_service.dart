@@ -75,7 +75,7 @@ class JsonConfigService extends ConfigProvider {
       final dir = await _documentsDirectoryProvider();
       // Use a subfolder on Desktop to keep things tidy
       final configDir = (Platform.isLinux || Platform.isWindows || Platform.isMacOS)
-          ? Directory('${dir.path}/LibreFrame')
+          ? Directory('${dir.path}/LibrePhotoFrame')
           : dir;
           
       if (!await configDir.exists()) {
