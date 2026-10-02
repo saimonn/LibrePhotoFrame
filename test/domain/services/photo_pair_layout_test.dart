@@ -183,6 +183,27 @@ void main() {
       expect(partner, isNull);
     });
 
+    test('two photos of the frame shape never share the frame', () {
+      // Landscape frame: one landscape photo or two portrait photos.
+      expect(
+        PhotoPairLayout.partnerFor(
+          primary: landscape('a'),
+          candidates: [landscape('b')],
+          pairing: PhotoPairing.portraitSideBySide,
+        ),
+        isNull,
+      );
+      // Portrait frame: one portrait photo or two landscape photos.
+      expect(
+        PhotoPairLayout.partnerFor(
+          primary: portrait('a'),
+          candidates: [portrait('b')],
+          pairing: PhotoPairing.landscapeStacked,
+        ),
+        isNull,
+      );
+    });
+
     test('a mixed collection finds a partner of the right shape', () {
       final primary = portrait('a');
       final partner = PhotoPairLayout.partnerFor(
