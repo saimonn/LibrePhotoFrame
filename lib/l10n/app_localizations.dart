@@ -134,6 +134,18 @@ abstract class AppLocalizations {
   /// **'Extend image to screen size'**
   String get blurBordersSubtitle;
 
+  /// No description provided for @pairPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'Split Screen'**
+  String get pairPhotos;
+
+  /// No description provided for @pairPhotosSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show two photos at once when they match the screen shape'**
+  String get pairPhotosSubtitle;
+
   /// No description provided for @unitMinutes.
   ///
   /// In en, this message translates to:
@@ -229,6 +241,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Photo Source'**
   String get sectionPhotoSource;
+
+  /// No description provided for @watchPhotoFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch Folder'**
+  String get watchPhotoFolder;
+
+  /// No description provided for @watchPhotoFolderSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Detect new and deleted photos in the photo folder automatically'**
+  String get watchPhotoFolderSubtitle;
 
   /// No description provided for @appFolder.
   ///

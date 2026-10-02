@@ -103,40 +103,46 @@ class PhotoSlide extends StatelessWidget {
   /// Both halves of a paired layout go through this, so `blurBorders` looks the
   /// same on each side instead of one half being bare black.
   Widget _buildCell(ImageProvider imageProvider) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        if (blurBorders) ...[
-          Image(
-            image: imageProvider,
-            fit: BoxFit.cover,
-            gaplessPlayback: true,
-          ),
-          BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-            child: Container(
-              color: Colors.black.withOpacity(0.4),
+    // The explicit ClipRect is what keeps the blurred backdrop inside its own
+    // half. A Stack only clips when a positioned child overflows it, and this
+    // one never does, so without the clip the BackdropFilter would blur
+    // everything painted before it, including the photo in the other half.
+    return ClipRect(
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (blurBorders) ...[
+            Image(
+              image: imageProvider,
+              fit: BoxFit.cover,
+              gaplessPlayback: true,
+            ),
+            BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+              child: Container(
+                color: Colors.black.withOpacity(0.4),
+              ),
+            ),
+          ] else
+            Container(
+              color: Colors.black,
+            ),
+          // 2. Main Image
+          // Positioned.fill gives the Image tight (full-cell) constraints so
+          // BoxFit.contain scales the photo up as well as down. A plain Center
+          // would leave the Image at its intrinsic size, so smaller-than-screen
+          // photos would not be scaled up. The image stays centered via the
+          // default alignment.
+          Positioned.fill(
+            child: Image(
+              image: imageProvider,
+              fit: BoxFit.contain,
+              filterQuality: FilterQuality.medium,
+              gaplessPlayback: true,
             ),
           ),
-        ] else
-          Container(
-            color: Colors.black,
-          ),
-        // 2. Main Image
-        // Positioned.fill gives the Image tight (full-cell) constraints so
-        // BoxFit.contain scales the photo up as well as down. A plain Center
-        // would leave the Image at its intrinsic size, so smaller-than-screen
-        // photos would not be scaled up. The image stays centered via the
-        // default alignment.
-        Positioned.fill(
-          child: Image(
-            image: imageProvider,
-            fit: BoxFit.contain,
-            filterQuality: FilterQuality.medium,
-            gaplessPlayback: true,
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

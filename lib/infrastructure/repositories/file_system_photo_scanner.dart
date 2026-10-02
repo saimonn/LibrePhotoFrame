@@ -31,8 +31,9 @@ class FileSystemPhotoScanner {
     this.debounceInterval = defaultDebounceInterval,
     this.settleAge = defaultSettleAge,
     this.settleRecheckInterval = defaultSettleRecheckInterval,
-    this.watchForChanges = true,
+    bool watchForChanges = true,
   })  : _storageProvider = storageProvider,
+        _watchForChanges = watchForChanges,
         // Start with the configured recheck delay instead of the static default.
         _settleDelay = settleRecheckInterval;
 
@@ -62,10 +63,20 @@ class FileSystemPhotoScanner {
   final Duration settleAge;
   final Duration settleRecheckInterval;
 
-  /// Whether to react to file system events. Turning it off leaves only the
-  /// periodic rescan, which is the wanted behaviour on platforms where the
-  /// watcher is unsupported or delivers nothing.
-  final bool watchForChanges;
+  bool _watchForChanges;
+
+  /// Whether to react to file system events. Turning it off cancels a running
+  /// watcher, which leaves only the periodic rescan. Turning it back on lets
+  /// the next scan recreate the watcher.
+  bool get watchForChanges => _watchForChanges;
+
+  set watchForChanges(bool value) {
+    if (_watchForChanges == value) return;
+    _watchForChanges = value;
+    if (!value) {
+      unawaited(_cancelWatcher());
+    }
+  }
 
   final _log = Logger('FileSystemPhotoScanner');
   final _changedController = StreamController<void>.broadcast();

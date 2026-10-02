@@ -8,6 +8,8 @@
   "transitionDuration": "Überblendzeit",
   "blurBorders": "Rand unscharf",
   "blurBordersSubtitle": "Bild mit Unschärfe bis zum Bildschirmrand zeichnen",
+  "pairPhotos": "Geteilter Bildschirm",
+  "pairPhotosSubtitle": "Zwei Fotos gleichzeitig zeigen, wenn sie zum Bildschirmformat passen",
   "unitMinutes": "Min",
   "unitSeconds": "Sek",
   
@@ -27,6 +29,8 @@
   "nominatimHint": "Verwendet Nominatim (OpenStreetMap). Kein API-Schlüssel erforderlich.",
   
   "sectionPhotoSource": "Fotoquelle",
+  "watchPhotoFolder": "Ordner überwachen",
+  "watchPhotoFolderSubtitle": "Neue und gelöschte Fotos im Fotoordner automatisch erkennen",
   "appFolder": "App-Ordner",
   "appFolderSubtitle": "Fotos im App-Ordner gespeichert",
   "appFolderWarning": "Kopiere Fotos in diesen Ordner. Sie werden beim Deinstallieren der App gelöscht.",

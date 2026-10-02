@@ -8,6 +8,8 @@
   "transitionDuration": "Transition Duration",
   "blurBorders": "Blur Borders",
   "blurBordersSubtitle": "Extend image to screen size",
+  "pairPhotos": "Split Screen",
+  "pairPhotosSubtitle": "Show two photos at once when they match the screen shape",
   "unitMinutes": "min",
   "unitSeconds": "sec",
   
@@ -27,6 +29,8 @@
   "nominatimHint": "Uses Nominatim (OpenStreetMap). No API key required.",
   
   "sectionPhotoSource": "Photo Source",
+  "watchPhotoFolder": "Watch Folder",
+  "watchPhotoFolderSubtitle": "Detect new and deleted photos in the photo folder automatically",
   "appFolder": "App Folder",
   "appFolderSubtitle": "Photos stored in app folder",
   "appFolderWarning": "Copy photos to this folder. They will be deleted when uninstalling the app.",
