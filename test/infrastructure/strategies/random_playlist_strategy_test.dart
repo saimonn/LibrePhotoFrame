@@ -69,6 +69,38 @@ void main() {
       }
     });
 
+    test('reaches a photo synced with an old file date as well', () {
+      // Two batches like a sync client leaves them: one carries the date it was
+      // synced, the other keeps the file date of months ago. Every photo has to
+      // show up whatever its file date.
+      final now = DateTime.now();
+      final fresh = List.generate(
+        5,
+        (i) => PhotoEntry(
+          file: File('/fake/fresh_$i.jpg'),
+          date: now.subtract(Duration(hours: i)),
+          sizeBytes: 1024,
+        ),
+      );
+      final old = List.generate(
+        7,
+        (i) => PhotoEntry(
+          file: File('/fake/old_$i.jpg'),
+          date: now.subtract(Duration(days: 120 + i)),
+          sizeBytes: 1024,
+        ),
+      );
+      final photos = [...fresh, ...old];
+      final strategy = RandomPlaylistStrategy(random: Random(5));
+
+      final seen = <String>{};
+      for (var i = 0; i < 200; i++) {
+        seen.add(strategy.nextPhoto(photos)!.file.path);
+      }
+
+      expect(seen, photos.map((photo) => photo.file.path).toSet());
+    });
+
     test('spreads the picks evenly over the collection', () {
       final photos = createPhotos(4);
       final strategy = RandomPlaylistStrategy(random: Random(11));
