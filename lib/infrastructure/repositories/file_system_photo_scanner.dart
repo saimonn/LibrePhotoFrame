@@ -261,6 +261,7 @@ class FileSystemPhotoScanner {
         PhotoEntry(
           file: file,
           date: stat.modified, // File date for shuffle algorithm
+          createdAt: stat.changed,
           sizeBytes: stat.size,
         ),
       );

@@ -10,6 +10,12 @@ class PhotoEntry {
   final File file;
   /// File modification date - used for shuffle algorithm
   final DateTime date;
+  /// File creation date, null when the platform does not report one.
+  ///
+  /// Android has no portable creation timestamp: [FileStat.changed] is the
+  /// inode change time, which is when the file was written, and MediaStore does
+  /// not expose DATE_ADDED through photo_manager. Callers fall back to [date].
+  final DateTime? createdAt;
   final int sizeBytes;
   
   // EXIF metadata - loaded lazily when photo is displayed
@@ -32,6 +38,7 @@ class PhotoEntry {
     required this.file,
     required this.date,
     required this.sizeBytes,
+    this.createdAt,
     int? width,
     int? height,
   })  : _width = width,

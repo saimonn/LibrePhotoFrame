@@ -152,17 +152,29 @@ abstract class AppLocalizations {
   /// **'Photo Order'**
   String get photoOrder;
 
-  /// No description provided for @photoOrderSmart.
-  ///
-  /// In en, this message translates to:
-  /// **'Smart shuffle'**
-  String get photoOrderSmart;
-
   /// No description provided for @photoOrderRandom.
   ///
   /// In en, this message translates to:
   /// **'Random order'**
   String get photoOrderRandom;
+
+  /// No description provided for @photoOrderExif.
+  ///
+  /// In en, this message translates to:
+  /// **'By capture time (EXIF)'**
+  String get photoOrderExif;
+
+  /// No description provided for @photoOrderCreation.
+  ///
+  /// In en, this message translates to:
+  /// **'By file creation time'**
+  String get photoOrderCreation;
+
+  /// No description provided for @photoOrderModification.
+  ///
+  /// In en, this message translates to:
+  /// **'By file modification time'**
+  String get photoOrderModification;
 
   /// No description provided for @unitMinutes.
   ///

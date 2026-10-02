@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
 import 'package:path_provider/path_provider.dart';
 import '../../domain/interfaces/config_provider.dart';
+import '../strategies/playlist_strategies.dart';
 
 enum ConfigLoadState {
   clean,
@@ -277,7 +278,12 @@ class JsonConfigService extends ConfigProvider {
   }
 
   @override
-  String get photoOrder => _config['photo_order'] ?? 'weighted_freshness';
+  String get photoOrder {
+    final value = _config['photo_order'];
+    return PlaylistStrategies.orders.contains(value)
+        ? value as String
+        : PlaylistStrategies.fallback;
+  }
 
   @override
   set photoOrder(String value) {

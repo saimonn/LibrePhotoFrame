@@ -80,6 +80,17 @@ class PhotoService extends ChangeNotifier {
     _playlistStrategy = strategy;
   }
 
+  /// Records what the frame is showing, so an order can take the recently
+  /// shown photos into account.
+  ///
+  /// [partner] is the photo sharing the frame in split mode; both are recorded
+  /// as one rank.
+  void noteDisplayed(PhotoEntry photo, [PhotoEntry? partner]) {
+    _playlistStrategy.recordShown(
+      partner == null ? [photo] : [photo, partner],
+    );
+  }
+
   Stream<void> get onPhotosChanged => _repository.onPhotosChanged;
 
   /// Re-checks the photo source immediately.

@@ -38,10 +38,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get photoOrder => 'Reihenfolge';
 
   @override
-  String get photoOrderSmart => 'Gewichtetes Mischen';
+  String get photoOrderRandom => 'Zufällige Reihenfolge';
 
   @override
-  String get photoOrderRandom => 'Zufällige Reihenfolge';
+  String get photoOrderExif => 'Nach Aufnahmezeit (EXIF)';
+
+  @override
+  String get photoOrderCreation => 'Nach Erstellungsdatum der Datei';
+
+  @override
+  String get photoOrderModification => 'Nach Änderungsdatum der Datei';
 
   @override
   String get unitMinutes => 'Min';

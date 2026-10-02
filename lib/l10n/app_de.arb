@@ -11,8 +11,10 @@
   "pairPhotos": "Geteilter Bildschirm",
   "pairPhotosSubtitle": "Zwei Fotos gleichzeitig zeigen, wenn sie zum Bildschirmformat passen",
   "photoOrder": "Reihenfolge",
-  "photoOrderSmart": "Gewichtetes Mischen",
   "photoOrderRandom": "Zufällige Reihenfolge",
+  "photoOrderExif": "Nach Aufnahmezeit (EXIF)",
+  "photoOrderCreation": "Nach Erstellungsdatum der Datei",
+  "photoOrderModification": "Nach Änderungsdatum der Datei",
   "unitMinutes": "Min",
   "unitSeconds": "Sek",
   

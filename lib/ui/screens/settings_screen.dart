@@ -1918,11 +1918,30 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
 
     String getPhotoOrderLabel(String value) {
       switch (value) {
+        case 'exif':
+          return l10n.photoOrderExif;
+        case 'creation':
+          return l10n.photoOrderCreation;
+        case 'modification':
+          return l10n.photoOrderModification;
         case 'random':
-          return l10n.photoOrderRandom;
         default:
-          return l10n.photoOrderSmart;
+          return l10n.photoOrderRandom;
       }
+    }
+
+    Widget item(IconData icon, String label, String value) {
+      return DropdownMenuItem(
+        value: value,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 20),
+            const SizedBox(width: 8),
+            Text(label),
+          ],
+        ),
+      );
     }
 
     return ListTile(
@@ -1933,28 +1952,10 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
         value: _photoOrder,
         underline: const SizedBox(),
         items: [
-          DropdownMenuItem(
-            value: 'weighted_freshness',
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.auto_awesome, size: 20),
-                const SizedBox(width: 8),
-                Text(l10n.photoOrderSmart),
-              ],
-            ),
-          ),
-          DropdownMenuItem(
-            value: 'random',
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.casino, size: 20),
-                const SizedBox(width: 8),
-                Text(l10n.photoOrderRandom),
-              ],
-            ),
-          ),
+          item(Icons.casino, l10n.photoOrderRandom, 'random'),
+          item(Icons.photo_camera, l10n.photoOrderExif, 'exif'),
+          item(Icons.add, l10n.photoOrderCreation, 'creation'),
+          item(Icons.update, l10n.photoOrderModification, 'modification'),
         ],
         onChanged: (value) {
           if (value != null) {
