@@ -121,11 +121,11 @@ class LibrePhotoFrameApp extends StatelessWidget {
           PhotoRepository,
           PhotoService
         >(
-          update: (_, config, playlist, storage, repo, previous) {
-            if (previous != null) {
-              previous.updatePlaylistStrategy(playlist);
-              return previous;
-            }
+          create: (context) {
+            final storage = context.read<StorageProvider>();
+            final playlist = context.read<PlaylistStrategy>();
+            final repo = context.read<PhotoRepository>();
+            final config = context.read<ConfigProvider>();
 
             // Factory function that creates a SyncProvider with current config
             SyncProvider createSyncProvider() {
@@ -150,6 +150,9 @@ class LibrePhotoFrameApp extends StatelessWidget {
               storageProvider: storage,
             );
           },
+          // The photo order setting is applied to the running service.
+          update: (_, config, playlist, storage, repo, previous) =>
+              previous!..updatePlaylistStrategy(playlist),
         ),
 
         // Opt-in GitHub self-updater (no-op unless enabled in settings)
