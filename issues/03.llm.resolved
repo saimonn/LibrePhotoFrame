@@ -1,0 +1,97 @@
+# Issue 03 - analysis and actions
+
+Status: resolved
+
+## Request
+
+- Drop the "smart shuffle" (freshness weighting).
+- "Random order" stays, without "smart" in the name, but weights the last 100
+  shown photos instead of the file date: weight 0.01 for the photo shown last,
+  0.02 for the one before, up to 0.99 for the 99th, weight 1 for everything
+  never shown. A split pair enters the list as one rank, both photos.
+- Three more orders: by EXIF time (fall back to the file creation time), by
+  file creation time, by file modification time.
+
+## What was built
+
+- `RandomPlaylistStrategy` now draws against the view history: every photo
+  never shown has the weight 1, a photo shown recently is weighted by its rank
+  divided by 100 (`rememberedPhotos`), so the photo shown last gets 0.01 and
+  the 100th 1.00. The history holds the photos shown together in split mode as
+  one rank, keyed by path so a rescan keeps it.
+- `SortedPlaylistStrategy` walks the collection oldest first and starts over at
+  the end. `PhotoOrderField` holds the three date fields and their fallback
+  chain: `exif` -> capture date, then file creation date, then file date;
+  `creation` -> file creation date, then file date; `modification` -> file
+  date. Photos sharing a date keep a stable order by path, and the walk
+  continues from the photo on screen when the order is rebuilt.
+- `PlaylistStrategy` gained `recordShown(List<PhotoEntry>)` with an empty
+  default; `PhotoService.noteDisplayed(photo, [partner])` forwards it and the
+  slideshow calls it after a transition and after a partner refit, which is
+  the only place that knows about the photo sharing the frame.
+- `PhotoEntry.createdAt` is the new optional file creation date, set from
+  `FileStat.changed` by the file system scanner. MediaStore does not report
+  one, so the `creation` order walks by file date there.
+- `JsonConfigService.photoOrder` only accepts the ids of `PlaylistStrategies.orders`
+  and falls back to `random`, so a config still holding `weighted_freshness`
+  does not reach the dropdown with no matching entry.
+- `ExifMetadataProvider` keeps its results in a cache file in the application
+  cache directory, keyed by path and modification date, written after a short
+  delay. A file that changed is read again, a corrupted cache is ignored.
+- Labels: `photoOrderSmart` removed, `photoOrderExif`, `photoOrderCreation`,
+  `photoOrderModification` added (en, de). The order names used by the
+  strategies themselves stay English, as before.
+
+## Verified
+
+Automated (`flutter analyze` + `flutter test`, CI run 37025164051, 104 tests):
+
+- `random_playlist_strategy_test.dart`: the photo shown last gets far below the
+  weight of an unseen photo, the weight grows with the age of the slide, both
+  photos of a split frame share a rank, the history survives a rescan, only
+  the last 100 slides keep a weight, every photo of a collection with two
+  batches of file dates is reached.
+- `sorted_playlist_strategy_test.dart`: the three fields, the fallback chains,
+  the wrap at the end of the collection, the rebuild that continues from the
+  photo on screen, the stable order of photos sharing a date.
+- `exif_metadata_provider_cache_test.dart`: the capture date of a JPEG with an
+  EXIF date is read, written to the cache, served from the cache file to a
+  provider that starts later even when the file content changed, read again
+  once the modification date moved, and a corrupted cache file is ignored.
+
+On the device (POCO F1, `2f64868c`, dev-0103 = `93443bd`):
+
+- MediaStore source, kiosk01 album with 16 photos in two batches (9 synced on
+  2026-10-01, 7 keeping their June file dates): `modification` walked all 16
+  photos in ascending file date, four full cycles, no out of order step;
+  `exif` walked all 16 photos in ascending capture date, two full cycles, no
+  out of order step, and in the opposite block order to `modification`; the
+  `creation` order walked by file date there, as expected since MediaStore
+  reports no creation date.
+- Local folder source, six test photos with the modification dates
+  L1 < L2 < L3 < P1 < P2 < P3 and the creation dates P3 < P2 < P1 < L3 < L2 <
+  L1: `modification` walked L1, L2, L3, P1, P2, P3 and `creation` walked P3,
+  P2, P1, L3, L2, L1, each repeating over the whole run. The two orders are
+  therefore told apart by the inode change date, not the modification date.
+- `random` over the kiosk01 album, 56 slides: the June batch was picked 24
+  times (42.9 %), the recent batch 32 times (57.1 %), all 16 photos shown, at
+  least 2 picks each. Before the change the same collection gave the June
+  batch 4 % of the picks and reached 11 of the 16 photos (issues/01).
+- Settings: the `Photo Order` row shows `Random order` and its dropdown offers
+  exactly `Random order`, `By capture time (EXIF)`, `By file creation time`,
+  `By file modification time`.
+
+## Notes
+
+- The dates are walked ascending, oldest photo first, which is the literal
+  reading of "by exif time". Flipping the direction is one line in
+  `SortedPlaylistStrategy` if newest first is wanted.
+- The EXIF order improves as photos are displayed: a photo that was never shown
+  is ordered by its file date until the frame has read its EXIF once. The
+  cache keeps that read to one per file and per change.
+- The 100th remembered photo gets the weight 1.00, which is the weight of a
+  photo that was never shown; the issue lists the weights up to 0.99 for the
+  99th and leaves that one open.
+
+Reliability: 95 % (every statement above comes from a test run or a device
+measurement of dev-0103).
