@@ -59,13 +59,14 @@ void main() {
       // A rescan rebuilds the list with new PhotoEntry objects, so the photo
       // shown last is recognized by its path, not by identity.
       final strategy = RandomPlaylistStrategy(random: Random(1));
-      final shown = strategy.nextPhoto(createPhotos(2))!;
 
+      PhotoEntry? previous;
       for (var i = 0; i < 20; i++) {
-        expect(
-          strategy.nextPhoto(createPhotos(2))!.file.path,
-          isNot(shown.file.path),
-        );
+        final photo = strategy.nextPhoto(createPhotos(2))!;
+        if (previous != null) {
+          expect(photo.file.path, isNot(previous.file.path));
+        }
+        previous = photo;
       }
     });
 
