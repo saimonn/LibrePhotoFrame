@@ -490,7 +490,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String aboutSubtitle(String version) {
-    return 'Open Photo Frame v$version';
+    return 'LibreFrame v$version';
   }
 
   @override

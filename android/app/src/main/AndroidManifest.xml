@@ -15,7 +15,7 @@
     <!-- Opt-in self-update from GitHub releases (not shipped on Play Store) -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
     <application
-        android:label="Open Photo Frame"
+        android:label="LibreFrame"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -75,7 +75,7 @@
             android:enabled="true"
             android:exported="false">
             <intent-filter>
-                <action android:name="io.github.micw.openphotoframe.WAKE_SCREEN"/>
+                <action android:name="io.github.saimonn.libreframe.WAKE_SCREEN"/>
             </intent-filter>
         </receiver>
         

@@ -1,6 +1,6 @@
 {
-    "name": "open_photo_frame",
-    "short_name": "open_photo_frame",
+    "name": "LibreFrame",
+    "short_name": "LibreFrame",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

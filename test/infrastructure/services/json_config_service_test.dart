@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:open_photo_frame/infrastructure/services/json_config_service.dart';
+import 'package:libre_frame/infrastructure/services/json_config_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -40,7 +40,7 @@ void main() {
 
   Directory configDirectory() {
     if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
-      return Directory('${tempDir.path}/OpenPhotoFrame');
+      return Directory('${tempDir.path}/LibreFrame');
     }
     return tempDir;
   }

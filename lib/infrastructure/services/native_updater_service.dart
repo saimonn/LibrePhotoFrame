@@ -7,7 +7,7 @@ import 'package:logging/logging.dart';
 /// Provides Device Owner detection and APK installation via the Android
 /// PackageInstaller (silent when Device Owner, otherwise a system prompt).
 class NativeUpdaterService {
-  static const _channel = MethodChannel('io.github.micw.openphotoframe/updater');
+  static const _channel = MethodChannel('io.github.saimonn.libreframe/updater');
   static final _log = Logger('NativeUpdaterService');
 
   static bool get isSupported => Platform.isAndroid;

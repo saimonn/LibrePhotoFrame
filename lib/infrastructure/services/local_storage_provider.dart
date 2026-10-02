@@ -63,7 +63,7 @@ class LocalStorageProvider implements StorageProvider {
     if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
       // On Desktop, use a distinct folder name in Documents
       baseDir = await getApplicationDocumentsDirectory();
-      subDirName = 'OpenPhotoFrame';
+      subDirName = 'LibreFrame';
     } else if (Platform.isAndroid) {
       baseDir = await getExternalStorageDirectory();
     }

@@ -1,4 +1,4 @@
-package io.github.micw.openphotoframe
+package io.github.saimonn.libreframe
 
 import android.app.admin.DeviceAdminReceiver
 import android.content.Context

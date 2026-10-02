@@ -935,7 +935,7 @@ abstract class AppLocalizations {
   /// No description provided for @aboutSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Open Photo Frame v{version}'**
+  /// **'LibreFrame v{version}'**
   String aboutSubtitle(String version);
 
   /// No description provided for @noPhotosFound.

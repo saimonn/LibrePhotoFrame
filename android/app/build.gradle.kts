@@ -17,7 +17,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "io.github.micw.openphotoframe"
+    namespace = "io.github.saimonn.libreframe"
     compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
@@ -37,7 +37,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "io.github.micw.openphotoframe"
+        applicationId = "io.github.saimonn.libreframe"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = 24
