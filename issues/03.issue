@@ -1,0 +1,20 @@
+remove the "smart shuffle" feature.
+
+"Random odrder" mode will be with weighted 100 last viewed pictures, and no smart in name.
+
+default weight for unseen/out-of-list picture: 1
+
+keep a weight for last 100 displayed pictures: 
+  - last picture : 0.01 
+  - 2nd last pic:  0.02, 
+  - etc until 
+  - last 99 picture shown: weight: 0.99
+  
+(if two pictures were shown because of split mode, add them both in the list, no matter if they have 0.01 weight difference)
+
+other display mode order in the list will be:
+- by exif time (fallback to timestamp of creation file if no exif time found).
+- by timestamp of creation time of file
+- by timestamp of modification time of file
+
+if android does not support separate create/modif timestamp, just use one.

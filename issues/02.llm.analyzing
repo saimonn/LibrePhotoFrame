@@ -1,0 +1,53 @@
+# Issue 02 - analysis and actions
+
+Status: analyzing (not started, no code change yet)
+
+## Request
+
+1. Choose the language inside the app instead of following Android.
+2. The date shown on the photo must follow that choice.
+3. Translate the menus into French, German and Spanish.
+
+## Current state (verified in the code)
+
+- `lib/l10n/app_en.arb` and `app_de.arb`: 155 keys each, template is `app_en.arb`
+  (`l10n.yaml`). The three generated Dart files are checked in, so a new locale
+  means one arb file plus its generated `app_localizations_<locale>.dart`.
+- `lib/main.dart:185` `supportedLocales: [Locale('en'), Locale('de')]`. The
+  `Global*Localizations` delegates are already registered, so a `Locale('fr')`
+  needs no dependency change. `intl` is a dependency and
+  `initializeDateFormatting()` runs in `app_initializer.dart:36`.
+- No language setting exists anywhere: no config key, no field in
+  `settings_screen.dart`. The app therefore shows English when Android runs in
+  French or Spanish.
+- `lib/ui/widgets/photo_info_overlay.dart:65-70` formats the photo date with
+  `DateFormat.yMMMMd(Platform.localeName)`, i.e. the *platform* locale, not
+  the locale of the app. This is the "only Android's default language is used
+  to display the date" part of the report.
+- `lib/ui/widgets/clock_overlay.dart:81` builds `HH:MM` by hand, so the clock
+  is locale independent: no AM/PM, no locale date. A language choice does not
+  change the clock unless the time format is locale driven too.
+
+## Work to do
+
+1. `language` config key (`''` = follow Android) in
+   `domain/interfaces/config_provider.dart` and
+   `infrastructure/services/json_config_service.dart`.
+2. `MaterialApp.locale:` resolved from that key in `main.dart`, so every
+   widget, the arb strings and `Localizations.localeOf(context)` follow it.
+   `Intl.defaultLocale` has to be set too, because `DateFormat` without an
+   explicit locale falls back on it.
+3. `photo_info_overlay.dart`: format with the app locale from
+   `Localizations.localeOf(context)` instead of `Platform.localeName`.
+4. Language dropdown in the settings (general section) with "System" plus en,
+   de, fr, es.
+5. `app_fr.arb` and `app_es.arb` (155 keys each) and their generated Dart
+   files; German already exists.
+
+## Open point
+
+The user has to say whether the clock follows the chosen language (12 h clock
+and a localized date) or stays as it is (24 h, time only).
+
+Reliability: 95 % for the code facts (read in the repository), the plan is
+untested.

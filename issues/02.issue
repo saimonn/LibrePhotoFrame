@@ -1,0 +1,4 @@
+feature request: add choice of language support
+
+- localized date: currently only android's default language is used (to dipslay the date for example).
+- translated option menu: add translation for french, german, spanish

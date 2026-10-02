@@ -1,0 +1,22 @@
+only kiosk01/PXL_202609* picture avec displayed on my private test samples.
+
+I added kiosk/PXL_202606* files later on, they are not displayed with version  04f97c2 of the app.
+
+I don't know if it could be a cache problem somewhere.
+
+try to reproduce the bug: 
+
+1. create a first set ("A") of test pictures (mix of portrait/landscape, at least 3 of each)
+1. create a 2nd set ("B") of test pictures (mix of portrait/landscape, at least 3 of each)
+2. put them in the directory of the picture shown (or change the app setting to the test dir if needed)
+3. enable the watcher option in the app.
+4. check which pictures are displayed
+5. add the set B of pictures.
+6. check if set B pictures are part of the slideshow (have to wait a bit to check that)
+
+
+
+
+if you find other means to check that (eg. with some clever unit test, adding file, etc.) that do not need live testing, that would be great.
+
+

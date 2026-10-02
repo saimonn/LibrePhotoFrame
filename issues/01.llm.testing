@@ -1,0 +1,73 @@
+# Issue 01 - analysis and actions
+
+Status: testing (code shipped and installed, last device test running)
+
+## Diagnosis
+
+The watcher is not at fault. On the device folder `/sdcard/kiosk01` the app
+listed all 16 files (13 distinct filenames appeared in the first 70 slides, and
+the missing ones appear later), so set B was published and offered to the
+slideshow.
+
+What hides set B is the photo selection. `WeightedFreshnessStrategy` weights a
+photo by `50 / (ageInDays + 1) + 1`, so the file date decides the share:
+
+- `PXL_202609*` and `image_*`, synced on 2026-10-01 -> age 1 day -> weight 26
+- `AGC_*` and `PXL_202606*`, synced on 2026-10-01 keeping their June file
+  dates (Syncthing preserves mtime, `.stfolder` in the folder) -> age ~121 days
+  -> weight 1.41
+
+Measured over 50 slides each, device `2f64868c`, same folder, same config
+apart from the order:
+
+| photo order | picks for the June batch | distinct photos shown |
+|---|---|---|
+| `weighted_freshness` | 4 % | 11 / 16 |
+| `random` | 40 % | 16 / 16 |
+
+Predicted share of a June photo under the smart shuffle is 0.6 %, so a single
+set B photo shows up roughly every 170 slides (3 h at a 60 s slide duration).
+That is what "never displayed" is.
+
+## Changes (branch `feature/local-folder-watch-refresh`)
+
+- `248dd04` feat: `photo_order` setting (`photo_order` config key) choosing
+  between the existing freshness shuffle and `RandomPlaylistStrategy`, applied
+  without a restart through the playlist strategy provider.
+- `9734b23` test: `photoOrder` in the three config fakes.
+- `8e39337` fix: `create` callback for `ChangeNotifierProxyProvider4`, plus a
+  regression test that a photo with an old file date and one synced today are
+  both reached by the random order.
+- `6968ec9` fix (other issue, portrait photo left alone when coming back from
+  the settings): the partner is re-picked on a frame shape change instead of
+  only being dropped.
+
+Already covered by existing tests, no change needed: the scanner publishes
+files that appear without an event (`refresh() picks up a file that appeared
+without any event`) and on the periodic rescan (`periodic rescan finds new and
+removed files without a watcher`).
+
+## Verification
+
+- `flutter analyze` + `flutter test`: 104 tests pass (CI run 37016538928).
+- APK `dev-0096` (`87cbe40`) installed on `2f64868c`.
+- Photo order distribution measured as in the table above.
+- Photo Order field visible in the settings, dropdown offers `Smart shuffle` and
+  `Random order` (semantics dump).
+- Split pair survives the settings round trip on `dev-0096`
+  (`pair=P3+P1` before and after) with the frame orientation set to `auto` and
+  the system rotation forced.
+
+Still to do:
+
+- The reported "single portrait photo after coming back from the settings" does
+  **not** reproduce that way: `dev-0091` (drop only) behaves the same as
+  `dev-0096` when the frame orientation is `auto`, because the window never
+  changes size. The trigger needs a *forced* frame orientation: the settings
+  screen frees it (`settings_screen.dart:174`
+  `setPreferredOrientations(DeviceOrientation.values)`) and the slideshow
+  re-applies it on return (`slideshow_screen.dart:476`), so a frame locked to
+  `landscapeLeft` on a portrait device rotates to portrait and back. Rerun the
+  round trip with a forced orientation on both builds, then restore the device
+  config and delete the test photos.
+
