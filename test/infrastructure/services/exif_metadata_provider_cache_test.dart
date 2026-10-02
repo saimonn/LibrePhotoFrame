@@ -74,7 +74,7 @@ void main() {
     });
 
     test('survives a corrupted cache file', () async {
-      await cacheFile.writeAsString('{ not json');
+      await cacheFile().writeAsString('{ not json');
 
       final metadata = await createProvider().getExifMetadata(photo);
 

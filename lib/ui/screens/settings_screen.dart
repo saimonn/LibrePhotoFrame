@@ -1930,7 +1930,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
       }
     }
 
-    Widget item(IconData icon, String label, String value) {
+    DropdownMenuItem<String> item(IconData icon, String label, String value) {
       return DropdownMenuItem(
         value: value,
         child: Row(
