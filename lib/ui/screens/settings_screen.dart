@@ -619,21 +619,20 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
           // Sync Type Selection (includes inline folder selector for local_folder)
           _buildSyncTypeSelector(),
           
-          // Watching the folder only applies to the folder based sources, the
-          // MediaStore source gets its changes from the system anyway.
-          if (_syncType != 'device_photos') ...[
-            const SizedBox(height: 16),
-            
-            SwitchListTile(
-              title: Text(AppLocalizations.of(context)!.watchPhotoFolder),
-              subtitle: Text(AppLocalizations.of(context)!.watchPhotoFolderSubtitle),
-              secondary: const Icon(Icons.sync),
-              value: _watchPhotoFolder,
-              onChanged: (value) {
-                setState(() => _watchPhotoFolder = value);
-              },
-            ),
-          ],
+          // Change detection for the selected source: the folder watcher for
+          // the folder sources, the MediaStore change callback for the device
+          // photos.
+          const SizedBox(height: 16),
+          
+          SwitchListTile(
+            title: Text(AppLocalizations.of(context)!.watchPhotoFolder),
+            subtitle: Text(AppLocalizations.of(context)!.watchPhotoFolderSubtitle),
+            secondary: const Icon(Icons.sync),
+            value: _watchPhotoFolder,
+            onChanged: (value) {
+              setState(() => _watchPhotoFolder = value);
+            },
+          ),
           
           // Nextcloud URL (only visible if nextcloud selected)
           if (_syncType == 'nextcloud_link') ...[
