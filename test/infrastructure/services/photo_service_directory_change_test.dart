@@ -96,6 +96,12 @@ class MockConfigProvider extends ChangeNotifier implements ConfigProvider {
   set pairPhotosEnabled(bool value) {}
 
   @override
+  String get photoOrder => 'weighted_freshness';
+
+  @override
+  set photoOrder(String value) {}
+
+  @override
   bool get watchPhotoFolder => true;
   @override
   set watchPhotoFolder(bool value) {}
