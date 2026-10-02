@@ -46,20 +46,29 @@ void main() {
 
     File cacheFile() => File('${cacheDir.path}/exif_metadata_cache.json');
 
-    /// Waits for the cache file the provider writes after its save delay.
-    Future<Map<String, dynamic>> readCache() async {
+    /// Returns the cache file as soon as [check] holds, the provider writes it
+    /// after its save delay.
+    Future<Map<String, dynamic>> waitForCache(
+      bool Function(Map<String, dynamic>) check,
+    ) async {
       final deadline = DateTime.now().add(const Duration(seconds: 5));
-      while (!await cacheFile().exists() && DateTime.now().isBefore(deadline)) {
+      while (DateTime.now().isBefore(deadline)) {
+        try {
+          final decoded = jsonDecode(await cacheFile().readAsString());
+          if (decoded is Map<String, dynamic> && check(decoded)) {
+            return decoded;
+          }
+        } catch (_) {
+          // Not written yet, or not readable.
+        }
         await Future<void>.delayed(const Duration(milliseconds: 20));
       }
-      expect(
-        await cacheFile().exists(),
-        isTrue,
-        reason: 'the provider did not write its cache',
-      );
-      return jsonDecode(await cacheFile().readAsString())
-          as Map<String, dynamic>;
+      fail('the provider did not write the expected cache');
+      return {};
     }
+
+    bool holdsPhoto(Map<String, dynamic> cache) =>
+        cache.containsKey(photo.path);
 
     /// Replaces the content of the photo, keeping its modification date, so
     /// only a provider that reads the file again can see the difference.
@@ -75,13 +84,14 @@ void main() {
       final metadata = await provider.getExifMetadata(photo);
 
       expect(metadata.captureDate, captureDate);
-      final cache = await readCache();
+      final cache = await waitForCache(holdsPhoto);
       expect(cache[photo.path]!['m'], isA<int>());
       expect(cache[photo.path]!['c'], captureDate.millisecondsSinceEpoch);
     });
 
     test('serves a cached capture date without reading the file', () async {
       await createProvider().getExifMetadata(photo);
+      await waitForCache(holdsPhoto);
       await replaceContent();
 
       // A provider that starts now only has what the cache file holds.
@@ -93,7 +103,7 @@ void main() {
 
     test('reads the file again after it changed', () async {
       await createProvider().getExifMetadata(photo);
-      final before = (await readCache())[photo.path]!['m'];
+      final before = (await waitForCache(holdsPhoto))[photo.path]!['m'];
       await replaceContent();
 
       await photo.setLastModified(
@@ -102,8 +112,9 @@ void main() {
       final metadata = await createProvider().getExifMetadata(photo);
 
       expect(metadata.captureDate, isNull);
-      final cache = await readCache();
-      expect(cache[photo.path]!['m'], isNot(before));
+      final cache = await waitForCache(
+        (cache) => cache[photo.path]?['m'] != before,
+      );
       expect(cache[photo.path]!['c'], isNull);
     });
 
@@ -113,7 +124,7 @@ void main() {
       final metadata = await createProvider().getExifMetadata(photo);
 
       expect(metadata.captureDate, captureDate);
-      expect((await readCache())[photo.path], isNotNull);
+      await waitForCache(holdsPhoto);
     });
   });
 }
