@@ -124,7 +124,7 @@ void main() {
       );
     });
 
-    test('keeps the photo on screen when an order is rebuilt', () {
+    test('walks on from the photo on screen when the order is rebuilt', () {
       final photos = [
         photo('a', modified: day),
         photo('b', modified: day.add(const Duration(days: 1))),
@@ -135,15 +135,15 @@ void main() {
       expect(strategy.nextPhoto(photos)!.file.path, '/fake/a.jpg');
       expect(strategy.nextPhoto(photos)!.file.path, '/fake/b.jpg');
 
-      // The frame picked up the capture date of a, which moves it to the end.
-      photos.first.setExifMetadata(captureDate: day.add(const Duration(days: 9)));
-      final strategyByExif = SortedPlaylistStrategy(PhotoOrderField.exif);
-      strategyByExif.nextPhoto(photos);
+      // The frame read the capture date of c while it was showing b. That only
+      // moves c in the exif order, and the rescan hands out a new list.
+      photos[2].setExifMetadata(captureDate: day);
+      final rescan = [photos[2], photos[1], photos[0]];
 
-      expect(strategy.nextPhoto(photos)!.file.path, '/fake/c.jpg');
+      expect(strategy.nextPhoto(rescan)!.file.path, '/fake/c.jpg');
     });
 
-    test('continues after a rescan that removed the photo on screen', () {
+    test('walks from the start when the photo on screen disappeared', () {
       final strategy = SortedPlaylistStrategy(PhotoOrderField.modification);
       final photos = [
         photo('a', modified: day),
@@ -154,11 +154,11 @@ void main() {
       expect(strategy.nextPhoto(photos)!.file.path, '/fake/a.jpg');
       expect(strategy.nextPhoto(photos)!.file.path, '/fake/b.jpg');
 
-      // b disappeared from the folder, the walk goes on with c and wraps.
+      // b disappeared from the folder, so the walk starts over at a.
       final remaining = [photos[0], photos[2]];
       expect(
         [for (var i = 0; i < 3; i++) strategy.nextPhoto(remaining)!.file.path],
-        ['/fake/c.jpg', '/fake/a.jpg', '/fake/c.jpg'],
+        ['/fake/a.jpg', '/fake/c.jpg', '/fake/a.jpg'],
       );
     });
 
