@@ -10,6 +10,9 @@
   "blurBordersSubtitle": "Bild mit Unschärfe bis zum Bildschirmrand zeichnen",
   "pairPhotos": "Geteilter Bildschirm",
   "pairPhotosSubtitle": "Zwei Fotos gleichzeitig zeigen, wenn sie zum Bildschirmformat passen",
+  "photoOrder": "Reihenfolge",
+  "photoOrderSmart": "Gewichtetes Mischen",
+  "photoOrderRandom": "Zufällige Reihenfolge",
   "unitMinutes": "Min",
   "unitSeconds": "Sek",
   

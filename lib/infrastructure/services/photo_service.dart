@@ -35,7 +35,7 @@ class SyncStatus {
 
 class PhotoService extends ChangeNotifier {
   final SyncProviderFactory _syncProviderFactory;
-  final PlaylistStrategy _playlistStrategy;
+  PlaylistStrategy _playlistStrategy;
   final PhotoRepository _repository;
   final ConfigProvider _configProvider;
   final StorageProvider _storageProvider;
@@ -69,6 +69,16 @@ class PhotoService extends ChangeNotifier {
         _repository = repository,
         _configProvider = configProvider,
         _storageProvider = storageProvider;
+
+  /// Applies the playlist strategy of the configured photo order.
+  ///
+  /// Called when the photo order setting changes, so a new order takes effect
+  /// without restarting the app. The strategy holding the shuffle history is
+  /// kept as long as the order does not change.
+  void updatePlaylistStrategy(PlaylistStrategy strategy) {
+    if (_playlistStrategy.id == strategy.id) return;
+    _playlistStrategy = strategy;
+  }
 
   Stream<void> get onPhotosChanged => _repository.onPhotosChanged;
 

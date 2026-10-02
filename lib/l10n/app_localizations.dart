@@ -146,6 +146,24 @@ abstract class AppLocalizations {
   /// **'Show two photos at once when they match the screen shape'**
   String get pairPhotosSubtitle;
 
+  /// No description provided for @photoOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo Order'**
+  String get photoOrder;
+
+  /// No description provided for @photoOrderSmart.
+  ///
+  /// In en, this message translates to:
+  /// **'Smart shuffle'**
+  String get photoOrderSmart;
+
+  /// No description provided for @photoOrderRandom.
+  ///
+  /// In en, this message translates to:
+  /// **'Random order'**
+  String get photoOrderRandom;
+
   /// No description provided for @unitMinutes.
   ///
   /// In en, this message translates to:

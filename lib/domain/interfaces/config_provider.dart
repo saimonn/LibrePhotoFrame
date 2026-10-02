@@ -23,6 +23,9 @@ abstract class ConfigProvider extends ChangeNotifier {
   bool get pairPhotosEnabled; // Show two photos on the frame when they match its orientation
   set pairPhotosEnabled(bool value);
 
+  String get photoOrder; // Id of the playlist strategy picking the next photo
+  set photoOrder(String value);
+
   // Sync settings
   int get syncIntervalMinutes; // 0 = disabled, otherwise interval in minutes
   set syncIntervalMinutes(int value);

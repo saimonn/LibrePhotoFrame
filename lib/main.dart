@@ -23,7 +23,7 @@ import 'infrastructure/services/local_storage_provider.dart';
 import 'infrastructure/services/native_display_controller.dart';
 import 'infrastructure/services/update_service.dart';
 import 'infrastructure/repositories/hybrid_photo_repository.dart';
-import 'infrastructure/strategies/weighted_freshness_strategy.dart';
+import 'infrastructure/strategies/playlist_strategies.dart';
 import 'ui/dialogs/update_dialog.dart';
 import 'ui/screens/slideshow_screen.dart';
 
@@ -84,8 +84,15 @@ class LibrePhotoFrameApp extends StatelessWidget {
         Provider<MetadataProvider>(
           create: (_) => ExifMetadataProvider(),
         ),
-        Provider<PlaylistStrategy>(
-          create: (_) => WeightedFreshnessStrategy(),
+        // Playlist strategy of the configured photo order. The instance is kept
+        // while the order does not change, so its shuffle history survives.
+        ProxyProvider<ConfigProvider, PlaylistStrategy>(
+          update: (_, config, previous) {
+            if (previous != null && previous.id == config.photoOrder) {
+              return previous;
+            }
+            return PlaylistStrategies.create(config.photoOrder);
+          },
         ),
         Provider<DisplayController>(
           create: (_) => NativeDisplayController(),
@@ -105,13 +112,20 @@ class LibrePhotoFrameApp extends StatelessWidget {
         
         // 2. Application Services (Dependent on Infrastructure)
         // Note: SyncProvider is created dynamically via factory to pick up config changes
-        // REUSE existing PhotoService instance
-        ChangeNotifierProvider<PhotoService>(
-          create: (context) {
-            final storage = context.read<StorageProvider>();
-            final playlist = context.read<PlaylistStrategy>();
-            final repo = context.read<PhotoRepository>();
-            final config = context.read<ConfigProvider>();
+        // REUSE existing PhotoService instance, only swapping the playlist
+        // strategy when the photo order changes
+        ChangeNotifierProxyProvider4<
+          ConfigProvider,
+          PlaylistStrategy,
+          StorageProvider,
+          PhotoRepository,
+          PhotoService
+        >(
+          update: (_, config, playlist, storage, repo, previous) {
+            if (previous != null) {
+              previous.updatePlaylistStrategy(playlist);
+              return previous;
+            }
 
             // Factory function that creates a SyncProvider with current config
             SyncProvider createSyncProvider() {

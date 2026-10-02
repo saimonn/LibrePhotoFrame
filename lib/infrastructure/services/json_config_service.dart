@@ -276,6 +276,14 @@ class JsonConfigService extends ConfigProvider {
     _config['pair_photos_enabled'] = value;
   }
 
+  @override
+  String get photoOrder => _config['photo_order'] ?? 'weighted_freshness';
+
+  @override
+  set photoOrder(String value) {
+    _config['photo_order'] = value;
+  }
+
 
   // Sync settings
   @override
