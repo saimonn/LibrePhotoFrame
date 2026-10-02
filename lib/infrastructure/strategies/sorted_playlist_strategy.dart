@@ -52,6 +52,10 @@ class SortedPlaylistStrategy implements PlaylistStrategy {
   @override
   String get name => field.name;
 
+  /// The walk order does not depend on what was shown before.
+  @override
+  void recordShown(List<PhotoEntry> photos) {}
+
   @override
   PhotoEntry? nextPhoto(List<PhotoEntry> availablePhotos) {
     if (availablePhotos.isEmpty) return null;

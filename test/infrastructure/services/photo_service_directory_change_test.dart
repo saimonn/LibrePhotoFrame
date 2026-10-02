@@ -246,6 +246,9 @@ class MockPlaylistStrategy implements PlaylistStrategy {
     if (photos.isEmpty) return null;
     return photos.first;
   }
+
+  @override
+  void recordShown(List<PhotoEntry> photos) {}
 }
 
 /// Hands out the photos in order, so history navigation can be tested.
@@ -263,6 +266,9 @@ class CyclingPlaylistStrategy implements PlaylistStrategy {
     if (photos.isEmpty) return null;
     return photos[_calls++ % photos.length];
   }
+
+  @override
+  void recordShown(List<PhotoEntry> photos) {}
 }
 
 class MockSyncProvider implements SyncProvider {
