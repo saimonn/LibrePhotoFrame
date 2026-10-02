@@ -1,4 +1,4 @@
-package io.github.saimonn.libreframe
+package io.github.saimonn.librephotoframe
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -7,35 +7,35 @@ import android.content.SharedPreferences
 import android.util.Log
 
 /**
- * BroadcastReceiver that restarts the app when it's updated (e.g., via F-Droid).
- * This ensures that alarms are re-registered after an app update.
+ * BroadcastReceiver that starts the app when the device boots.
+ * Only starts if autostart is enabled in app settings.
  */
-class PackageReplacedReceiver : BroadcastReceiver() {
+class BootReceiver : BroadcastReceiver() {
     companion object {
-        private const val TAG = "PackageReplacedReceiver"
+        private const val TAG = "BootReceiver"
         private const val PREFS_NAME = "FlutterSharedPreferences"
         private const val AUTOSTART_KEY = "flutter.autostart_on_boot"
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action == Intent.ACTION_MY_PACKAGE_REPLACED) {
-            Log.d(TAG, "App was updated (MY_PACKAGE_REPLACED)")
+        if (intent.action == Intent.ACTION_BOOT_COMPLETED || 
+            intent.action == "android.intent.action.QUICKBOOT_POWERON") {
             
-            // Check if autostart is enabled
+            Log.d(TAG, "Boot completed received")
+            
+            // Check if autostart is enabled in shared preferences
             val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             val autostartEnabled = prefs.getBoolean(AUTOSTART_KEY, false)
             
             Log.d(TAG, "Autostart enabled: $autostartEnabled")
             
             if (autostartEnabled) {
-                Log.d(TAG, "Restarting MainActivity to re-register alarms")
+                Log.d(TAG, "Starting MainActivity")
                 val startIntent = Intent(context, MainActivity::class.java).apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 }
                 context.startActivity(startIntent)
-            } else {
-                Log.d(TAG, "Autostart disabled, not restarting app")
             }
         }
     }

@@ -4,10 +4,10 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logging/logging.dart';
-import 'package:libre_frame/domain/interfaces/storage_provider.dart';
-import 'package:libre_frame/infrastructure/services/webdav_remote_client.dart';
-import 'package:libre_frame/infrastructure/services/webdav_source_config.dart';
-import 'package:libre_frame/infrastructure/services/webdav_sync_service.dart';
+import 'package:libre_photo_frame/domain/interfaces/storage_provider.dart';
+import 'package:libre_photo_frame/infrastructure/services/webdav_remote_client.dart';
+import 'package:libre_photo_frame/infrastructure/services/webdav_source_config.dart';
+import 'package:libre_photo_frame/infrastructure/services/webdav_sync_service.dart';
 
 class FakeStorageProvider implements StorageProvider {
   FakeStorageProvider(this.directory);

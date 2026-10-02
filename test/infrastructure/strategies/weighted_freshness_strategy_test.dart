@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:libre_frame/domain/models/photo_entry.dart';
-import 'package:libre_frame/infrastructure/strategies/weighted_freshness_strategy.dart';
+import 'package:libre_photo_frame/domain/models/photo_entry.dart';
+import 'package:libre_photo_frame/infrastructure/strategies/weighted_freshness_strategy.dart';
 
 void main() {
   group('WeightedFreshnessStrategy', () {

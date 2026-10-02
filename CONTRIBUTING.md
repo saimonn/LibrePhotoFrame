@@ -1,4 +1,4 @@
-# Contributing to LibreFrame
+# Contributing to LibrePhotoFrame
 
 We love your input! We want to make contributing to this project as easy and transparent as possible, whether it's:
 
@@ -9,7 +9,7 @@ We love your input! We want to make contributing to this project as easy and tra
 
 ## Contributor License Agreement (CLA)
 
-By contributing to LibreFrame, you agree that your contributions will be licensed under its **GNU General Public License v3.0**.
+By contributing to LibrePhotoFrame, you agree that your contributions will be licensed under its **GNU General Public License v3.0**.
 
 However, to allow the project owner to offer commercial licenses (Dual Licensing) and ensure the long-term sustainability of the project, we require all contributors to sign a **Contributor License Agreement (CLA)**.
 

@@ -43,7 +43,7 @@ class UpdateService extends ChangeNotifier with WidgetsBindingObserver {
         _dio = dio ?? Dio();
 
   static const _owner = 'saimonn';
-  static const _repo = 'LibreFrame';
+  static const _repo = 'LibrePhotoFrame';
 
   /// Periodic fallback interval while the app keeps running.
   static const _checkInterval = Duration(hours: 8);

@@ -7,8 +7,8 @@
 
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:libre_frame/main.dart';
-import 'package:libre_frame/infrastructure/services/json_config_service.dart';
+import 'package:libre_photo_frame/main.dart';
+import 'package:libre_photo_frame/infrastructure/services/json_config_service.dart';
 
 void main() {
   testWidgets('App initializes without crashing', (WidgetTester tester) async {
@@ -16,9 +16,9 @@ void main() {
     final configService = JsonConfigService();
     
     // Build our app and trigger a frame.
-    await tester.pumpWidget(LibreFrameApp(configProvider: configService));
+    await tester.pumpWidget(LibrePhotoFrameApp(configProvider: configService));
     
     // If we get here without throwing, the app initialized successfully
-    expect(find.byType(LibreFrameApp), findsOneWidget);
+    expect(find.byType(LibrePhotoFrameApp), findsOneWidget);
   });
 }

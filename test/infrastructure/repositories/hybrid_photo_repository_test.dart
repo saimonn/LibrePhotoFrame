@@ -3,10 +3,10 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:libre_frame/domain/interfaces/config_provider.dart';
-import 'package:libre_frame/domain/interfaces/metadata_provider.dart';
-import 'package:libre_frame/domain/interfaces/storage_provider.dart';
-import 'package:libre_frame/infrastructure/repositories/hybrid_photo_repository.dart';
+import 'package:libre_photo_frame/domain/interfaces/config_provider.dart';
+import 'package:libre_photo_frame/domain/interfaces/metadata_provider.dart';
+import 'package:libre_photo_frame/domain/interfaces/storage_provider.dart';
+import 'package:libre_photo_frame/infrastructure/repositories/hybrid_photo_repository.dart';
 
 class FakeConfigProvider extends ChangeNotifier implements ConfigProvider {
   @override

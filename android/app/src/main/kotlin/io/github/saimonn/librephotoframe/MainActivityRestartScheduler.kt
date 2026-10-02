@@ -1,4 +1,4 @@
-package io.github.saimonn.libreframe
+package io.github.saimonn.librephotoframe
 
 interface DelayedExecutor {
     fun postDelayed(runnable: Runnable, delayMillis: Long)

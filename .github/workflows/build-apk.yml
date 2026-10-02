@@ -82,7 +82,7 @@ jobs:
               -keyalg RSA \
               -keysize 2048 \
               -validity 10000 \
-              -dname "CN=LibreFrame Dev Build, OU=Dev, O=LibreFrame, C=DE" 2>/dev/null
+              -dname "CN=LibrePhotoFrame Dev Build, OU=Dev, O=LibrePhotoFrame, C=DE" 2>/dev/null
           else
             # Write the private key and certificate
             echo "$APK_SIGNING_KEY" > /tmp/signing-key.pem
@@ -117,23 +117,23 @@ jobs:
             # Tag build: use clean version
             for abi in arm64-v8a armeabi-v7a x86_64; do
               if [[ -f "${APK_DIR}/app-${abi}-release.apk" ]]; then
-                mv "${APK_DIR}/app-${abi}-release.apk" "${APK_DIR}/LibreFrame-${VERSION}-${abi}.apk"
+                mv "${APK_DIR}/app-${abi}-release.apk" "${APK_DIR}/LibrePhotoFrame-${VERSION}-${abi}.apk"
               fi
             done
-            echo "APK_PATTERN=LibreFrame-${VERSION}-*.apk" >> $GITHUB_ENV
+            echo "APK_PATTERN=LibrePhotoFrame-${VERSION}-*.apk" >> $GITHUB_ENV
           else
             # Branch build: add -dev and commit count
             COMMIT_COUNT=$(printf "%04d" $(git rev-list --count HEAD))
             for abi in arm64-v8a armeabi-v7a x86_64; do
               if [[ -f "${APK_DIR}/app-${abi}-release.apk" ]]; then
-                mv "${APK_DIR}/app-${abi}-release.apk" "${APK_DIR}/LibreFrame-${VERSION}-dev-${COMMIT_COUNT}-${abi}.apk"
+                mv "${APK_DIR}/app-${abi}-release.apk" "${APK_DIR}/LibrePhotoFrame-${VERSION}-dev-${COMMIT_COUNT}-${abi}.apk"
               fi
             done
             # Rename debug APK
             if [[ -f "${APK_DIR}/app-debug.apk" ]]; then
-              mv "${APK_DIR}/app-debug.apk" "${APK_DIR}/LibreFrame-${VERSION}-dev-${COMMIT_COUNT}-debug.apk"
+              mv "${APK_DIR}/app-debug.apk" "${APK_DIR}/LibrePhotoFrame-${VERSION}-dev-${COMMIT_COUNT}-debug.apk"
             fi
-            echo "APK_PATTERN=LibreFrame-${VERSION}-dev-${COMMIT_COUNT}-*.apk" >> $GITHUB_ENV
+            echo "APK_PATTERN=LibrePhotoFrame-${VERSION}-dev-${COMMIT_COUNT}-*.apk" >> $GITHUB_ENV
           fi
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
           echo "APK_DIR=${APK_DIR}" >> $GITHUB_ENV
@@ -142,8 +142,8 @@ jobs:
         if: ${{ !startsWith(github.ref, 'refs/tags/') && github.ref != 'refs/heads/master' }}
         uses: actions/upload-artifact@v4
         with:
-          name: LibreFrame-apks-${{ github.sha }}
-          path: build/app/outputs/flutter-apk/LibreFrame-*.apk
+          name: LibrePhotoFrame-apks-${{ github.sha }}
+          path: build/app/outputs/flutter-apk/LibrePhotoFrame-*.apk
           if-no-files-found: error
           retention-days: 14
 
@@ -151,7 +151,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: build/app/outputs/flutter-apk/LibreFrame-*.apk
+          files: build/app/outputs/flutter-apk/LibrePhotoFrame-*.apk
           generate_release_notes: true
           draft: false
           prerelease: false
@@ -196,7 +196,7 @@ jobs:
             
             // Find all APK files matching the pattern
             const allFiles = fs.readdirSync(apkDir);
-            const apkFiles = allFiles.filter(f => f.startsWith('LibreFrame-') && f.endsWith('.apk'));
+            const apkFiles = allFiles.filter(f => f.startsWith('LibrePhotoFrame-') && f.endsWith('.apk'));
             
             // Try to get existing release
             let release;

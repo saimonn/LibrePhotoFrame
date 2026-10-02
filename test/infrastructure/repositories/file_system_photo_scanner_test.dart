@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:libre_frame/domain/interfaces/storage_provider.dart';
-import 'package:libre_frame/infrastructure/repositories/file_system_photo_scanner.dart';
+import 'package:libre_photo_frame/domain/interfaces/storage_provider.dart';
+import 'package:libre_photo_frame/infrastructure/repositories/file_system_photo_scanner.dart';
 
 class MockStorageProvider implements StorageProvider {
   Directory _dir;

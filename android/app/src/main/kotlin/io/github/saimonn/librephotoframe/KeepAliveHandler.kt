@@ -1,4 +1,4 @@
-package io.github.saimonn.libreframe
+package io.github.saimonn.librephotoframe
 
 import android.Manifest
 import android.content.Context
@@ -21,7 +21,7 @@ import io.flutter.plugin.common.MethodChannel
 class KeepAliveHandler(private val context: Context) {
     companion object {
         private const val TAG = "KeepAliveHandler"
-        private const val CHANNEL = "io.github.saimonn.libreframe/keep_alive"
+        private const val CHANNEL = "io.github.saimonn.librephotoframe/keep_alive"
     }
 
     fun configureChannel(flutterEngine: FlutterEngine) {
