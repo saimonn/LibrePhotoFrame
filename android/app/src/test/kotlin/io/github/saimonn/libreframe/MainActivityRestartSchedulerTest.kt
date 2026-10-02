@@ -1,4 +1,4 @@
-package io.github.micw.openphotoframe
+package io.github.saimonn.libreframe
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull

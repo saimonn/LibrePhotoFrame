@@ -1,4 +1,4 @@
-package io.github.micw.openphotoframe
+package io.github.saimonn.libreframe
 
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -17,7 +17,7 @@ import android.util.Log
 class WakeReceiver : BroadcastReceiver() {
     companion object {
         private const val TAG = "WakeReceiver"
-        private const val WAKE_LOCK_TAG = "OpenPhotoFrame:WakeUp"
+        private const val WAKE_LOCK_TAG = "LibreFrame:WakeUp"
         private const val INITIAL_DELAY_MS = 3000L // Wait 3s to avoid Binder crash window
         private const val CHECK_DELAY_MS = 5000L   // Check after 5s if activity is running
         private const val MAX_RETRIES = 2

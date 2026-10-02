@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:open_photo_frame/domain/interfaces/config_provider.dart';
-import 'package:open_photo_frame/infrastructure/services/android_runtime_settings_sync.dart';
-import 'package:open_photo_frame/infrastructure/services/app_initializer.dart';
-import 'package:open_photo_frame/infrastructure/services/json_config_service.dart';
+import 'package:libre_frame/domain/interfaces/config_provider.dart';
+import 'package:libre_frame/infrastructure/services/android_runtime_settings_sync.dart';
+import 'package:libre_frame/infrastructure/services/app_initializer.dart';
+import 'package:libre_frame/infrastructure/services/json_config_service.dart';
 
 class FakeConfigProvider extends ChangeNotifier implements ConfigProvider {
   FakeConfigProvider({

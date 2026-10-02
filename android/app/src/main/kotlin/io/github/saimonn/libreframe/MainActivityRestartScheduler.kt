@@ -1,4 +1,4 @@
-package io.github.micw.openphotoframe
+package io.github.saimonn.libreframe
 
 interface DelayedExecutor {
     fun postDelayed(runnable: Runnable, delayMillis: Long)

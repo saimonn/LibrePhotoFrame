@@ -229,7 +229,7 @@
   "enable": "Enable",
   
   "about": "About",
-  "aboutSubtitle": "Open Photo Frame v{version}",
+  "aboutSubtitle": "LibreFrame v{version}",
   "@aboutSubtitle": {
     "placeholders": {
       "version": {

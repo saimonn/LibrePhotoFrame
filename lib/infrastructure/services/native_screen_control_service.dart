@@ -10,7 +10,7 @@ import 'package:flutter/services.dart';
 /// 
 /// Requires Device Admin permission to be enabled by the user.
 class NativeScreenControlService {
-  static const _channel = MethodChannel('io.github.micw.openphotoframe/screen_control');
+  static const _channel = MethodChannel('io.github.saimonn.libreframe/screen_control');
   
   /// Check if the platform supports native screen control.
   static bool get isSupported => Platform.isAndroid;

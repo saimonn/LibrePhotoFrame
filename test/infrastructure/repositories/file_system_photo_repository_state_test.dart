@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:open_photo_frame/domain/interfaces/metadata_provider.dart';
-import 'package:open_photo_frame/domain/interfaces/storage_provider.dart';
-import 'package:open_photo_frame/infrastructure/repositories/file_system_photo_repository.dart';
+import 'package:libre_frame/domain/interfaces/metadata_provider.dart';
+import 'package:libre_frame/domain/interfaces/storage_provider.dart';
+import 'package:libre_frame/infrastructure/repositories/file_system_photo_repository.dart';
 
 // Mock implementations
 class MockStorageProvider implements StorageProvider {
