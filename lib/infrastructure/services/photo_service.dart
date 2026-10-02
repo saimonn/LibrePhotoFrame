@@ -350,6 +350,12 @@ class PhotoService extends ChangeNotifier {
     _historyIndex = newIndex == -1 ? _history.length - 1 : newIndex;
   }
   
+  /// All photos currently available for the slideshow.
+  ///
+  /// Exposed so the UI can look for a second photo to pair with the one on
+  /// screen without reaching into the repository.
+  List<PhotoEntry> get availablePhotos => _repository.photos;
+
   /// Check if a photo is still in the current photo list
   bool containsPhoto(PhotoEntry photo) {
     return _repository.photos.any((p) => p.file.path == photo.file.path);
