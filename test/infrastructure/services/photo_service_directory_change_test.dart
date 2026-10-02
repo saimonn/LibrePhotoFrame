@@ -89,6 +89,16 @@ class MockConfigProvider extends ChangeNotifier implements ConfigProvider {
   bool get blurBorders => true;
   @override
   set blurBorders(bool value) {}
+
+  @override
+  bool get pairPhotosEnabled => true;
+  @override
+  set pairPhotosEnabled(bool value) {}
+
+  @override
+  bool get watchPhotoFolder => true;
+  @override
+  set watchPhotoFolder(bool value) {}
   
   @override
   int get syncIntervalMinutes => _syncIntervalMinutes;

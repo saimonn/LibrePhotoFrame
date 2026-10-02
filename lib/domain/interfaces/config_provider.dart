@@ -20,9 +20,15 @@ abstract class ConfigProvider extends ChangeNotifier {
   bool get blurBorders; // Blur borders outside image
   set blurBorders(bool value);
   
+  bool get pairPhotosEnabled; // Show two photos on the frame when they match its orientation
+  set pairPhotosEnabled(bool value);
+
   // Sync settings
   int get syncIntervalMinutes; // 0 = disabled, otherwise interval in minutes
   set syncIntervalMinutes(int value);
+  
+  bool get watchPhotoFolder; // Watch the photo folder for changes
+  set watchPhotoFolder(bool value);
   
   bool get deleteOrphanedFiles; // Delete local files not on server
   set deleteOrphanedFiles(bool value);

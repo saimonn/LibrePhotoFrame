@@ -52,6 +52,18 @@ class FakeConfigProvider extends ChangeNotifier implements ConfigProvider {
   set blurBorders(bool value) {}
 
   @override
+  bool get pairPhotosEnabled => true;
+
+  @override
+  set pairPhotosEnabled(bool value) {}
+
+  @override
+  bool get watchPhotoFolder => true;
+
+  @override
+  set watchPhotoFolder(bool value) {}
+
+  @override
   int get syncIntervalMinutes => 0;
 
   @override

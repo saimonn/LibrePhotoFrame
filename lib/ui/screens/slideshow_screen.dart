@@ -60,6 +60,9 @@ class SlideshowScreen extends StatefulWidget {
 
 class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderStateMixin, WidgetsBindingObserver {
   PhotoEntry? _currentPhoto;
+  /// Second photo currently shown next to [_currentPhoto], if any. Kept so the
+  /// next slide can pick a different partner instead of reusing this one.
+  PhotoEntry? _currentPartner;
   Timer? _timer;
   bool _isLoading = true;
   StreamSubscription? _photosSubscription;
@@ -398,6 +401,7 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
           // No photos available anymore - show empty state
           setState(() {
             _currentPhoto = null;
+            _currentPartner = null;
             _isLoading = false;
           });
         }
@@ -486,6 +490,7 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
 Future<void> _warmDimensions() async {
   final screen = _screenSize;
   if (screen == null) return;
+  if (!context.read<ConfigProvider>().pairPhotosEnabled) return;
   if (!PhotoPairLayout.isPaired(
     PhotoPairLayout.forScreen(screen.width, screen.height),
   )) {
@@ -511,6 +516,7 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
 
     final pairing = PhotoPairLayout.forScreen(screen.width, screen.height);
     if (!PhotoPairLayout.isPaired(pairing)) return null;
+    if (!context.read<ConfigProvider>().pairPhotosEnabled) return null;
 
     final candidates = context.read<PhotoService>().availablePhotos;
     if (candidates.length < 2) return null;
@@ -531,6 +537,9 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
       excludePaths: {
         photo.file.path,
         if (_currentPhoto != null) _currentPhoto!.file.path,
+        // The partner on screen must not be picked again, otherwise the second
+        // photo of a pair would stay frozen while the first one advances.
+        if (_currentPartner != null) _currentPartner!.file.path,
       },
     );
   }
@@ -614,6 +623,7 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
     setState(() {
       _isLoading = false;
       _currentPhoto = photo;
+      _currentPartner = partner;
       _slides.add(newItem);
     });
 

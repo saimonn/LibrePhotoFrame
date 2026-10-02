@@ -268,6 +268,14 @@ class JsonConfigService extends ConfigProvider {
     _config['blur_borders'] = value;
   }
 
+  @override
+  bool get pairPhotosEnabled => _config['pair_photos_enabled'] ?? true;
+
+  @override
+  set pairPhotosEnabled(bool value) {
+    _config['pair_photos_enabled'] = value;
+  }
+
 
   // Sync settings
   @override
@@ -276,6 +284,14 @@ class JsonConfigService extends ConfigProvider {
   @override
   set syncIntervalMinutes(int value) {
     _config['sync_interval_minutes'] = value;
+  }
+  
+  @override
+  bool get watchPhotoFolder => _config['watch_photo_folder'] ?? true;
+  
+  @override
+  set watchPhotoFolder(bool value) {
+    _config['watch_photo_folder'] = value;
   }
   
   @override

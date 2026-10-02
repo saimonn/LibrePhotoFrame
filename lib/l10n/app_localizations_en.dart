@@ -27,6 +27,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get blurBordersSubtitle => 'Extend image to screen size';
 
   @override
+  String get pairPhotos => 'Split Screen';
+
+  @override
+  String get pairPhotosSubtitle =>
+      'Show two photos at once when they match the screen shape';
+
+  @override
   String get unitMinutes => 'min';
 
   @override
@@ -76,6 +83,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sectionPhotoSource => 'Photo Source';
+
+  @override
+  String get watchPhotoFolder => 'Watch Folder';
+
+  @override
+  String get watchPhotoFolderSubtitle =>
+      'Detect new and deleted photos in the photo folder automatically';
 
   @override
   String get appFolder => 'App Folder';

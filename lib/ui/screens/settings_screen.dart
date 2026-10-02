@@ -44,31 +44,33 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
   );
 
   // === Slide duration slider scale ===
-  // A single slider covers both units. The first half counts seconds, the
-  // second half counts minutes, so short slideshows become reachable without
-  // giving up the long ones.
-  static const int _minSlideSeconds = 3;
+  // A single slider covers both units. The first half counts seconds in steps
+  // of five, the second half counts minutes, so short slideshows become
+  // reachable without giving up the long ones.
+  static const int _minSlideSeconds = 5;
   static const int _maxSlideSeconds = 60;
+  static const int _slideSecondsStep = 5;
   static const int _minSlideMinutes = 1;
   static const int _maxSlideMinutes = 15;
 
   /// Number of second-steps on the first half of the track.
-  static const int _secondSteps = _maxSlideSeconds - _minSlideSeconds + 1; // 58
+  static const int _secondSteps =
+      (_maxSlideSeconds - _minSlideSeconds) ~/ _slideSecondsStep + 1; // 12
 
   /// Number of minute-steps on the second half of the track.
   static const int _minuteSteps = _maxSlideMinutes - _minSlideMinutes + 1; // 15
 
   /// Total divisions of the combined slider.
-  static const int _slideDurationDivisions = _secondSteps + _minuteSteps - 1; // 72
+  static const int _slideDurationDivisions = _secondSteps + _minuteSteps - 1; // 26
 
   /// Index of the first minute-step on the track.
-  static const int _minutesStartStep = _secondSteps - 1; // 57
+  static const int _minutesStartStep = _secondSteps - 1; // 11
 
   /// Maps a slider position to the duration in seconds it represents.
   static int _slideDurationSecondsFromStep(int step) {
     final clamped = step.clamp(0, _slideDurationDivisions);
     if (clamped <= _minutesStartStep) {
-      return _minSlideSeconds + clamped;
+      return _minSlideSeconds + _slideSecondsStep * clamped;
     }
     return (_minSlideMinutes + (clamped - _minutesStartStep - 1)) * 60;
   }
@@ -76,7 +78,8 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
   /// Maps a duration in seconds to the nearest slider position.
   static int _slideDurationStepFromSeconds(int seconds) {
     if (seconds <= _maxSlideSeconds) {
-      return (seconds - _minSlideSeconds).clamp(0, _minutesStartStep);
+      final step = ((seconds - _minSlideSeconds) / _slideSecondsStep).round();
+      return step.clamp(0, _minutesStartStep);
     }
     final minutes = (seconds / 60).round();
     return (minutes - _minSlideMinutes + _minutesStartStep + 1)
@@ -84,10 +87,12 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
   }
 
   /// Slide duration as a position on a single slider whose first half is
-  /// seconds (3-60s) and second half is minutes (1-15min).
+  /// seconds (5-60s) and second half is minutes (1-15min).
   late int _slideDurationStep;
   late double _transitionDurationSeconds;
   late bool _blurBorders;
+  late bool _pairPhotos;
+  late bool _watchPhotoFolder;
   late String _syncType;
   late TextEditingController _nextcloudUrlController;
   late WebDavAuthMode _webdavAuthMode;
@@ -171,6 +176,8 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     _slideDurationStep = _slideDurationStepFromSeconds(config.slideDurationSeconds);
     _transitionDurationSeconds = (config.transitionDurationMs / 1000.0).clamp(0.5, 5.0);
     _blurBorders = config.blurBorders;
+    _pairPhotos = config.pairPhotosEnabled;
+    _watchPhotoFolder = config.watchPhotoFolder;
     // Default sync type: app_folder on Android, local_folder on Desktop
     final defaultSyncType = Platform.isAndroid ? 'app_folder' : 'local_folder';
     _syncType = config.activeSourceType.isEmpty ? defaultSyncType : config.activeSourceType;
@@ -359,6 +366,8 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     config.slideDurationSeconds = _slideDurationSecondsFromStep(_slideDurationStep);
     config.transitionDurationMs = (_transitionDurationSeconds * 1000).round();
     config.blurBorders = _blurBorders;
+    config.pairPhotosEnabled = _pairPhotos;
+    config.watchPhotoFolder = _watchPhotoFolder;
     // app_folder and local_folder both use empty activeSourceType (no sync)
     final isLocalMode = _syncType == 'local_folder' || _syncType == 'app_folder';
     config.activeSourceType = isLocalMode ? '' : _syncType;
@@ -444,7 +453,8 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
           const SizedBox(height: 8),
           
           // Slide Duration
-          // One slider: first half is 3-60 seconds, second half 1-15 minutes.
+          // One slider: first half is 5-60 seconds in steps of 5, second half
+          // 1-15 minutes.
           Builder(
             builder: (context) {
               final l10n = AppLocalizations.of(context)!;
@@ -462,7 +472,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
                   // halfway point, whole minutes above it.
                   final step = v.round();
                   if (step <= _minutesStartStep) {
-                    return '${_minSlideSeconds + step}';
+                    return '${_minSlideSeconds + _slideSecondsStep * step}';
                   }
                   return '${_minSlideMinutes + (step - _minutesStartStep - 1)}';
                 },
@@ -499,6 +509,19 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
             value: _blurBorders,
             onChanged: (value) {
               setState(() => _blurBorders = value);
+            },
+          ),
+          
+          const SizedBox(height: 16),
+          
+          // Pair Photos
+          SwitchListTile(
+            title: Text(AppLocalizations.of(context)!.pairPhotos),
+            subtitle: Text(AppLocalizations.of(context)!.pairPhotosSubtitle),
+            secondary: const Icon(Icons.view_column),
+            value: _pairPhotos,
+            onChanged: (value) {
+              setState(() => _pairPhotos = value);
             },
           ),
           
@@ -595,6 +618,22 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
           
           // Sync Type Selection (includes inline folder selector for local_folder)
           _buildSyncTypeSelector(),
+          
+          // Watching the folder only applies to the folder based sources, the
+          // MediaStore source gets its changes from the system anyway.
+          if (_syncType != 'device_photos') ...[
+            const SizedBox(height: 16),
+            
+            SwitchListTile(
+              title: Text(AppLocalizations.of(context)!.watchPhotoFolder),
+              subtitle: Text(AppLocalizations.of(context)!.watchPhotoFolderSubtitle),
+              secondary: const Icon(Icons.sync),
+              value: _watchPhotoFolder,
+              onChanged: (value) {
+                setState(() => _watchPhotoFolder = value);
+              },
+            ),
+          ],
           
           // Nextcloud URL (only visible if nextcloud selected)
           if (_syncType == 'nextcloud_link') ...[

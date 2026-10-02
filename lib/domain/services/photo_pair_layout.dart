@@ -59,9 +59,9 @@ class PhotoPairLayout {
 
   /// Picks the partner for [primary] from [candidates].
   ///
-  /// Returns null when no candidate matches the required shape, in which case
-  /// the frame simply shows [primary] alone. [excludePaths] prevents pairing a
-  /// photo with itself or with the photo already on screen.
+  /// Returns null when [primary] or no candidate matches the required shape, in
+  /// which case the frame simply shows [primary] alone. [excludePaths] prevents
+  /// pairing a photo with itself or with the photo already on screen.
   static PhotoEntry? partnerFor({
     required PhotoEntry primary,
     required List<PhotoEntry> candidates,
@@ -69,6 +69,7 @@ class PhotoPairLayout {
     Set<String> excludePaths = const {},
   }) {
     if (!isPaired(pairing)) return null;
+    if (!accepts(pairing, primary)) return null;
 
     final required = requiredShape(pairing);
     final excluded = {...excludePaths, primary.file.path};

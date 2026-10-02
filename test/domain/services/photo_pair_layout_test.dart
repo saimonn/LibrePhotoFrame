@@ -171,6 +171,18 @@ void main() {
       expect(partner, isNull);
     });
 
+    test('a primary of the wrong shape is shown alone', () {
+      // A landscape photo cannot share a portrait frame with a portrait photo,
+      // so it fills the frame on its own instead of leaving half of it empty.
+      final partner = PhotoPairLayout.partnerFor(
+        primary: portrait('a'),
+        candidates: [landscape('b')],
+        pairing: PhotoPairing.landscapeStacked,
+      );
+
+      expect(partner, isNull);
+    });
+
     test('a mixed collection finds a partner of the right shape', () {
       final primary = portrait('a');
       final partner = PhotoPairLayout.partnerFor(

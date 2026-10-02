@@ -28,6 +28,13 @@ class AppLocalizationsDe extends AppLocalizations {
       'Bild mit Unschärfe bis zum Bildschirmrand zeichnen';
 
   @override
+  String get pairPhotos => 'Geteilter Bildschirm';
+
+  @override
+  String get pairPhotosSubtitle =>
+      'Zwei Fotos gleichzeitig zeigen, wenn sie zum Bildschirmformat passen';
+
+  @override
   String get unitMinutes => 'Min';
 
   @override
@@ -77,6 +84,13 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get sectionPhotoSource => 'Fotoquelle';
+
+  @override
+  String get watchPhotoFolder => 'Ordner überwachen';
+
+  @override
+  String get watchPhotoFolderSubtitle =>
+      'Neue und gelöschte Fotos im Fotoordner automatisch erkennen';
 
   @override
   String get appFolder => 'App-Ordner';

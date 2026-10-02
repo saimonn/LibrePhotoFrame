@@ -40,6 +40,10 @@ class HybridPhotoRepository implements PhotoRepository {
   final _photosController = StreamController<void>.broadcast();
   StreamSubscription<void>? _scannerSubscription;
 
+  /// Last folder watching setting applied to [_scanner], so a change can be
+  /// detected.
+  bool _watchPhotoFolder = true;
+
   // MediaStore mode resources
   String? _selectedAlbumId;
   bool _mediaStoreListenerRegistered = false;
@@ -52,6 +56,9 @@ class HybridPhotoRepository implements PhotoRepository {
         _metadataProvider = metadataProvider,
         _config = configProvider,
         _scanner = FileSystemPhotoScanner(storageProvider: storageProvider) {
+    _watchPhotoFolder = configProvider.watchPhotoFolder;
+    _scanner.watchForChanges = _watchPhotoFolder;
+
     // Expose a single, stable stream. The scanner is only active in filesystem
     // mode while the source can change at runtime (settings), and consumers
     // subscribe once - so forward the scanner events instead of exposing its
@@ -59,6 +66,22 @@ class HybridPhotoRepository implements PhotoRepository {
     _scannerSubscription = _scanner.onPhotosChanged.listen((_) {
       _notifyChanged();
     });
+
+    // The watcher follows the setting instead of requiring a restart.
+    configProvider.addListener(_onConfigChanged);
+  }
+
+  /// Applies the folder watching setting as soon as it is toggled, so no
+  /// restart is needed.
+  void _onConfigChanged() {
+    if (_useMediaStore) return;
+    if (_watchPhotoFolder == _config.watchPhotoFolder) return;
+
+    _watchPhotoFolder = _config.watchPhotoFolder;
+    _scanner.watchForChanges = _watchPhotoFolder;
+    // Re-scan right away: enabling the watcher has to pick up the changes that
+    // happened while it was off.
+    unawaited(_scanner.scan());
   }
 
   @override
@@ -322,6 +345,7 @@ class HybridPhotoRepository implements PhotoRepository {
 
   @override
   void dispose() {
+    _config.removeListener(_onConfigChanged);
     unawaited(_cleanup());
     unawaited(_scannerSubscription?.cancel());
     _scannerSubscription = null;
