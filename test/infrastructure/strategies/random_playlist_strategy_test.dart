@@ -168,21 +168,25 @@ void main() {
     });
 
     test('drops the oldest photos once the history is full', () {
-      final photos = createPhotos(105);
+      final photos = createPhotos(102);
       final strategy = RandomPlaylistStrategy(random: Random(29));
 
-      for (final photo in photos) {
+      // More slides than the history holds, so the first one falls out of it.
+      for (final photo in photos.take(101)) {
         strategy.recordShown([photo]);
       }
 
       final counts = countDraws(strategy, photos);
 
-      // Only the last 100 shown keep a weight, photo_0 is unseen again.
-      expect(counts['/fake/photo_0.jpg'], greaterThan(draws ~/ 2 ~/ 2));
-      expect(
-        counts['/fake/photo_104.jpg'],
-        lessThan(counts['/fake/photo_0.jpg']! ~/ 20),
-      );
+      final dropped = counts['/fake/photo_0.jpg']!;
+      final lastShown = counts['/fake/photo_100.jpg']!;
+      final neverShown = counts['/fake/photo_101.jpg']!;
+
+      // A dropped photo counts as never shown again.
+      expect(dropped, greaterThan(neverShown * 0.7));
+      expect(dropped, lessThan(neverShown * 1.3));
+      // The photo shown last keeps the weight of rank 1.
+      expect(dropped, greaterThan(lastShown * 20));
     });
   });
 }

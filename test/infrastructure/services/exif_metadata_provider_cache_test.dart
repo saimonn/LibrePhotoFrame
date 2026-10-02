@@ -4,9 +4,23 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:libre_photo_frame/infrastructure/services/exif_metadata_provider.dart';
 
-void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
+/// 8x8 JPEG holding one EXIF DateTimeOriginal tag, capture date 2026-06-01.
+const String _photoWithExifBase64 =
+    '/9j/4QBIRXhpZgAASUkqAAgAAAABAGmHBAABAAAAGgAAAAAAAAABAAOQAgAUAAAALAAAAAAAAAAy'
+    'MDI2OjA2OjAxIDEyOjAwOjAwAP/gABBKRklGAAEBAAABAAEAAP/bAEMABgQFBgUEBgYFBgcHBggK'
+    'EAoKCQkKFA4PDBAXFBgYFxQWFhodJR8aGyMcFhYgLCAjJicpKikZHy0wLSgwJSgpKP/bAEMBBwcH'
+    'CggKEwoKEygaFhooKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgo'
+    'KCgoKP/AABEIAAgACAMBIgACEQEDEQH/xAAfAAABBQEBAQEBAQAAAAAAAAAAAQIDBAUGBwgJCgv/'
+    'xAC1EAACAQMDAgQDBQUEBAAAAX0BAgMABBEFEiExQQYTUWEHInEUMoGRoQgjQrHBFVLR8CQzYnKC'
+    'CQoWFxgZGiUmJygpKjQ1Njc4OTpDREVGR0hJSlNUVVZXWFlaY2RlZmdoaWpzdHV2d3h5eoOEhYaH'
+    'iImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp'
+    '6vHy8/T19vf4+fr/xAAfAQADAQEBAQEBAQEBAAAAAAAAAQIDBAUGBwgJCgv/xAC1EQACAQIEBAME'
+    'BwUEBAABAncAAQIDEQQFITEGEkFRB2FxEyIygQgUQpGhscEJIzNS8BVictEKFiQ04SXxFxgZGiYn'
+    'KCkqNTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqCg4SFhoeIiYqSk5SVlpeY'
+    'mZqio6Slpqeoqaqys7S1tre4ubrCw8TFxsfIycrS09TV1tfY2dri4+Tl5ufo6ery8/T19vf4+fr/'
+    '2gAMAwEAAhEDEQA/AOAooor54/YT/9k=';
 
+void main() {
   group('ExifMetadataProvider cache', () {
     late Directory cacheDir;
     late File photo;
@@ -14,73 +28,92 @@ void main() {
     setUp(() async {
       cacheDir = await Directory.systemTemp.createTemp('exif_cache_test_');
       photo = File('${cacheDir.path}/photo.jpg');
-      await photo.writeAsBytes(List.filled(2048, 0));
+      await photo.writeAsBytes(base64Decode(_photoWithExifBase64));
     });
 
     tearDown(() async {
       await cacheDir.delete(recursive: true);
     });
 
+    final captureDate = DateTime(2026, 6, 1, 12);
+
     ExifMetadataProvider createProvider() {
-      return ExifMetadataProvider(cacheDirectoryProvider: () async => cacheDir);
+      return ExifMetadataProvider(
+        cacheDirectoryProvider: () async => cacheDir,
+        saveDelay: const Duration(milliseconds: 10),
+      );
     }
 
     File cacheFile() => File('${cacheDir.path}/exif_metadata_cache.json');
 
-    /// Reads the cache file the provider writes after its save delay.
+    /// Waits for the cache file the provider writes after its save delay.
     Future<Map<String, dynamic>> readCache() async {
-      final deadline = DateTime.now().add(const Duration(seconds: 10));
+      final deadline = DateTime.now().add(const Duration(seconds: 5));
       while (!await cacheFile().exists() && DateTime.now().isBefore(deadline)) {
-        await Future<void>.delayed(const Duration(milliseconds: 50));
+        await Future<void>.delayed(const Duration(milliseconds: 20));
       }
-      expect(await cacheFile().exists(), isTrue,
-          reason: 'the provider did not write its cache');
-      return jsonDecode(await cacheFile().readAsString()) as Map<String, dynamic>;
+      expect(
+        await cacheFile().exists(),
+        isTrue,
+        reason: 'the provider did not write its cache',
+      );
+      return jsonDecode(await cacheFile().readAsString())
+          as Map<String, dynamic>;
     }
 
-    test('reads a photo without EXIF and remembers the file', () async {
+    /// Replaces the content of the photo, keeping its modification date, so
+    /// only a provider that reads the file again can see the difference.
+    Future<void> replaceContent() async {
+      final modified = (await photo.stat()).modified;
+      await photo.writeAsBytes(List.filled(2048, 0));
+      await photo.setLastModified(modified);
+    }
+
+    test('reads the capture date and writes it to the cache', () async {
       final provider = createProvider();
 
       final metadata = await provider.getExifMetadata(photo);
 
-      expect(metadata.captureDate, isNull);
+      expect(metadata.captureDate, captureDate);
       final cache = await readCache();
-      expect(cache.keys, contains(photo.path));
+      expect(cache[photo.path]!['m'], isA<int>());
+      expect(cache[photo.path]!['c'], captureDate.millisecondsSinceEpoch);
     });
 
-    test('reuses the cached result of an unchanged file', () async {
+    test('serves a cached capture date without reading the file', () async {
       await createProvider().getExifMetadata(photo);
+      await replaceContent();
 
-      // A second provider only has what the cache file holds.
+      // A provider that starts now only has what the cache file holds.
       final restarted = createProvider();
-      await restarted.getExifMetadata(photo);
+      final metadata = await restarted.getExifMetadata(photo);
 
-      final cache = await readCache();
-      expect(cache[photo.path], isNotNull);
-      expect(cache[photo.path]!['m'], isA<int>());
+      expect(metadata.captureDate, captureDate);
     });
 
     test('reads the file again after it changed', () async {
       await createProvider().getExifMetadata(photo);
       final before = (await readCache())[photo.path]!['m'];
+      await replaceContent();
 
       await photo.setLastModified(
-        DateTime.now().add(const Duration(days: 1)),
+        (await photo.stat()).modified.add(const Duration(days: 1)),
       );
-      await createProvider().getExifMetadata(photo);
-
-      final cache = await readCache();
-      expect(cache[photo.path]!['m'], isNot(before));
-    });
-
-    test('survives a corrupted cache file', () async {
-      await cacheFile().writeAsString('{ not json');
-
       final metadata = await createProvider().getExifMetadata(photo);
 
       expect(metadata.captureDate, isNull);
       final cache = await readCache();
-      expect(cache.keys, contains(photo.path));
+      expect(cache[photo.path]!['m'], isNot(before));
+      expect(cache[photo.path]!['c'], isNull);
+    });
+
+    test('ignores a corrupted cache file', () async {
+      await cacheFile().writeAsString('{ not json');
+
+      final metadata = await createProvider().getExifMetadata(photo);
+
+      expect(metadata.captureDate, captureDate);
+      expect((await readCache())[photo.path], isNotNull);
     });
   });
 }

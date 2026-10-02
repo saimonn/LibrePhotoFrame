@@ -18,7 +18,7 @@ class ExifMetadataProvider implements MetadataProvider {
   static const String _cacheFileName = 'exif_metadata_cache.json';
 
   /// How long new results are collected before the cache is written.
-  static const Duration _saveDelay = Duration(seconds: 2);
+  static const Duration defaultSaveDelay = Duration(seconds: 2);
 
   final _log = Logger('ExifMetadataProvider');
 
@@ -26,6 +26,7 @@ class ExifMetadataProvider implements MetadataProvider {
   static const int _maxExifBytes = 512 * 1024;
 
   final Future<Directory> Function() _cacheDirectoryProvider;
+  final Duration _saveDelay;
 
   /// EXIF results of the photos read so far, by path.
   final Map<String, _CachedMetadata> _cache = {};
@@ -34,9 +35,12 @@ class ExifMetadataProvider implements MetadataProvider {
   Future<void>? _loadingCache;
   Timer? _saveTimer;
 
-  ExifMetadataProvider({Future<Directory> Function()? cacheDirectoryProvider})
-      : _cacheDirectoryProvider =
-            cacheDirectoryProvider ?? getApplicationCacheDirectory;
+  ExifMetadataProvider({
+    Future<Directory> Function()? cacheDirectoryProvider,
+    Duration saveDelay = defaultSaveDelay,
+  })  : _cacheDirectoryProvider =
+            cacheDirectoryProvider ?? getApplicationCacheDirectory,
+        _saveDelay = saveDelay;
 
   @override
   Future<ExifMetadata> getExifMetadata(File file) async {
@@ -104,7 +108,7 @@ class ExifMetadataProvider implements MetadataProvider {
 
   Future<void> _readCache() async {
     try {
-      final directory = await getApplicationCacheDirectory();
+      final directory = await _cacheDirectoryProvider();
       _cacheFile = File('${directory.path}/$_cacheFileName');
       if (!await _cacheFile!.exists()) return;
 
