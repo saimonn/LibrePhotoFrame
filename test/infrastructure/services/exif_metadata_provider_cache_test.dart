@@ -25,10 +25,15 @@ void main() {
     late Directory cacheDir;
     late File photo;
 
+    /// A file system only keeps whole seconds here, and the tests need a
+    /// modification date they can restore exactly.
+    final modified = DateTime(2026, 6, 2, 8, 30);
+
     setUp(() async {
       cacheDir = await Directory.systemTemp.createTemp('exif_cache_test_');
       photo = File('${cacheDir.path}/photo.jpg');
       await photo.writeAsBytes(base64Decode(_photoWithExifBase64));
+      await photo.setLastModified(modified);
     });
 
     tearDown(() async {
@@ -73,7 +78,6 @@ void main() {
     /// Replaces the content of the photo, keeping its modification date, so
     /// only a provider that reads the file again can see the difference.
     Future<void> replaceContent() async {
-      final modified = (await photo.stat()).modified;
       await photo.writeAsBytes(List.filled(2048, 0));
       await photo.setLastModified(modified);
     }
@@ -106,9 +110,7 @@ void main() {
       final before = (await waitForCache(holdsPhoto))[photo.path]!['m'];
       await replaceContent();
 
-      await photo.setLastModified(
-        (await photo.stat()).modified.add(const Duration(days: 1)),
-      );
+      await photo.setLastModified(modified.add(const Duration(days: 1)));
       final metadata = await createProvider().getExifMetadata(photo);
 
       expect(metadata.captureDate, isNull);
