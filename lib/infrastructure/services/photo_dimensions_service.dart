@@ -34,23 +34,25 @@ class PhotoDimensionsService {
   }
 
   Future<PhotoShape?> _read(PhotoEntry photo) async {
-    ui.ImmutableBuffer? buffer;
-    ui.ImageDescriptor? descriptor;
+    // ImageDescriptor.encoded only parses the container header, so this reads
+    // the width/height without decoding pixels. instantiateImageCodec would
+    // decode every candidate in full, which is far too slow when the
+    // slideshow resolves dimensions for a pool of photos on every slide.
+    final buffer = await ui.ImmutableBuffer.fromFilePath(photo.file.path);
     try {
-      // encodedFromBuffer only parses the container header, so this reads the
-      // width/height without decoding pixels. instantiateImageCodec would
-      // decode every candidate in full, which is far too slow when the
-      // slideshow resolves dimensions for a pool of photos on every slide.
-      buffer = await ui.ImmutableBuffer.fromFilePath(photo.file.path);
-      descriptor = await ui.ImageDescriptor.encodedFromBuffer(buffer);
-      final width = descriptor.width;
-      final height = descriptor.height;
-      if (width <= 0 || height <= 0) {
-        photo.setDimensions(null, null);
-        return null;
+      final descriptor = await ui.ImageDescriptor.encoded(buffer);
+      try {
+        final width = descriptor.width;
+        final height = descriptor.height;
+        if (width <= 0 || height <= 0) {
+          photo.setDimensions(null, null);
+          return null;
+        }
+        photo.setDimensions(width, height);
+        return photo.shape;
+      } finally {
+        descriptor.dispose();
       }
-      photo.setDimensions(width, height);
-      return photo.shape;
     } catch (e) {
       // Not a decodable image (or unreadable): leave it unpaired rather than
       // breaking the slideshow.
@@ -58,8 +60,7 @@ class PhotoDimensionsService {
       photo.setDimensions(null, null);
       return null;
     } finally {
-      descriptor?.dispose();
-      buffer?.dispose();
+      buffer.dispose();
     }
   }
 
