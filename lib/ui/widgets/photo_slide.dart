@@ -2,20 +2,60 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../../domain/models/photo_entry.dart';
+import '../../domain/services/photo_pair_layout.dart';
 
 class PhotoSlide extends StatelessWidget {
   final PhotoEntry photo;
   final Size screenSize;
   final bool blurBorders;
 
-  const PhotoSlide({super.key, required this.photo, required this.screenSize, required this.blurBorders});
+  /// Second photo to show next to [photo]. When set, the two are laid out
+  /// according to [pairing]: portrait photos side by side on a landscape
+  /// frame, landscape photos stacked on a portrait frame.
+  final PhotoEntry? partner;
+  final PhotoPairing pairing;
 
-  /// Creates a ResizeImage provider optimized for the screen size.
+  const PhotoSlide({
+    super.key,
+    required this.photo,
+    required this.screenSize,
+    required this.blurBorders,
+    this.partner,
+    this.pairing = PhotoPairing.single,
+  });
+
+  /// Gap between the two photos of a paired layout, in logical pixels.
+  static const double pairGap = 2.0;
+
+  /// Size of the box a single photo occupies on a frame of [screenSize].
+  ///
+  /// A paired layout gives each photo half the frame, so decoding at the full
+  /// screen size would waste memory on a low-RAM frame. Preloading must use
+  /// this same size, otherwise the [ResizeImage] cache key misses and the photo
+  /// gets decoded a second time during the transition.
+  static Size cellSize(Size screenSize, PhotoPairing pairing) {
+    switch (pairing) {
+      case PhotoPairing.portraitSideBySide:
+        return Size(
+          (screenSize.width - pairGap) / 2,
+          screenSize.height,
+        );
+      case PhotoPairing.landscapeStacked:
+        return Size(
+          screenSize.width,
+          (screenSize.height - pairGap) / 2,
+        );
+      case PhotoPairing.single:
+        return screenSize;
+    }
+  }
+
+  /// Creates a ResizeImage provider optimized for [boxSize].
   /// This significantly speeds up decoding on slower devices.
-  static ImageProvider createOptimizedProvider(File file, Size screenSize) {
-    // Use the larger dimension to ensure the image covers the screen
+  static ImageProvider createOptimizedProvider(File file, Size boxSize) {
+    // Use the larger dimension to ensure the image covers the box
     // Adding some buffer for quality (1.2x)
-    final targetSize = (screenSize.longestSide * 1.2).toInt();
+    final targetSize = (boxSize.longestSide * 1.2).toInt();
     return ResizeImage(
       FileImage(file),
       width: targetSize,
@@ -26,9 +66,43 @@ class PhotoSlide extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Use ResizeImage for faster decoding - loads image at screen resolution
-    final imageProvider = createOptimizedProvider(photo.file, screenSize);
+    // Use ResizeImage for faster decoding - loads image at cell resolution
+    final cell = cellSize(screenSize, partner == null ? PhotoPairing.single : pairing);
+    final content = _buildCell(createOptimizedProvider(photo.file, cell));
 
+    final second = partner;
+    if (second == null || !PhotoPairLayout.isPaired(pairing)) return content;
+
+    // Paired layout. Each photo keeps BoxFit.contain so it is never cropped,
+    // and a hairline gap keeps the two from bleeding into each other when the
+    // blurred background shows through.
+    const gap = pairGap;
+    final secondCell = _buildCell(createOptimizedProvider(second.file, cell));
+
+    if (pairing == PhotoPairing.portraitSideBySide) {
+      return Row(
+        children: [
+          Expanded(child: content),
+          const SizedBox(width: gap),
+          Expanded(child: secondCell),
+        ],
+      );
+    }
+
+    return Column(
+      children: [
+        Expanded(child: content),
+        const SizedBox(height: gap),
+        Expanded(child: secondCell),
+      ],
+    );
+  }
+
+  /// One photo: optional blurred backdrop plus the photo itself.
+  ///
+  /// Both halves of a paired layout go through this, so `blurBorders` looks the
+  /// same on each side instead of one half being bare black.
+  Widget _buildCell(ImageProvider imageProvider) {
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -41,7 +115,7 @@ class PhotoSlide extends StatelessWidget {
           BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
             child: Container(
-            color: Colors.black.withOpacity(0.4),
+              color: Colors.black.withOpacity(0.4),
             ),
           ),
         ] else
@@ -49,7 +123,7 @@ class PhotoSlide extends StatelessWidget {
             color: Colors.black,
           ),
         // 2. Main Image
-        // Positioned.fill gives the Image tight (full-screen) constraints so
+        // Positioned.fill gives the Image tight (full-cell) constraints so
         // BoxFit.contain scales the photo up as well as down. A plain Center
         // would leave the Image at its intrinsic size, so smaller-than-screen
         // photos would not be scaled up. The image stays centered via the

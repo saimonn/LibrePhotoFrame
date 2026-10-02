@@ -43,7 +43,49 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     minute: 0,
   );
 
-  late int _slideDurationMinutes;
+  // === Slide duration slider scale ===
+  // A single slider covers both units. The first half counts seconds, the
+  // second half counts minutes, so short slideshows become reachable without
+  // giving up the long ones.
+  static const int _minSlideSeconds = 3;
+  static const int _maxSlideSeconds = 60;
+  static const int _minSlideMinutes = 1;
+  static const int _maxSlideMinutes = 15;
+
+  /// Number of second-steps on the first half of the track.
+  static const int _secondSteps = _maxSlideSeconds - _minSlideSeconds + 1; // 58
+
+  /// Number of minute-steps on the second half of the track.
+  static const int _minuteSteps = _maxSlideMinutes - _minSlideMinutes + 1; // 15
+
+  /// Total divisions of the combined slider.
+  static const int _slideDurationDivisions = _secondSteps + _minuteSteps - 1; // 72
+
+  /// Index of the first minute-step on the track.
+  static const int _minutesStartStep = _secondSteps - 1; // 57
+
+  /// Maps a slider position to the duration in seconds it represents.
+  static int _slideDurationSecondsFromStep(int step) {
+    final clamped = step.clamp(0, _slideDurationDivisions);
+    if (clamped <= _minutesStartStep) {
+      return _minSlideSeconds + clamped;
+    }
+    return (_minSlideMinutes + (clamped - _minutesStartStep - 1)) * 60;
+  }
+
+  /// Maps a duration in seconds to the nearest slider position.
+  static int _slideDurationStepFromSeconds(int seconds) {
+    if (seconds <= _maxSlideSeconds) {
+      return (seconds - _minSlideSeconds).clamp(0, _minutesStartStep);
+    }
+    final minutes = (seconds / 60).round();
+    return (minutes - _minSlideMinutes + _minutesStartStep + 1)
+        .clamp(_minutesStartStep + 1, _slideDurationDivisions);
+  }
+
+  /// Slide duration as a position on a single slider whose first half is
+  /// seconds (3-60s) and second half is minutes (1-15min).
+  late int _slideDurationStep;
   late double _transitionDurationSeconds;
   late bool _blurBorders;
   late String _syncType;
@@ -126,7 +168,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     SystemChrome.setPreferredOrientations(DeviceOrientation.values);
     
     final config = context.read<ConfigProvider>();
-    _slideDurationMinutes = (config.slideDurationSeconds / 60).round().clamp(1, 15);
+    _slideDurationStep = _slideDurationStepFromSeconds(config.slideDurationSeconds);
     _transitionDurationSeconds = (config.transitionDurationMs / 1000.0).clamp(0.5, 5.0);
     _blurBorders = config.blurBorders;
     // Default sync type: app_folder on Android, local_folder on Desktop
@@ -253,7 +295,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
       // On Desktop, use a distinct folder name in Documents
       baseDir = await getApplicationDocumentsDirectory();
-      subDirName = 'LibreFrame';
+      subDirName = 'OpenPhotoFrame';
     } else if (Platform.isAndroid) {
       baseDir = await getExternalStorageDirectory();
     }
@@ -314,7 +356,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
         _syncType == 'nextcloud_link' && 
         newNextcloudUrl.isNotEmpty;
     
-    config.slideDurationSeconds = _slideDurationMinutes * 60;
+    config.slideDurationSeconds = _slideDurationSecondsFromStep(_slideDurationStep);
     config.transitionDurationMs = (_transitionDurationSeconds * 1000).round();
     config.blurBorders = _blurBorders;
     // app_folder and local_folder both use empty activeSourceType (no sync)
@@ -402,16 +444,32 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
           const SizedBox(height: 8),
           
           // Slide Duration
-          _buildSliderSetting(
-            icon: Icons.timer,
-            title: AppLocalizations.of(context)!.slideDuration,
-            value: _slideDurationMinutes.toDouble(),
-            min: 1,
-            max: 15,
-            divisions: 14,
-            unit: AppLocalizations.of(context)!.unitMinutes,
-            onChanged: (value) {
-              setState(() => _slideDurationMinutes = value.round());
+          // One slider: first half is 3-60 seconds, second half 1-15 minutes.
+          Builder(
+            builder: (context) {
+              final l10n = AppLocalizations.of(context)!;
+              final inSeconds = _slideDurationStep <= _minutesStartStep;
+              return _buildSliderSetting(
+                icon: Icons.timer,
+                title: l10n.slideDuration,
+                value: _slideDurationStep.toDouble(),
+                min: 0,
+                max: _slideDurationDivisions.toDouble(),
+                divisions: _slideDurationDivisions,
+                unit: inSeconds ? l10n.unitSeconds : l10n.unitMinutes,
+                formatValue: (v) {
+                  // Show the value in its own unit: seconds below the
+                  // halfway point, whole minutes above it.
+                  final step = v.round();
+                  if (step <= _minutesStartStep) {
+                    return '${_minSlideSeconds + step}';
+                  }
+                  return '${_minSlideMinutes + (step - _minutesStartStep - 1)}';
+                },
+                onChanged: (value) {
+                  setState(() => _slideDurationStep = value.round());
+                },
+              );
             },
           ),
           
@@ -663,7 +721,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
             onTap: () {
               showAboutDialog(
                 context: context,
-                applicationName: 'LibreFrame',
+                applicationName: 'Open Photo Frame',
                 applicationVersion: _appVersion.isEmpty ? '...' : _appVersion,
                 applicationLegalese: '© 2026 Michael Wyraz',
               );

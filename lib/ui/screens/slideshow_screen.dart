@@ -15,6 +15,8 @@ import '../../infrastructure/services/native_screen_control_service.dart';
 import '../../infrastructure/services/geocoding_service.dart';
 import '../../infrastructure/services/keep_alive_service.dart';
 import '../../domain/models/photo_entry.dart';
+import '../../domain/services/photo_pair_layout.dart';
+import '../../infrastructure/services/photo_dimensions_service.dart';
 import '../widgets/photo_slide.dart';
 import '../widgets/clock_overlay.dart';
 import '../widgets/photo_info_overlay.dart';
@@ -23,6 +25,9 @@ import 'settings_screen.dart';
 
 final _log = Logger('SlideshowScreen');
 final _geocodingService = GeocodingService();
+
+/// Upper bound on how many photos get their dimensions read for pairing.
+const int _maxPairCandidates = 24;
 
 /// Convert screen orientation setting to DeviceOrientation list
 List<DeviceOrientation> _getDeviceOrientations(String orientation) {
@@ -67,6 +72,9 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
   
   // Transaction ID to cancel outdated transitions
   int _transitionId = 0;
+
+  // Resolves photo pixel dimensions for pairing
+  late final PhotoDimensionsService _photoDimensions;
   
   // Screen size for optimized image loading
   Size? _screenSize;
@@ -75,7 +83,7 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
   StreamSubscription? _scheduleSubscription;
   Timer? _scheduleTimer;
   bool _scheduleWasEnabled = false; // Track previous state for detecting changes
-  
+
   // Display off state for black overlay
   bool _isDisplayOff = false;
   
@@ -85,6 +93,7 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
   @override
   void initState() {
     super.initState();
+    _photoDimensions = PhotoDimensionsService();
     // Register lifecycle observer
     WidgetsBinding.instance.addObserver(this);
     
@@ -368,6 +377,9 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
     _photosSubscription = service.onPhotosChanged.listen((_) {
       if (mounted) {
         final photoService = context.read<PhotoService>();
+
+        // New photos may need pairing, so extend the dimensions cache.
+        unawaited(_warmDimensions());
         
         // Only react if the current photo is no longer in the list
         // This handles: directory change, photo deleted
@@ -393,7 +405,12 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
     });
 
     await service.initialize();
-    
+
+    // Prime the dimensions cache so the first slide does not have to wait for
+    // header reads. Deliberately not awaited: the first photo can show right
+    // away and simply stays unpaired until the cache is warm.
+    unawaited(_warmDimensions());
+
     // Initial check
     final firstPhoto = service.nextPhoto();
     if (mounted) {
@@ -462,6 +479,62 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
     });
   }
 
+  /// Resolves pixel dimensions for a bounded pool of photos in the background.
+///
+/// Only header reads are involved, so this is cheap, but it is kept off the
+/// transition path so the first slide never waits on it.
+Future<void> _warmDimensions() async {
+  final screen = _screenSize;
+  if (screen == null) return;
+  if (!PhotoPairLayout.isPaired(
+    PhotoPairLayout.forScreen(screen.width, screen.height),
+  )) {
+    return;
+  }
+  if (!mounted) return;
+  final candidates = context.read<PhotoService>().availablePhotos;
+  if (candidates.length < 2) return;
+  await Future.wait(
+    candidates.take(_maxPairCandidates).map(_photoDimensions.shapeOf),
+  );
+}
+
+/// Looks for a photo to share the frame with [photo].
+///
+/// On a landscape frame two portrait photos sit side by side; on a portrait
+/// frame two landscape photos are stacked. When nothing suitable is found the
+/// frame shows [photo] alone, which is also what happens while the dimensions
+/// of the candidates are still unknown.
+Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
+    final screen = _screenSize;
+    if (screen == null) return null;
+
+    final pairing = PhotoPairLayout.forScreen(screen.width, screen.height);
+    if (!PhotoPairLayout.isPaired(pairing)) return null;
+
+    final candidates = context.read<PhotoService>().availablePhotos;
+    if (candidates.length < 2) return null;
+
+    // Resolve dimensions of the photos we might pair with. Bounded so a huge
+    // collection cannot stall the transition.
+    final pool = candidates.take(_maxPairCandidates).toList();
+    await Future.wait(
+      pool.map((candidate) => _photoDimensions.shapeOf(candidate)),
+    );
+
+    if (!mounted || myTransitionId != _transitionId) return null;
+
+    return PhotoPairLayout.partnerFor(
+      primary: photo,
+      candidates: pool,
+      pairing: pairing,
+      excludePaths: {
+        photo.file.path,
+        if (_currentPhoto != null) _currentPhoto!.file.path,
+      },
+    );
+  }
+
   Future<void> _transitionTo(PhotoEntry photo, {SlideDirection? slideDirection}) async {
     // Increment transaction ID - this invalidates any pending transitions
     final myTransitionId = ++_transitionId;
@@ -471,12 +544,31 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
       // Fallback: use a reasonable default until MediaQuery is available
       _screenSize = const Size(1920, 1080);
     }
+
+    // Find a partner before preloading so both images are ready together.
+    final partner = await _findPartner(photo, myTransitionId);
+    if (!mounted || myTransitionId != _transitionId) {
+      return; // A newer transition was started, abort this one
+    }
     
     // Preload the image before starting the transition
-    // Use ResizeImage for faster decoding on slower devices
-    final imageProvider = PhotoSlide.createOptimizedProvider(photo.file, _screenSize!);
+    // Use ResizeImage for faster decoding on slower devices.
+    // The box size must match what PhotoSlide later asks for, otherwise the
+    // ResizeImage cache key differs and the photo gets decoded twice.
+    final layout = PhotoPairLayout.forScreen(_screenSize!.width, _screenSize!.height);
+    final cell = PhotoSlide.cellSize(
+      _screenSize!,
+      partner == null ? PhotoPairing.single : layout,
+    );
     try {
-      await _preloadImage(imageProvider);
+      await _preloadImage(
+        PhotoSlide.createOptimizedProvider(photo.file, cell),
+      );
+      if (partner != null) {
+        await _preloadImage(
+          PhotoSlide.createOptimizedProvider(partner.file, cell),
+        );
+      }
     } catch (e) {
       print('Failed to preload image: $e');
       // Continue anyway - the image might still load
@@ -511,6 +603,7 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
 
     final newItem = _SlideItem(
       photo: photo,
+      partner: partner,
       controller: controller,
       slideDirection: slideDirection,
     );
@@ -632,6 +725,7 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
     _photosSubscription?.cancel();
     _scheduleSubscription?.cancel();
     _scheduleTimer?.cancel();
+    _photoDimensions.dispose();
     for (var slide in _slides) {
       slide.controller.dispose();
     }
@@ -700,8 +794,19 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
           // 1. Content Layer (Custom Stack)
           ..._slides.map((slide) {
             final child = PhotoSlide(
-              key: ValueKey(slide.photo.file.path),
+              key: ValueKey(
+                slide.partner == null
+                    ? slide.photo.file.path
+                    : '${slide.photo.file.path}|${slide.partner!.file.path}',
+              ),
               photo: slide.photo,
+              partner: slide.partner,
+              pairing: _screenSize == null
+                  ? PhotoPairing.single
+                  : PhotoPairLayout.forScreen(
+                      _screenSize!.width,
+                      _screenSize!.height,
+                    ),
               screenSize: _screenSize!,
               blurBorders: config.blurBorders,
             );
@@ -826,10 +931,17 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
 
 class _SlideItem {
   final PhotoEntry photo;
+  /// Second photo shown alongside [photo], or null when the frame shows one.
+  final PhotoEntry? partner;
   final AnimationController controller;
   final SlideDirection? slideDirection; // null = fade, left/right = slide
 
-  _SlideItem({required this.photo, required this.controller, this.slideDirection});
+  _SlideItem({
+    required this.photo,
+    this.partner,
+    required this.controller,
+    this.slideDirection,
+  });
 }
 
 /// Direction for slide animation
