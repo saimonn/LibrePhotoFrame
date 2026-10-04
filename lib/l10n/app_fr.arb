@@ -12,7 +12,7 @@
   "blurBordersSubtitle": "Étendre l'image à la taille de l'écran",
   "pairPhotos": "Écran divisé",
   "pairPhotosSubtitle": "Afficher deux photos à la fois quand elles correspondent au format de l'écran",
-  "photoOrder": "Ordre des photos",
+  "photoOrder": "Trier les photos par…",
   "photoOrderRandom": "Ordre aléatoire",
   "photoOrderExif": "Par date de prise de vue (EXIF)",
   "photoOrderCreation": "Par date de création du fichier",

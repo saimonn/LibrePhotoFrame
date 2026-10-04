@@ -12,7 +12,7 @@
   "blurBordersSubtitle": "Bild mit Unschärfe bis zum Bildschirmrand zeichnen",
   "pairPhotos": "Geteilter Bildschirm",
   "pairPhotosSubtitle": "Zwei Fotos gleichzeitig zeigen, wenn sie zum Bildschirmformat passen",
-  "photoOrder": "Reihenfolge",
+  "photoOrder": "Fotos sortieren nach…",
   "photoOrderRandom": "Zufällige Reihenfolge",
   "photoOrderExif": "Nach Aufnahmezeit (EXIF)",
   "photoOrderCreation": "Nach Erstellungsdatum der Datei",

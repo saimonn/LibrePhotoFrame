@@ -40,7 +40,7 @@ class AppLocalizationsFr extends AppLocalizations {
       'Afficher deux photos à la fois quand elles correspondent au format de l\'écran';
 
   @override
-  String get photoOrder => 'Ordre des photos';
+  String get photoOrder => 'Trier les photos par…';
 
   @override
   String get photoOrderRandom => 'Ordre aléatoire';

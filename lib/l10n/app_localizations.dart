@@ -165,7 +165,7 @@ abstract class AppLocalizations {
   /// No description provided for @photoOrder.
   ///
   /// In en, this message translates to:
-  /// **'Photo Order'**
+  /// **'Sort photos by…'**
   String get photoOrder;
 
   /// No description provided for @photoOrderRandom.

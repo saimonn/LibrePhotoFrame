@@ -40,7 +40,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Show two photos at once when they match the screen shape';
 
   @override
-  String get photoOrder => 'Photo Order';
+  String get photoOrder => 'Sort photos by…';
 
   @override
   String get photoOrderRandom => 'Random order';

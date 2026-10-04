@@ -12,7 +12,7 @@
   "blurBordersSubtitle": "Extend image to screen size",
   "pairPhotos": "Split Screen",
   "pairPhotosSubtitle": "Show two photos at once when they match the screen shape",
-  "photoOrder": "Photo Order",
+  "photoOrder": "Sort photos by…",
   "photoOrderRandom": "Random order",
   "photoOrderExif": "By capture time (EXIF)",
   "photoOrderCreation": "By file creation time",

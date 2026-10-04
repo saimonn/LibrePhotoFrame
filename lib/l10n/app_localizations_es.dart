@@ -41,7 +41,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Mostrar dos fotos a la vez cuando coinciden con la forma de la pantalla';
 
   @override
-  String get photoOrder => 'Orden de las fotos';
+  String get photoOrder => 'Ordenar fotos por…';
 
   @override
   String get photoOrderRandom => 'Orden aleatorio';

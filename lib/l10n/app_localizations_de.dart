@@ -41,7 +41,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Zwei Fotos gleichzeitig zeigen, wenn sie zum Bildschirmformat passen';
 
   @override
-  String get photoOrder => 'Reihenfolge';
+  String get photoOrder => 'Fotos sortieren nach…';
 
   @override
   String get photoOrderRandom => 'Zufällige Reihenfolge';
