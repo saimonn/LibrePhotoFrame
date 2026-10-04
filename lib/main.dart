@@ -180,9 +180,7 @@ class LibrePhotoFrameApp extends StatelessWidget {
           return MaterialApp(
             navigatorKey: appNavigatorKey,
             title: 'LibrePhotoFrame',
-            locale: language.isEmpty
-                ? null
-                : Locale(language),
+            locale: language.isEmpty ? null : Locale(language),
             localizationsDelegates: const [
               AppLocalizations.delegate,
               GlobalMaterialLocalizations.delegate,
