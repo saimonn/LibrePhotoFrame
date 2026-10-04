@@ -41,6 +41,64 @@ jobs:
       - name: Test
         run: flutter test
 
+  device-test:
+    name: Device test (emulator)
+    needs: build
+    # On demand only: booting an emulator adds minutes to the run and its
+    # flakiness must not hold back a build.
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Download the APKs
+        uses: actions/download-artifact@v4
+        with:
+          name: LibrePhotoFrame-apks-${{ github.sha }}
+          path: apks
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Create the emulator image
+        run: |
+          yes | sdkmanager --licenses > /dev/null || true
+          sdkmanager --install "platform-tools" "system-images;android-34;google_apis;x86_64"
+          echo no | avdmanager create avd -n lpf -k "system-images;android-34;google_apis;x86_64" -d pixel_6 --force
+
+      - name: Start the emulator
+        run: |
+          "${ANDROID_SDK_ROOT:-$ANDROID_HOME}/emulator/emulator" -avd lpf -no-window -no-audio -no-boot-anim -gpu swiftshader -no-snapshot -wipe-data &
+          adb wait-for-device
+          adb shell 'while [[ -z "$(getprop sys.boot_completed)" ]]; do sleep 2; done'
+          adb root
+          adb wait-for-device
+
+      - name: Install the APK and measure the settings rows
+        run: |
+          adb install -r apks/*x86_64.apk
+          tool/device_test.sh io.github.saimonn.librephotoframe
+
+      - name: Upload the screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: device-test-${{ github.sha }}
+          path: artifacts
+          if-no-files-found: warn
+
   build:
     needs: verify
     runs-on: ubuntu-latest
