@@ -1954,7 +1954,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
           children: [
             Icon(icon, size: 20),
             const SizedBox(width: 8),
-            Text(label),
+            Text(label, overflow: TextOverflow.ellipsis),
           ],
         ),
       );
@@ -1962,23 +1962,34 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
 
     return ListTile(
       leading: const Icon(Icons.shuffle),
-      title: Text(l10n.photoOrder),
-      subtitle: Text(getPhotoOrderLabel(_photoOrder)),
-      trailing: DropdownButton<String>(
-        value: _photoOrder,
-        underline: const SizedBox(),
-        items: [
-          item(Icons.casino, l10n.photoOrderRandom, 'random'),
-          item(Icons.photo_camera, l10n.photoOrderExif, 'exif'),
-          item(Icons.add, l10n.photoOrderCreation, 'creation'),
-          item(Icons.update, l10n.photoOrderModification, 'modification'),
-        ],
-        onChanged: (value) {
-          if (value != null) {
-            setState(() => _photoOrder = value);
-          }
-        },
+      title: Text(l10n.photoOrder, overflow: TextOverflow.ellipsis),
+      subtitle: Text(getPhotoOrderLabel(_photoOrder), overflow: TextOverflow.ellipsis),
+      trailing: _boundedDropdown(
+        DropdownButton<String>(
+          value: _photoOrder,
+          underline: const SizedBox(),
+          items: [
+            item(Icons.casino, l10n.photoOrderRandom, 'random'),
+            item(Icons.photo_camera, l10n.photoOrderExif, 'exif'),
+            item(Icons.add, l10n.photoOrderCreation, 'creation'),
+            item(Icons.update, l10n.photoOrderModification, 'modification'),
+          ],
+          onChanged: (value) {
+            if (value != null) {
+              setState(() => _photoOrder = value);
+            }
+          },
+        ),
       ),
+    );
+  }
+
+  /// A trailing dropdown is measured with the width of its widest item, which
+  /// leaves the title so little room that it wraps one letter per line.
+  Widget _boundedDropdown(Widget dropdown) {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 170),
+      child: dropdown,
     );
   }
   
@@ -2077,79 +2088,81 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     
     return ListTile(
       leading: const Icon(Icons.screen_rotation),
-      title: Text(AppLocalizations.of(context)!.screenOrientation),
-      subtitle: Text(getOrientationLabel(_screenOrientation)),
-      trailing: DropdownButton<String>(
-        value: _screenOrientation,
-        underline: const SizedBox(),
-        items: [
-          DropdownMenuItem(
-            value: 'auto',
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.screen_rotation, size: 20),
-                const SizedBox(width: 8),
-                Text(AppLocalizations.of(context)!.screenOrientationAuto),
-              ],
+      title: Text(AppLocalizations.of(context)!.screenOrientation, overflow: TextOverflow.ellipsis),
+      subtitle: Text(getOrientationLabel(_screenOrientation), overflow: TextOverflow.ellipsis),
+      trailing: _boundedDropdown(
+        DropdownButton<String>(
+          value: _screenOrientation,
+          underline: const SizedBox(),
+          items: [
+            DropdownMenuItem(
+              value: 'auto',
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.screen_rotation, size: 20),
+                  const SizedBox(width: 8),
+                  Text(AppLocalizations.of(context)!.screenOrientationAuto, overflow: TextOverflow.ellipsis),
+                ],
+              ),
             ),
-          ),
-          DropdownMenuItem(
-            value: 'portraitUp',
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.stay_current_portrait, size: 20),
-                const SizedBox(width: 8),
-                Text(AppLocalizations.of(context)!.screenOrientationPortraitUp),
-              ],
+            DropdownMenuItem(
+              value: 'portraitUp',
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.stay_current_portrait, size: 20),
+                  const SizedBox(width: 8),
+                  Text(AppLocalizations.of(context)!.screenOrientationPortraitUp, overflow: TextOverflow.ellipsis),
+                ],
+              ),
             ),
-          ),
-          DropdownMenuItem(
-            value: 'portraitDown',
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Transform.rotate(
-                  angle: 3.14159, // 180 degrees
-                  child: const Icon(Icons.stay_current_portrait, size: 20),
-                ),
-                const SizedBox(width: 8),
-                Text(AppLocalizations.of(context)!.screenOrientationPortraitDown),
-              ],
+            DropdownMenuItem(
+              value: 'portraitDown',
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Transform.rotate(
+                    angle: 3.14159, // 180 degrees
+                    child: const Icon(Icons.stay_current_portrait, size: 20),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(AppLocalizations.of(context)!.screenOrientationPortraitDown, overflow: TextOverflow.ellipsis),
+                ],
+              ),
             ),
-          ),
-          DropdownMenuItem(
-            value: 'landscapeLeft',
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.stay_current_landscape, size: 20),
-                const SizedBox(width: 8),
-                Text(AppLocalizations.of(context)!.screenOrientationLandscapeLeft),
-              ],
+            DropdownMenuItem(
+              value: 'landscapeLeft',
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.stay_current_landscape, size: 20),
+                  const SizedBox(width: 8),
+                  Text(AppLocalizations.of(context)!.screenOrientationLandscapeLeft, overflow: TextOverflow.ellipsis),
+                ],
+              ),
             ),
-          ),
-          DropdownMenuItem(
-            value: 'landscapeRight',
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Transform.flip(
-                  flipX: true,
-                  child: const Icon(Icons.stay_current_landscape, size: 20),
-                ),
-                const SizedBox(width: 8),
-                Text(AppLocalizations.of(context)!.screenOrientationLandscapeRight),
-              ],
+            DropdownMenuItem(
+              value: 'landscapeRight',
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Transform.flip(
+                    flipX: true,
+                    child: const Icon(Icons.stay_current_landscape, size: 20),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(AppLocalizations.of(context)!.screenOrientationLandscapeRight, overflow: TextOverflow.ellipsis),
+                ],
+              ),
             ),
-          ),
-        ],
-        onChanged: (value) {
-          if (value != null) {
-            setState(() => _screenOrientation = value);
-          }
-        },
+          ],
+          onChanged: (value) {
+            if (value != null) {
+              setState(() => _screenOrientation = value);
+            }
+          },
+        ),
       ),
     );
   }
