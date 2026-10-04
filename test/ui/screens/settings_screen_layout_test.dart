@@ -10,6 +10,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+// ignore: depend_on_referenced_packages
+import 'package:test_api/scaffolding.dart' show Timeout;
 
 import 'package:libre_photo_frame/domain/interfaces/config_provider.dart';
 import 'package:libre_photo_frame/infrastructure/services/json_config_service.dart';
@@ -75,6 +77,7 @@ void main() {
           addTearDown(tester.view.reset);
 
           final l10n = await AppLocalizations.delegate.load(locale);
+          print('lpf-layout ${locale.languageCode} ${screen.key}: l10n loaded');
           await tester.pumpWidget(
             ChangeNotifierProvider<ConfigProvider>.value(
               value: JsonConfigService(),
@@ -86,7 +89,9 @@ void main() {
               ),
             ),
           );
+          print('lpf-layout ${locale.languageCode} ${screen.key}: pumped widget');
           await tester.pump();
+          print('lpf-layout ${locale.languageCode} ${screen.key}: pumped frame');
 
           // Scroll the whole list: a row is only laid out when it is reached.
           final title = find.text(l10n.photoOrder);
@@ -94,6 +99,7 @@ void main() {
           for (var i = 0; i < 24 && title.evaluate().isEmpty; i++) {
             await tester.drag(scrollable, const Offset(0, -350));
             await tester.pump();
+            print('lpf-layout ${locale.languageCode} ${screen.key}: drag $i');
           }
 
           expect(title, findsOneWidget,
@@ -102,7 +108,10 @@ void main() {
               greaterThanOrEqualTo(_minimumTitleWidth),
               reason: 'the photo order title must keep a usable width');
           expect(overflows, isEmpty);
+          print('lpf-layout ${locale.languageCode} ${screen.key}: measured '
+              '${tester.getSize(title).width} px wide, ${overflows.length} overflow');
         },
+        timeout: const Timeout(Duration(seconds: 30)),
       );
     }
   }

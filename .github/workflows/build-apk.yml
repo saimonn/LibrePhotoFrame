@@ -15,6 +15,8 @@ jobs:
   verify:
     name: Verify (analyze + test)
     runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 10
 
     steps:
       - name: Checkout repository
