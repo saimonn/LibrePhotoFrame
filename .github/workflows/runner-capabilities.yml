@@ -1,0 +1,19 @@
+name: Runner capabilities
+
+# Diagnostic only, dispatched by hand. Answers one question: can a container or
+# an Android image run on the hosted runners, i.e. is /dev/kvm present?
+on:
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Report the virtualization capabilities
+        run: |
+          set -x
+          uname -a
+          cat /etc/os-release | head -3
+          ls -l /dev/kvm || echo "NO /dev/kvm"
+          grep -c -E '(vmx|svm)' /proc/cpuinfo || true
+          docker info 2>/dev/null | grep -i -A3 "Runtimes" || true
