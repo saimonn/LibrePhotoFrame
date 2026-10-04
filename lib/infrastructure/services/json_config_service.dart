@@ -569,7 +569,7 @@ class JsonConfigService extends ConfigProvider {
 
   @override
   String get clockFormat {
-    final value = _config['clock_format'] as String?;
+    final value = _config['clock_format'] as String? ?? '';
     return value == '12' || value == '24' ? value : 'auto';
   }
 

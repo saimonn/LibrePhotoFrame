@@ -828,7 +828,7 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
     );
     if (_screenSize != physicalSize) {
       if (kDebugMode) {
-        print('Screen size changed: ${_screenSize?.width?.toInt()}x${_screenSize?.height?.toInt()} -> ${physicalSize.width.toInt()}x${physicalSize.height.toInt()} (logical: ${mediaQuerySize.width.toInt()}x${mediaQuerySize.height.toInt()}, dpr: $devicePixelRatio)');
+        print('Screen size changed: ${_screenSize?.width.toInt()}x${_screenSize?.height.toInt()} -> ${physicalSize.width.toInt()}x${physicalSize.height.toInt()} (logical: ${mediaQuerySize.width.toInt()}x${mediaQuerySize.height.toInt()}, dpr: $devicePixelRatio)');
       }
       _screenSize = physicalSize;
       // The pair on screen was picked for the previous frame shape: it may no
