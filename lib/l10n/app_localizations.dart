@@ -7,6 +7,8 @@ import 'package:intl/intl.dart' as intl;
 
 import 'app_localizations_de.dart';
 import 'app_localizations_en.dart';
+import 'app_localizations_es.dart';
+import 'app_localizations_fr.dart';
 
 // ignore_for_file: type=lint
 
@@ -96,6 +98,8 @@ abstract class AppLocalizations {
   static const List<Locale> supportedLocales = <Locale>[
     Locale('de'),
     Locale('en'),
+    Locale('es'),
+    Locale('fr'),
   ];
 
   /// No description provided for @settings.
@@ -103,6 +107,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Settings'**
   String get settings;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// No description provided for @languageSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System default'**
+  String get languageSystem;
 
   /// No description provided for @sectionSlideshow.
   ///
@@ -217,6 +233,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Position'**
   String get position;
+
+  /// No description provided for @clockFormat.
+  ///
+  /// In en, this message translates to:
+  /// **'Clock Format'**
+  String get clockFormat;
+
+  /// No description provided for @clockFormatAuto.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic'**
+  String get clockFormatAuto;
+
+  /// No description provided for @clockFormat12.
+  ///
+  /// In en, this message translates to:
+  /// **'12-hour'**
+  String get clockFormat12;
+
+  /// No description provided for @clockFormat24.
+  ///
+  /// In en, this message translates to:
+  /// **'24-hour'**
+  String get clockFormat24;
 
   /// No description provided for @sectionPhotoInfo.
   ///
@@ -1052,7 +1092,7 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) =>
-      <String>['de', 'en'].contains(locale.languageCode);
+      <String>['de', 'en', 'es', 'fr'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -1065,6 +1105,10 @@ AppLocalizations lookupAppLocalizations(Locale locale) {
       return AppLocalizationsDe();
     case 'en':
       return AppLocalizationsEn();
+    case 'es':
+      return AppLocalizationsEs();
+    case 'fr':
+      return AppLocalizationsFr();
   }
 
   throw FlutterError(

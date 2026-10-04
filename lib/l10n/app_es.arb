@@ -1,0 +1,265 @@
+{
+  "@@locale": "es",
+  
+  "settings": "Ajustes",
+  "language": "Idioma",
+  "languageSystem": "Predeterminado del sistema",
+  
+  "sectionSlideshow": "Presentación",
+  "slideDuration": "Duración de la diapositiva",
+  "transitionDuration": "Duración de la transición",
+  "blurBorders": "Difuminar los bordes",
+  "blurBordersSubtitle": "Ampliar la imagen al tamaño de la pantalla",
+  "pairPhotos": "Pantalla dividida",
+  "pairPhotosSubtitle": "Mostrar dos fotos a la vez cuando coinciden con la forma de la pantalla",
+  "photoOrder": "Orden de las fotos",
+  "photoOrderRandom": "Orden aleatorio",
+  "photoOrderExif": "Por fecha de captura (EXIF)",
+  "photoOrderCreation": "Por fecha de creación del archivo",
+  "photoOrderModification": "Por fecha de modificación del archivo",
+  "unitMinutes": "min",
+  "unitSeconds": "s",
+  
+  "sectionClock": "Reloj",
+  "showClock": "Mostrar el reloj",
+  "showClockSubtitle": "Mostrar la hora en la presentación",
+  "size": "Tamaño",
+  "position": "Posición",
+  "clockFormat": "Formato de la hora",
+  "clockFormatAuto": "Automático",
+  "clockFormat12": "12 horas",
+  "clockFormat24": "24 horas",
+  
+  "sectionPhotoInfo": "Información de la foto",
+  "showPhotoInfo": "Mostrar información de la foto",
+  "showPhotoInfoSubtitle": "Mostrar la fecha y el lugar en la presentación",
+  "useScriptFont": "Fuente manuscrita",
+  "useScriptFontSubtitle": "Mostrar los metadatos con un estilo manuscrito elegante",
+  "resolveLocationNames": "Resolver nombres de lugares",
+  "resolveLocationNamesSubtitle": "Usar OpenStreetMap para mostrar nombres de lugar en lugar de coordenadas",
+  "nominatimHint": "Usa Nominatim (OpenStreetMap). No se necesita clave de API.",
+  
+  "sectionPhotoSource": "Origen de las fotos",
+  "watchPhotoFolder": "Vigilando la carpeta",
+  "watchPhotoFolderSubtitle": "Detectar automáticamente las fotos nuevas y borradas de la carpeta",
+  "appFolder": "Carpeta de la aplicación",
+  "appFolderSubtitle": "Fotos guardadas en la carpeta de la aplicación",
+  "appFolderWarning": "Copia las fotos a esta carpeta. Se eliminarán al desinstalar la aplicación.",
+  "devicePhotos": "Fotos del dispositivo",
+  "devicePhotosSubtitle": "Mostrar las fotos de tu dispositivo",
+  "localFolder": "Carpeta local",
+  "localFolderSubtitle": "Usar las fotos de una carpeta local",
+  "nextcloud": "Nextcloud",
+  "nextcloudSubtitle": "Sincronizar desde un enlace público de Nextcloud",
+  "loading": "Cargando...",
+  "loadingAlbums": "Cargando álbumes...",
+  "tapToLoadAlbums": "Toca para cargar los álbumes de fotos del dispositivo",
+  "load": "Cargar",
+  "photoAlbum": "Álbum de fotos",
+  "allPhotos": "Todas las fotos",
+  "refreshAlbums": "Actualizar álbumes",
+  "change": "Cambiar",
+  "reset": "Restablecer",
+  "photoPermissionDenied": "Permiso de fotos denegado",
+  "errorLoadingAlbums": "Error al cargar los álbumes: {error}",
+  "@errorLoadingAlbums": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "failedToPickFolder": "No se pudo elegir la carpeta: {error}",
+  "@failedToPickFolder": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "selectPhotoFolder": "Seleccionar la carpeta de fotos",
+  
+  "nextcloudPublicShareUrl": "Enlace público de Nextcloud",
+  "nextcloudUrlHint": "https://cloud.example.com/s/abc123",
+  "webdavAuthPublicShare": "Enlace público",
+  "webdavAuthLogin": "Inicio de sesión WebDAV",
+  "webdavUrlLabel": "URL de WebDAV",
+  "webdavUrlHint": "https://cloud.example.com/remote.php/dav/files/user/",
+  "webdavUsername": "Nombre de usuario",
+  "webdavPassword": "Contraseña",
+  "webdavAllowInvalidCertificate": "Aceptar certificado no válido",
+  "webdavAllowInvalidCertificateWarning": "Inseguro: solo para certificados autofirmados en redes de confianza.",
+  "testConnection": "Probar la conexión",
+  "testing": "Probando...",
+  "connectionSuccessful": "¡Conexión correcta!",
+  "syncAllNextcloudFolders": "Todas las carpetas",
+  "syncAllNextcloudFoldersSubtitle": "Sincronizar las imágenes de la raíz del enlace y de cada subcarpeta",
+  "syncSelectedNextcloudFolders": "Carpetas seleccionadas",
+  "syncSelectedNextcloudFoldersSubtitle": "Elegir las carpetas cuyas imágenes directas se deben usar",
+  "loadNextcloudFolders": "Cargar carpetas",
+  "loadingNextcloudFolders": "Cargando carpetas...",
+  "nextcloudFolderSelectionHint": "Selecciona la raíz del enlace y las subcarpetas que quieras incluir.",
+  "nextcloudShareRoot": "Raíz del enlace",
+  "nextcloudShareRootSubtitle": "Imágenes directamente en la carpeta raíz compartida",
+  "nextcloudFolderPhotoCount": "{count, plural, =1{1 foto} other{{count} fotos}}",
+  "@nextcloudFolderPhotoCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nextcloudFoldersLoadError": "Error al cargar las carpetas: {error}",
+  "@nextcloudFoldersLoadError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "autoSyncInterval": "Intervalo de sincronización automática",
+  "disabled": "Desactivado",
+  "deleteOrphanedFiles": "Eliminar archivos huérfanos",
+  "deleteOrphanedFilesSubtitle": "Eliminar los archivos locales que ya no están en el servidor",
+  "syncNow": "Sincronizar ahora",
+  "syncing": "Sincronizando...",
+  "syncCompletedSuccessfully": "¡Sincronización completada!",
+  "syncCancelled": "Sincronización cancelada.",
+  "syncError": "Error: {error}",
+  "@syncError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "nextcloudErrorInvalidShareLink": "El enlace de Nextcloud ya no es válido.",
+  "nextcloudErrorShareInaccessible": "El enlace de Nextcloud ya no es accesible.",
+  "nextcloudErrorConnectionTimeout": "La conexión con Nextcloud ha agotado el tiempo de espera.",
+  "nextcloudErrorConnectionFailed": "No se pudo conectar con Nextcloud. Comprueba la conexión a internet y el enlace.",
+  "nextcloudErrorDownloadStalled": "La descarga ha agotado el tiempo de espera tras 15 minutos sin recibir datos.",
+  "nextcloudErrorInvalidUrlEmpty": "La URL está vacía.",
+  "nextcloudErrorInvalidUrlScheme": "Esquema de URL no válido. Usa http o https.",
+  "nextcloudErrorInvalidUrlNoHost": "URL no válida. Falta el host.",
+  "nextcloudErrorInvalidUrlFormat": "Formato de URL no válido: {error}",
+  "@nextcloudErrorInvalidUrlFormat": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "nextcloudErrorUnknown": "Error de sincronización de Nextcloud: {error}",
+  "@nextcloudErrorUnknown": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "neverSynced": "Nunca sincronizado",
+  "lastSyncJustNow": "Última sincronización: ahora mismo",
+  "lastSyncMinutesAgo": "Última sincronización: hace {minutes} min",
+  "@lastSyncMinutesAgo": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "lastSyncHoursAgo": "Última sincronización: hace {hours} h",
+  "@lastSyncHoursAgo": {
+    "placeholders": {
+      "hours": {
+        "type": "int"
+      }
+    }
+  },
+  "lastSyncDate": "Última sincronización: {date}",
+  "@lastSyncDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "sectionDisplaySchedule": "Horario de pantalla",
+  "dayNightSchedule": "Horario día/noche",
+  "dayNightScheduleSubtitle": "Apagar la pantalla por la noche",
+  "dayStartsAt": "El día empieza a las",
+  "nightStartsAt": "La noche empieza a las",
+  "differentNightTimeOnFridaysAndSaturdays": "Hora nocturna distinta los viernes y sábados",
+  "differentNightTimeFridaysAndSaturdays": "La noche empieza los viernes y sábados a las",
+  "nativeScreenOff": "Apagado nativo de la pantalla",
+  "nativeScreenOffEnabledSubtitle": "Usar el administrador del dispositivo para apagar la pantalla por completo",
+  "nativeScreenOffDisabledSubtitle": "Requiere permiso de administrador del dispositivo",
+  "deviceAdminExplanation": "Se necesita el permiso de administrador del dispositivo para apagar la pantalla por completo. Sin él, la pantalla solo se atenuará.",
+  "grantDeviceAdmin": "Conceder administrador del dispositivo",
+  "deviceAdminEnabled": "Administrador del dispositivo activado: la pantalla se apagará por completo",
+  "screenLockWarning": "Importante: el bloqueo de pantalla (PIN/patrón/contraseña) debe estar desactivado para que el despertar automático funcione. Ve a Ajustes → Seguridad → Bloqueo de pantalla → Ninguno.",
+  
+  "deviceAdminActive": "Administrador del dispositivo activo",
+  "deviceAdminUninstallWarning": "Para desinstalar esta aplicación, desactiva primero el permiso de administrador del dispositivo en los ajustes de Android.",
+  "openDeviceAdminSettings": "Abrir los ajustes de administrador del dispositivo",
+  
+  "sectionAndroid": "Android",
+  "startOnBoot": "Iniciar al arrancar",
+  "startOnBootSubtitle": "Iniciar la aplicación automáticamente al encender el dispositivo",
+  "keepAppRunning": "Mantener la aplicación activa",
+  "keepAppRunningSubtitle": "Evitar que la aplicación se detenga cuando falte memoria",
+  "notificationPermissionRequired": "Se necesita el permiso de notificaciones para Mantener la aplicación activa",
+
+  "autoUpdateTitle": "Actualizaciones automáticas",
+  "autoUpdateSubtitle": "Buscar nuevas versiones en GitHub e instalarlas",
+  "autoUpdateFdroidNote": "Solo para instalaciones desde GitHub. Si la instalaste desde F-Droid, deja esto desactivado y actualiza desde F-Droid.",
+  "autoUpdateSilentTitle": "Instalar sin confirmación",
+  "autoUpdateSilentSubtitle": "Propietario del dispositivo detectado: las actualizaciones se pueden instalar en segundo plano sin confirmación.",
+  "autoUpdatePromptNote": "Cuando haya una actualización disponible, se te preguntará antes de instalarla.",
+  "autoUpdateCheckNow": "Comprobar ahora",
+  "autoUpdateUpToDate": "Estás al día.",
+  "updateAvailableTitle": "Actualización disponible",
+  "updateAvailableMessage": "La versión {version} está disponible. ¿Descargar e instalarla ahora?",
+  "@updateAvailableMessage": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "updateDownloading": "Descargando…",
+  "updateSkip": "Omitir",
+  "updateDownloadInstall": "Descargar e instalar",
+  
+  "keepAliveDialogTitle": "Mantener la aplicación activa",
+  "keepAliveWhatDoes": "¿Qué hace esto?",
+  "keepAliveWhatDoesExplanation": "Esta función mantiene la aplicación del marco de fotos activa de forma continua, incluso cuando al dispositivo le falta memoria.",
+  "keepAliveWhyNeed": "¿Por qué lo necesitaría?",
+  "keepAliveWhyNeedExplanation": "En dispositivos antiguos con poca RAM, Android puede detener la aplicación para liberar memoria. Esto lo evita ejecutándola como servicio en primer plano.",
+  "keepAliveWhatHappens": "¿Qué va a pasar?",
+  "keepAliveWhatHappensExplanation": "• Aparecerá una pequeña notificación en la barra de estado\n• La aplicación tendrá menos probabilidades de ser detenida por Android\n• En Android 13 o superior, tendrás que conceder el permiso de notificaciones",
+  "keepAliveDisableAnytime": "Puedes desactivarlo en cualquier momento desde los ajustes.",
+  "cancel": "Cancelar",
+  "enable": "Activar",
+  
+  "about": "Acerca de",
+  "aboutSubtitle": "LibrePhotoFrame v{version}",
+  "@aboutSubtitle": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  
+  "noPhotosFound": "No se han encontrado fotos",
+  "tapCenterToOpenSettings": "Toca el centro de la pantalla para abrir los ajustes",
+  
+  "screenOrientation": "Orientación de la pantalla",
+  "screenOrientationAuto": "Automática (sensor)",
+  "screenOrientationPortraitUp": "Vertical",
+  "screenOrientationPortraitDown": "Vertical (invertida)",
+  "screenOrientationLandscapeLeft": "Horizontal (izquierda)",
+  "screenOrientationLandscapeRight": "Horizontal (derecha)"
+}

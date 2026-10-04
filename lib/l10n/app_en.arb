@@ -2,6 +2,8 @@
   "@@locale": "en",
   
   "settings": "Settings",
+  "language": "Language",
+  "languageSystem": "System default",
   
   "sectionSlideshow": "Slideshow",
   "slideDuration": "Slide Duration",
@@ -23,6 +25,10 @@
   "showClockSubtitle": "Display time on slideshow",
   "size": "Size",
   "position": "Position",
+  "clockFormat": "Clock Format",
+  "clockFormatAuto": "Automatic",
+  "clockFormat12": "12-hour",
+  "clockFormat24": "24-hour",
   
   "sectionPhotoInfo": "Photo Information",
   "showPhotoInfo": "Show Photo Info",

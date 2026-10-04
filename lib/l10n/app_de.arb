@@ -2,6 +2,8 @@
   "@@locale": "de",
   
   "settings": "Einstellungen",
+  "language": "Sprache",
+  "languageSystem": "Systemstandard",
   
   "sectionSlideshow": "Diashow",
   "slideDuration": "Anzeigedauer",
@@ -23,6 +25,10 @@
   "showClockSubtitle": "Uhrzeit auf der Diashow anzeigen",
   "size": "Größe",
   "position": "Position",
+  "clockFormat": "Uhrzeitformat",
+  "clockFormatAuto": "Automatisch",
+  "clockFormat12": "12 Stunden",
+  "clockFormat24": "24 Stunden",
   
   "sectionPhotoInfo": "Foto-Informationen",
   "showPhotoInfo": "Foto-Info anzeigen",
@@ -96,6 +102,13 @@
   "nextcloudShareRoot": "Freigabe-Root",
   "nextcloudShareRootSubtitle": "Bilder direkt im freigegebenen Root-Ordner",
   "nextcloudFolderPhotoCount": "{count, plural, =1{1 Bild} other{{count} Bilder}}",
+  "@nextcloudFolderPhotoCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "nextcloudFoldersLoadError": "Fehler beim Laden der Ordner: {error}",
   "@nextcloudFoldersLoadError": {
     "placeholders": {

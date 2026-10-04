@@ -12,6 +12,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settings => 'Einstellungen';
 
   @override
+  String get language => 'Sprache';
+
+  @override
+  String get languageSystem => 'Systemstandard';
+
+  @override
   String get sectionSlideshow => 'Diashow';
 
   @override
@@ -69,6 +75,18 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get position => 'Position';
+
+  @override
+  String get clockFormat => 'Uhrzeitformat';
+
+  @override
+  String get clockFormatAuto => 'Automatisch';
+
+  @override
+  String get clockFormat12 => '12 Stunden';
+
+  @override
+  String get clockFormat24 => '24 Stunden';
 
   @override
   String get sectionPhotoInfo => 'Foto-Informationen';
