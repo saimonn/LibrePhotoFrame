@@ -926,9 +926,12 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
           // 2. Clock Overlay
           if (config.showClock)
             ClockOverlay(
-              key: ValueKey('clock_${config.clockSize}_${config.clockPosition}'),
+              key: ValueKey(
+                'clock_${config.clockSize}_${config.clockPosition}_${config.clockFormat}',
+              ),
               size: config.clockSize,
               position: config.clockPosition,
+              format: config.clockFormat,
             ),
 
           // 3. Photo Info Overlay

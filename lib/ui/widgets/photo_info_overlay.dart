@@ -1,4 +1,3 @@
-import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../domain/models/photo_entry.dart';
@@ -61,12 +60,9 @@ class PhotoInfoOverlay extends StatelessWidget {
     }
   }
 
-  String _formatDate(DateTime date) {
-    // Get platform locale (e.g. "de_DE.UTF-8" on Linux)
-    final platformLocale = Platform.localeName;
-    // Extract language code (e.g. "de_DE" from "de_DE.UTF-8")
-    final localeCode = platformLocale.split('.').first.replaceAll('-', '_');
-    final format = DateFormat.yMMMMd(localeCode);
+  String _formatDate(BuildContext context, DateTime date) {
+    // The date follows the language of the app, not the one of the platform.
+    final format = DateFormat.yMMMMd(Localizations.localeOf(context).toString());
     return format.format(date);
   }
 
@@ -77,7 +73,7 @@ class PhotoInfoOverlay extends StatelessWidget {
     
     // Add capture date only if available from EXIF (no fallback to file date)
     if (photo.captureDate != null) {
-      infoLines.add(_formatDate(photo.captureDate!));
+      infoLines.add(_formatDate(context, photo.captureDate!));
     }
     
     // Add location if available

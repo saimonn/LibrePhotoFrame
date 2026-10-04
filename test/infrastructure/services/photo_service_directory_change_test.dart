@@ -232,6 +232,18 @@ class MockConfigProvider extends ChangeNotifier implements ConfigProvider {
   String get screenOrientation => 'auto';
   @override
   set screenOrientation(String value) {}
+
+  @override
+  String get language => '';
+
+  @override
+  set language(String value) {}
+
+  @override
+  String get clockFormat => 'auto';
+
+  @override
+  set clockFormat(String value) {}
 }
 
 class MockPlaylistStrategy implements PlaylistStrategy {

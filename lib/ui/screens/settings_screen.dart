@@ -111,6 +111,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
   late bool _showClock;
   late String _clockSize;
   late String _clockPosition;
+  late String _clockFormat;
   
   // Photo info settings
   late bool _showPhotoInfo;
@@ -128,9 +129,10 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
   late bool _useNativeScreenOff;
   bool _deviceAdminEnabled = false;
   
-  // Screen orientation setting
+  // Language and screen orientation settings
   late String _photoOrder;
   late String _screenOrientation;
+  late String _language;
 
   bool _isTestingConnection = false;
   String? _connectionTestResult;
@@ -201,6 +203,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     _showClock = config.showClock;
     _clockSize = config.clockSize;
     _clockPosition = config.clockPosition;
+    _clockFormat = config.clockFormat;
     
     // Photo info settings
     _showPhotoInfo = config.showPhotoInfo;
@@ -225,7 +228,8 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     _lastFridaySaturdayNightStartTime = _fridaySaturdayNightStartTime;
     _useNativeScreenOff = config.useNativeScreenOff;
     
-    // Screen orientation
+    // Language and screen orientation
+    _language = config.language;
     _screenOrientation = config.screenOrientation;
     
     // Check Device Admin status
@@ -390,6 +394,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     config.showClock = _showClock;
     config.clockSize = _clockSize;
     config.clockPosition = _clockPosition;
+    config.clockFormat = _clockFormat;
     
     // Photo info settings
     config.showPhotoInfo = _showPhotoInfo;
@@ -408,9 +413,11 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     config.fridaySaturdayNightStartMinute = _fridaySaturdayNightStartTime?.minute;
     config.useNativeScreenOff = _useNativeScreenOff;
     
-    // Screen orientation
+    // Language and screen orientation
+    config.language = _language;
     config.screenOrientation = _screenOrientation;
     
+
     // Sync autostart setting to SharedPreferences for BootReceiver
     await AutostartService.setEnabled(_autostartOnBoot);
     
@@ -450,7 +457,14 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
         children: [
           // === DEVICE ADMIN WARNING ===
           if (Platform.isAndroid && _deviceAdminEnabled) ..._buildDeviceAdminWarning(),
-          
+
+          // Language, first because it labels everything below
+          _buildLanguageSelector(),
+
+          const SizedBox(height: 24),
+          const Divider(),
+          const SizedBox(height: 16),
+
           // === SLIDESHOW SETTINGS ===
           _buildSectionHeader(AppLocalizations.of(context)!.sectionSlideshow),
           const SizedBox(height: 8),
@@ -561,6 +575,8 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
             _buildClockSizeSelector(),
             const SizedBox(height: 8),
             _buildClockPositionSelector(),
+            const SizedBox(height: 8),
+            _buildClockFormatSelector(),
           ],
           
           const SizedBox(height: 24),
@@ -1966,6 +1982,81 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     );
   }
   
+  Widget _buildLanguageSelector() {
+    final l10n = AppLocalizations.of(context)!;
+    // Each language is named in itself, as the list is read in any language.
+    final names = {
+      '': l10n.languageSystem,
+      'en': 'English',
+      'de': 'Deutsch',
+      'fr': 'Français',
+      'es': 'Español',
+    };
+
+    return ListTile(
+      leading: const Icon(Icons.translate),
+      title: Text(l10n.language),
+      subtitle: Text(names[_language] ?? l10n.languageSystem),
+      trailing: DropdownButton<String>(
+        value: _language,
+        underline: const SizedBox(),
+        items: [
+          for (final language in names.keys)
+            DropdownMenuItem(value: language, child: Text(names[language]!)),
+        ],
+        onChanged: (value) {
+          if (value != null) {
+            setState(() => _language = value);
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _buildClockFormatSelector() {
+    final l10n = AppLocalizations.of(context)!;
+
+    String getClockFormatLabel(String value) {
+      switch (value) {
+        case '12':
+          return l10n.clockFormat12;
+        case '24':
+          return l10n.clockFormat24;
+        default:
+          return l10n.clockFormatAuto;
+      }
+    }
+
+    return ListTile(
+      leading: const Icon(Icons.schedule),
+      title: Text(l10n.clockFormat),
+      subtitle: Text(getClockFormatLabel(_clockFormat)),
+      trailing: DropdownButton<String>(
+        value: _clockFormat,
+        underline: const SizedBox(),
+        items: [
+          DropdownMenuItem(
+            value: 'auto',
+            child: Text(l10n.clockFormatAuto),
+          ),
+          DropdownMenuItem(
+            value: '12',
+            child: Text(l10n.clockFormat12),
+          ),
+          DropdownMenuItem(
+            value: '24',
+            child: Text(l10n.clockFormat24),
+          ),
+        ],
+        onChanged: (value) {
+          if (value != null) {
+            setState(() => _clockFormat = value);
+          }
+        },
+      ),
+    );
+  }
+
   Widget _buildScreenOrientationSelector() {
     String getOrientationLabel(String value) {
       switch (value) {

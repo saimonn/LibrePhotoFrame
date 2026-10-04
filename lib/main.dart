@@ -173,45 +173,51 @@ class LibrePhotoFrameApp extends StatelessWidget {
           },
         ),
       ],
-      child: MaterialApp(
-        navigatorKey: appNavigatorKey,
-        title: 'LibrePhotoFrame',
-        localizationsDelegates: const [
-          AppLocalizations.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: const [
-          Locale('en'),
-          Locale('de'),
-        ],
-        themeMode: ThemeMode.dark,
-        darkTheme: ThemeData(
-          brightness: Brightness.dark,
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.deepPurple,
-            brightness: Brightness.dark,
-          ),
-          useMaterial3: true,
-          scaffoldBackgroundColor: Colors.black,
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Colors.black,
-            foregroundColor: Colors.white,
-          ),
-        ),
-        theme: ThemeData(
-          brightness: Brightness.dark,
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: Colors.deepPurple,
-            brightness: Brightness.dark,
-          ),
-          useMaterial3: true,
-          scaffoldBackgroundColor: Colors.black,
-        ),
-        home: SlideshowScreen(
-          initialConfigLoadResult: initialConfigLoadResult,
-        ),
+      child: Builder(
+        builder: (context) {
+          // The language of the setting wins over the one of the device.
+          final language = context.read<ConfigProvider>().language;
+          return MaterialApp(
+            navigatorKey: appNavigatorKey,
+            title: 'LibrePhotoFrame',
+            locale: language.isEmpty
+                ? null
+                : Locale(language),
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: AppLocalizations.supportedLocales,
+            themeMode: ThemeMode.dark,
+            darkTheme: ThemeData(
+              brightness: Brightness.dark,
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: Colors.deepPurple,
+                brightness: Brightness.dark,
+              ),
+              useMaterial3: true,
+              scaffoldBackgroundColor: Colors.black,
+              appBarTheme: const AppBarTheme(
+                backgroundColor: Colors.black,
+                foregroundColor: Colors.white,
+              ),
+            ),
+            theme: ThemeData(
+              brightness: Brightness.dark,
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: Colors.deepPurple,
+                brightness: Brightness.dark,
+              ),
+              useMaterial3: true,
+              scaffoldBackgroundColor: Colors.black,
+            ),
+            home: SlideshowScreen(
+              initialConfigLoadResult: initialConfigLoadResult,
+            ),
+          );
+        },
       ),
     );
   }

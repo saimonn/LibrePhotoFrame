@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:logging/logging.dart';
 import 'package:path_provider/path_provider.dart';
 import '../../domain/interfaces/config_provider.dart';
+import '../../l10n/app_localizations.dart';
 import '../strategies/playlist_strategies.dart';
 
 enum ConfigLoadState {
@@ -549,5 +550,31 @@ class JsonConfigService extends ConfigProvider {
   @override
   set screenOrientation(String value) {
     _config['screen_orientation'] = value;
+  }
+
+  // Language settings, empty following the device
+  @override
+  String get language {
+    final value = _config['language'] as String? ?? '';
+    return AppLocalizations.supportedLocales
+            .any((locale) => locale.languageCode == value)
+        ? value
+        : '';
+  }
+
+  @override
+  set language(String value) {
+    _config['language'] = value;
+  }
+
+  @override
+  String get clockFormat {
+    final value = _config['clock_format'] as String?;
+    return value == '12' || value == '24' ? value : 'auto';
+  }
+
+  @override
+  set clockFormat(String value) {
+    _config['clock_format'] = value;
   }
 }

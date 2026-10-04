@@ -107,4 +107,53 @@ void main() {
     expect(decoded['sync_interval_minutes'], 23);
     expect(decoded['active_source'], 'nextcloud_link');
   });
+
+  group('language', () {
+    test('is empty until a supported language is set', () async {
+      final service = createService();
+
+      await service.load();
+      expect(service.language, '');
+
+      service.language = 'fr';
+      expect(service.language, 'fr');
+    });
+
+    test('ignores a language the app does not translate', () async {
+      await configDirectory().create(recursive: true);
+      await configFile().writeAsString(json.encode({'language': 'it'}));
+
+      final service = createService();
+
+      await service.load();
+
+      expect(service.language, '');
+    });
+  });
+
+  group('clock format', () {
+    test('is automatic until 12 or 24 hours is set', () async {
+      final service = createService();
+
+      await service.load();
+      expect(service.clockFormat, 'auto');
+
+      service.clockFormat = '12';
+      expect(service.clockFormat, '12');
+
+      service.clockFormat = '24';
+      expect(service.clockFormat, '24');
+    });
+
+    test('ignores an unknown hour cycle', () async {
+      await configDirectory().create(recursive: true);
+      await configFile().writeAsString(json.encode({'clock_format': '36'}));
+
+      final service = createService();
+
+      await service.load();
+
+      expect(service.clockFormat, 'auto');
+    });
+  });
 }

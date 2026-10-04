@@ -217,6 +217,18 @@ class FakeConfigProvider extends ChangeNotifier implements ConfigProvider {
 
   @override
   set screenOrientation(String value) {}
+
+  @override
+  String get language => '';
+
+  @override
+  set language(String value) {}
+
+  @override
+  String get clockFormat => 'auto';
+
+  @override
+  set clockFormat(String value) {}
 }
 
 class FakeStorageProvider implements StorageProvider {

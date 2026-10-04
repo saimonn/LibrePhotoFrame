@@ -1,15 +1,18 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 /// A beautiful clock overlay widget with customizable size and position.
 class ClockOverlay extends StatefulWidget {
   final String size; // 'small', 'medium', 'large'
   final String position; // 'bottomRight', 'bottomLeft', 'topRight', 'topLeft'
+  final String format; // 'auto', '12' or '24'
 
   const ClockOverlay({
     super.key,
     required this.size,
     required this.position,
+    this.format = 'auto',
   });
 
   @override
@@ -76,9 +79,20 @@ class _ClockOverlayState extends State<ClockOverlay> {
     }
   }
 
+  String _time(BuildContext context) {
+    // 'auto' follows the region of the chosen language, which is 12 h in en.
+    final locale = Localizations.localeOf(context).toString();
+    final format = switch (widget.format) {
+      '12' => DateFormat('h:mm a', locale),
+      '24' => DateFormat.Hm(locale),
+      _ => DateFormat.jm(locale),
+    };
+    return format.format(_now);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final timeString = '${_now.hour.toString().padLeft(2, '0')}:${_now.minute.toString().padLeft(2, '0')}';
+    final timeString = _time(context);
     
     return Align(
       alignment: _alignment,

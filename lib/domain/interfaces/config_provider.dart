@@ -119,4 +119,14 @@ abstract class ConfigProvider extends ChangeNotifier {
   // Values: 'auto', 'portraitUp', 'portraitDown', 'landscapeLeft', 'landscapeRight'
   String get screenOrientation;
   set screenOrientation(String value);
+
+  // Language of the app, empty following the one of the device
+  // Values: '', 'en', 'de', 'fr', 'es'
+  String get language;
+  set language(String value);
+
+  // Hour cycle of the clock overlay
+  // Values: 'auto', '12', '24'
+  String get clockFormat;
+  set clockFormat(String value);
 }
