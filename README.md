@@ -48,34 +48,19 @@ flutter run -d linux
 
 ## 📁 Filling the frame from a synced folder
 
-The frame needs no sync client of its own. Point it at a folder that something
-else keeps up to date — [Syncthing](https://syncthing.net), a Nextcloud or Seafile
-desktop client, `rsync` over SSH, a Samba/NFS mount, a USB stick — and the
-slideshow follows that folder:
+The frame needs no sync client of its own. Point it at a folder that something else keeps up to date — [Syncthing](https://syncthing.net), a Nextcloud or Seafile desktop client, `rsync` over SSH, a Samba/NFS mount, a USB stick — and the slideshow follows that folder:
 
-1. **Settings → Photo Source → Local Folder**, then pick the folder. Use *App
-   Folder* instead to keep the photos inside the app storage (they are then
-   deleted when the app is uninstalled).
+1. **Settings → Photo Source → Local Folder**, then pick the folder. Use *App Folder* instead to keep the photos inside the app storage (they are then deleted when the app is uninstalled).
 2. Turn on **Watch Folder**.
 
-Two independent mechanisms keep the list in sync, because neither is enough
-alone:
+Two independent mechanisms keep the list in sync, because neither is enough alone:
 
-- **File system events** (`Directory.watch`) react within milliseconds, but
-  Android external storage and SD cards are mounted through FUSE, and files
-  written by another app frequently produce no event at all.
-- **A rescan every 60 seconds** is the safety net and picks up everything an
-  event missed.
+- **File system events** (`Directory.watch`) react within milliseconds, but Android external storage and SD cards are mounted through FUSE, and files written by another app frequently produce no event at all.
+- **A rescan every 60 seconds** is the safety net and picks up everything an event missed.
 
-A photo a sync client drops into the folder therefore appears within about a
-minute even when no event is delivered, and immediately when one is. Deleted
-files drop out of the list on the next scan, and subfolders are scanned too. A
-new photo is published only once it stopped growing, so a file that is still
-being copied is never shown half-written.
+A photo a sync client drops into the folder therefore appears within about a minute even when no event is delivered, and immediately when one is. Deleted files drop out of the list on the next scan, and subfolders are scanned too. A new photo is published only once it stopped growing, so a file that is still being copied is never shown half-written.
 
-Turning **Watch Folder** off leaves only the 60-second rescan. In folder mode
-the app reads `.jpg`, `.jpeg`, `.png` and `.webp` (case insensitive); other
-formats such as HEIC, AVIF or RAW are ignored.
+Turning **Watch Folder** off leaves only the 60-second rescan. In folder mode the app reads `.jpg`, `.jpeg`, `.png` and `.webp` (case insensitive); other formats such as HEIC, AVIF or RAW are ignored.
 
 ## 🔄 Automatic Updates
 

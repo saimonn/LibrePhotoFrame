@@ -1,2 +1,23 @@
+New features:
+• Fill the frame from any synced folder: pick a local folder, turn on Watch Folder, and photos added or removed by Syncthing or any other sync tool show up on their own
+• Choose the order of the next photos: random, capture time (EXIF), file creation time or file modification time
+• Show two photos at once when they match the shape of the screen (Split Screen)
+• Show a clock on the slideshow, with its size, position and 12/24-hour format
+• Show the date and location of a photo, optionally resolving place names with OpenStreetMap and a handwritten script font
+• Choose the app language (English, German, French, Spanish) and the screen orientation
+• Pick an album of device photos and refresh it while the frame is running
+
 Improvements:
 • Automatic updates now also check when the app wakes up, so new versions arrive more reliably
+• A photo is only shown once it stopped being written, so a file that is still being copied is never displayed half-written
+
+Fixes:
+• Photos a sync client adds to a device photo album now appear in the running slideshow without a restart
+• The photo order, language and clock dropdowns no longer squeeze their row and make the settings unusable
+• Settings are saved when the system back button closes the screen
+• A paired photo is shown again after the frame changes shape, and a partner that no longer fits is dropped
+• EXIF results are cached per file, so rescanning a large folder stays fast
+
+Project:
+• This app is now a fork of OpenPhotoFrame by Michael Wyraz, renamed LibrePhotoFrame
+• The Contributor License Agreement was removed: contributions are simply published under the GPLv3, no signature is requested anymore

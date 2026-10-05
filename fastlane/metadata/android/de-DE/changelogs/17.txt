@@ -1,2 +1,23 @@
+Neue Funktionen:
+• Den Bilderrahmen aus jedem synchronisierten Ordner füllen: lokalen Ordner auswählen, "Ordner überwachen" aktivieren – von Syncthing oder einem anderen Sync-Tool hinzugefügte oder gelöschte Fotos erscheinen von selbst
+• Reihenfolge der nächsten Fotos wählen: zufällig, Aufnahmezeit (EXIF), Erstellzeit oder Änderungszeit der Datei
+• Zwei Fotos gleichzeitig anzeigen, wenn sie zum Format des Bildschirms passen (geteilter Bildschirm)
+• Uhr auf der Diashow anzeigen, mit Größe, Position und 12-/24-Stunden-Format
+• Aufnahmedatum und Ort eines Fotos anzeigen, optional mit Ortsnamen aus OpenStreetMap und einer handschriftlichen Schrift
+• Sprache der App (Englisch, Deutsch, Französisch, Spanisch) und Ausrichtung des Bildschirms wählen
+• Album der Gerätefotos auswählen und es bei laufender Anwendung aktualisieren
+
 Verbesserungen:
 • Automatische Updates prüfen jetzt auch beim Aufwachen der App, damit neue Versionen zuverlässiger ankommen
+• Ein Foto wird erst angezeigt, wenn es vollständig geschrieben wurde, ein noch laufender Download ist also nie halb geschrieben zu sehen
+
+Fehlerbehebungen:
+• Fotos, die ein Sync-Tool zu einem Gerätefotoalbum hinzufügt, erscheinen jetzt ohne Neustart in der laufenden Diashow
+• Die Auswahlfelder für Fotoreihenfolge, Sprache und Uhrformat machen ihre Zeile nicht mehr kaputt
+• Einstellungen werden auch beim Schließen mit dem System-Zurück-Button gespeichert
+• Nach einer Drehung wird das zweite Foto wieder angezeigt und ein nicht mehr passender Partner entfernt
+• EXIF-Daten werden pro Datei zwischengespeichert, das erneute Einlesen großer Ordner bleibt damit schnell
+
+Projekt:
+• Die Anwendung ist jetzt ein Fork von OpenPhotoFrame von Michael Wyraz und heißt LibrePhotoFrame
+• Die Contributor License Agreement (CLA) wurde entfernt: Beiträge werden einfach unter der GPLv3 veröffentlicht, es wird keine Unterschrift mehr angefordert

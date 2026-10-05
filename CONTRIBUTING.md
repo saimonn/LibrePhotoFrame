@@ -7,14 +7,9 @@ We love your input! We want to make contributing to this project as easy and tra
 - Submitting a fix
 - Proposing new features
 
-## Contributor License Agreement (CLA)
+## License
 
-By contributing to LibrePhotoFrame, you agree that your contributions will be licensed under its **GNU General Public License v3.0**.
-
-However, to allow the project owner to offer commercial licenses (Dual Licensing) and ensure the long-term sustainability of the project, we require all contributors to sign a **Contributor License Agreement (CLA)**.
-
-*   **What this means:** You keep the copyright to your code, but you give the project owner the right to use it, including the right to relicense it (e.g., for commercial customers).
-*   **How to sign:** When you open a Pull Request, a bot will automatically ask you to agree to the CLA if you haven't already.
+By contributing to LibrePhotoFrame, you agree that your contributions are licensed under the **GNU General Public License v3.0**, like the rest of the project. The Contributor License Agreement that was required until now has been removed: no bot asks you to sign anything when you open a pull request.
 
 ## Pull Request Process
 
