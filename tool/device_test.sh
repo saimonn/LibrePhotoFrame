@@ -25,6 +25,15 @@ dump() {
   adb shell cat /sdcard/ui.xml | tr -cd '\11\12\15\40-\176' | tr '>' '\n'
 }
 
+# Whether the last dump contains a literal string.
+#
+# The dump is read into a variable instead of being searched through a pipe:
+# `grep -q` stops at the first match, which kills the upstream `tr` with a
+# SIGPIPE, and `set -o pipefail` then reports the whole check as failed.
+dump_contains() {
+  [[ "$(dump)" == *"$1"* ]]
+}
+
 # "width height" of the display, in physical pixels.
 size() {
   adb shell wm size | sed -n 's/.*: \([0-9]*\)x\([0-9]*\).*/\1 \2/p' | tail -1
@@ -32,7 +41,9 @@ size() {
 
 # Bounds "left top right bottom" of the row whose label starts with the argument.
 bounds_of() {
-  dump | grep -m1 "content-desc=\"$1" \
+  local xml
+  xml="$(dump)"
+  grep -m1 "content-desc=\"$1" <<<"$xml" \
     | sed -n 's/.*bounds="\[\([0-9]*\),\([0-9]*\)\]\[\([0-9]*\),\([0-9]*\)\]".*/\1 \2 \3 \4/p'
 }
 
@@ -68,16 +79,16 @@ read -r width height <<<"$(size)"
 adb shell input tap $((width / 2)) $((height / 2))
 sleep 10
 
-if ! dump | grep -q 'content-desc="Param'; then
+if ! dump_contains 'content-desc="Param'; then
   echo "The settings did not open, retrying once"
   adb shell input tap $((width / 2)) $((height / 2))
   sleep 10
 fi
 
-if ! dump | grep -q 'content-desc="Param'; then
+if ! dump_contains 'content-desc="Param'; then
   echo "FAIL: the settings screen did not open"
   adb exec-out screencap -p > "$OUT_DIR/no-settings.png" || true
-  dump | grep -o 'content-desc="[^"]*"' | head -20
+  dump | grep -o 'content-desc="[^"]*"' | head -20 || true
   exit 1
 fi
 
