@@ -15,8 +15,6 @@ jobs:
   verify:
     name: Verify (analyze + test)
     runs-on: ubuntu-latest
-    # Temporary: lets the emulator job run while the layout test is validated.
-    continue-on-error: true
 
     steps:
       - name: Checkout repository
