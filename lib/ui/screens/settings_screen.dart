@@ -1972,7 +1972,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
           children: [
             Icon(icon, size: 20),
             const SizedBox(width: 8),
-            Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
+            Flexible(child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis)),
           ],
         ),
       );
@@ -2034,18 +2034,28 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
       leading: const Icon(Icons.translate),
       title: Text(l10n.language),
       subtitle: Text(names[_language] ?? l10n.languageSystem),
-      trailing: DropdownButton<String>(
-        value: _language,
-        underline: const SizedBox(),
-        items: [
-          for (final language in names.keys)
-            DropdownMenuItem(value: language, child: Text(names[language]!)),
-        ],
-        onChanged: (value) {
-          if (value != null) {
-            setState(() => _language = value);
-          }
-        },
+      trailing: _boundedDropdown(
+        DropdownButton<String>(
+          isExpanded: true,
+          value: _language,
+          underline: const SizedBox(),
+          items: [
+            for (final language in names.keys)
+              DropdownMenuItem(
+                value: language,
+                child: Text(
+                  names[language]!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+          ],
+          onChanged: (value) {
+            if (value != null) {
+              setState(() => _language = value);
+            }
+          },
+        ),
       ),
     );
   }
@@ -2068,28 +2078,28 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
       leading: const Icon(Icons.schedule),
       title: Text(l10n.clockFormat),
       subtitle: Text(getClockFormatLabel(_clockFormat)),
-      trailing: DropdownButton<String>(
-        value: _clockFormat,
-        underline: const SizedBox(),
-        items: [
-          DropdownMenuItem(
-            value: 'auto',
-            child: Text(l10n.clockFormatAuto),
-          ),
-          DropdownMenuItem(
-            value: '12',
-            child: Text(l10n.clockFormat12),
-          ),
-          DropdownMenuItem(
-            value: '24',
-            child: Text(l10n.clockFormat24),
-          ),
-        ],
-        onChanged: (value) {
-          if (value != null) {
-            setState(() => _clockFormat = value);
-          }
-        },
+      trailing: _boundedDropdown(
+        DropdownButton<String>(
+          isExpanded: true,
+          value: _clockFormat,
+          underline: const SizedBox(),
+          items: [
+            for (final format in ['auto', '12', '24'])
+              DropdownMenuItem(
+                value: format,
+                child: Text(
+                  getClockFormatLabel(format),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+          ],
+          onChanged: (value) {
+            if (value != null) {
+              setState(() => _clockFormat = value);
+            }
+          },
+        ),
       ),
     );
   }
@@ -2130,7 +2140,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
                   const Icon(Icons.screen_rotation, size: 20),
                   const SizedBox(width: 8),
                   Flexible(
-                    child: Text(AppLocalizations.of(context)!.screenOrientationAuto, overflow: TextOverflow.ellipsis),
+                    child: Text(AppLocalizations.of(context)!.screenOrientationAuto, maxLines: 1, overflow: TextOverflow.ellipsis),
                   ),
                 ],
               ),
@@ -2143,7 +2153,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
                   const Icon(Icons.stay_current_portrait, size: 20),
                   const SizedBox(width: 8),
                   Flexible(
-                    child: Text(AppLocalizations.of(context)!.screenOrientationPortraitUp, overflow: TextOverflow.ellipsis),
+                    child: Text(AppLocalizations.of(context)!.screenOrientationPortraitUp, maxLines: 1, overflow: TextOverflow.ellipsis),
                   ),
                 ],
               ),
@@ -2159,7 +2169,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
                   ),
                   const SizedBox(width: 8),
                   Flexible(
-                    child: Text(AppLocalizations.of(context)!.screenOrientationPortraitDown, overflow: TextOverflow.ellipsis),
+                    child: Text(AppLocalizations.of(context)!.screenOrientationPortraitDown, maxLines: 1, overflow: TextOverflow.ellipsis),
                   ),
                 ],
               ),
@@ -2172,7 +2182,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
                   const Icon(Icons.stay_current_landscape, size: 20),
                   const SizedBox(width: 8),
                   Flexible(
-                    child: Text(AppLocalizations.of(context)!.screenOrientationLandscapeLeft, overflow: TextOverflow.ellipsis),
+                    child: Text(AppLocalizations.of(context)!.screenOrientationLandscapeLeft, maxLines: 1, overflow: TextOverflow.ellipsis),
                   ),
                 ],
               ),
@@ -2188,7 +2198,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
                   ),
                   const SizedBox(width: 8),
                   Flexible(
-                    child: Text(AppLocalizations.of(context)!.screenOrientationLandscapeRight, overflow: TextOverflow.ellipsis),
+                    child: Text(AppLocalizations.of(context)!.screenOrientationLandscapeRight, maxLines: 1, overflow: TextOverflow.ellipsis),
                   ),
                 ],
               ),
