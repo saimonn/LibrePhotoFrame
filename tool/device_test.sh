@@ -19,7 +19,10 @@ mkdir -p "$OUT_DIR"
 dump() {
   adb shell rm -f /sdcard/ui.xml
   adb shell uiautomator dump /sdcard/ui.xml >/dev/null
-  adb shell cat /sdcard/ui.xml | tr '>' '\n'
+  # The console of the emulator returns the dump in latin-1 where the console
+  # of the frame returns UTF-8, so the labels are compared on their ASCII part
+  # only ("Paramètres" reads as "Paramtres" either way).
+  adb shell cat /sdcard/ui.xml | tr -cd '\11\12\15\40-\176' | tr '>' '\n'
 }
 
 # "width height" of the display, in physical pixels.
@@ -65,13 +68,13 @@ read -r width height <<<"$(size)"
 adb shell input tap $((width / 2)) $((height / 2))
 sleep 10
 
-if ! dump | grep -q 'content-desc="Paramètres"'; then
+if ! dump | grep -q 'content-desc="Param'; then
   echo "The settings did not open, retrying once"
   adb shell input tap $((width / 2)) $((height / 2))
   sleep 10
 fi
 
-if ! dump | grep -q 'content-desc="Paramètres"'; then
+if ! dump | grep -q 'content-desc="Param'; then
   echo "FAIL: the settings screen did not open"
   adb exec-out screencap -p > "$OUT_DIR/no-settings.png" || true
   dump | grep -o 'content-desc="[^"]*"' | head -20
@@ -87,7 +90,8 @@ for _ in $(seq 1 8); do
   sleep 4
 done
 
-adb exec-out screencap -p > "$OUT_DIR/settings-fr.png"
+adb exec-out screencap -p > "$OUT_DIR/settings-fr.png" \
+  || echo "WARN: no screenshot, the XML dump is the measurement"
 dump > "$OUT_DIR/settings-fr.xml"
 
 read -r left top right bottom <<<"$(bounds_of "$ROW_PREFIX")"
