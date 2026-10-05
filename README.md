@@ -8,12 +8,16 @@
 
 LibrePhotoFrame is a free, open-source slideshow app that syncs photos from your private cloud (Nextcloud) or local storage. No ads, no subscriptions, no nag screens – just your photos.
 
+> **This project is a fork.** It was originally developed as [OpenPhotoFrame](https://github.com/micw/OpenPhotoFrame) by Michael Wyraz, and forked and renamed to LibrePhotoFrame to carry it forward. All credit for the original work goes to him.
+
 ## ✨ Features
 
 - **🖼️ Beautiful Slideshow** – Smooth crossfade transitions between your photos
-- **☁️ Nextcloud Sync** – Sync photos from a Nextcloud public share link (WebDAV)
-- **📁 Local First** – Works offline, photos are cached locally
-- **⚙️ Simple Settings** – Configure slide duration, transition speed, and sync interval
+- **☁️ Nextcloud Sync** – Sync photos from a Nextcloud public share link or a WebDAV login
+- **📁 Local First** – Works offline from a watched folder: Syncthing, a Nextcloud desktop client, rsync or a network mount can fill it, and the frame picks up added and removed photos on its own (see below)
+- **📱 Device Photos** – Show the albums of the device itself, refreshed while the frame runs
+- **🖼️🖼️ Split Screen** – Show two photos at once when they match the shape of the screen
+- **⚙️ Simple Settings** – Slide duration, transition speed, photo order, clock, screen orientation, language
 - **🌙 Always On** – Designed to run 24/7 as a dedicated photo frame
 - **🔒 Privacy First** – Your photos stay on your server, no third-party cloud required
 
@@ -41,6 +45,37 @@ For now, build from source (see Development section).
 ```bash
 flutter run -d linux
 ```
+
+## 📁 Filling the frame from a synced folder
+
+The frame needs no sync client of its own. Point it at a folder that something
+else keeps up to date — [Syncthing](https://syncthing.net), a Nextcloud or Seafile
+desktop client, `rsync` over SSH, a Samba/NFS mount, a USB stick — and the
+slideshow follows that folder:
+
+1. **Settings → Photo Source → Local Folder**, then pick the folder. Use *App
+   Folder* instead to keep the photos inside the app storage (they are then
+   deleted when the app is uninstalled).
+2. Turn on **Watch Folder**.
+
+Two independent mechanisms keep the list in sync, because neither is enough
+alone:
+
+- **File system events** (`Directory.watch`) react within milliseconds, but
+  Android external storage and SD cards are mounted through FUSE, and files
+  written by another app frequently produce no event at all.
+- **A rescan every 60 seconds** is the safety net and picks up everything an
+  event missed.
+
+A photo a sync client drops into the folder therefore appears within about a
+minute even when no event is delivered, and immediately when one is. Deleted
+files drop out of the list on the next scan, and subfolders are scanned too. A
+new photo is published only once it stopped growing, so a file that is still
+being copied is never shown half-written.
+
+Turning **Watch Folder** off leaves only the 60-second rescan. In folder mode
+the app reads `.jpg`, `.jpeg`, `.png` and `.webp` (case insensitive); other
+formats such as HEIC, AVIF or RAW are ignored.
 
 ## 🔄 Automatic Updates
 
