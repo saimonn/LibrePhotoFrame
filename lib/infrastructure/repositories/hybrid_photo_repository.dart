@@ -51,9 +51,13 @@ class HybridPhotoRepository implements PhotoRepository {
   String? _selectedAlbumId;
   bool _mediaStoreListenerRegistered = false;
   Timer? _mediaStorePollTimer;
+  Timer? _mediaStoreDebounceTimer;
 
   /// Interval of the periodic MediaStore re-read.
   final Duration mediaStorePollInterval;
+
+  /// Quiet period the MediaStore change notifications are coalesced over.
+  final Duration mediaStoreDebounceInterval;
 
   /// How often the MediaStore album is re-read while the frame runs.
   ///
@@ -65,11 +69,16 @@ class HybridPhotoRepository implements PhotoRepository {
   /// and the next poll is what repairs it.
   static const Duration defaultMediaStorePollInterval = Duration(seconds: 60);
 
+  /// Android notifies once per changed row, so the re-read waits for the burst
+  /// to end instead of scanning the album once per photo.
+  static const Duration defaultMediaStoreDebounceInterval = Duration(milliseconds: 400);
+
   HybridPhotoRepository({
     required StorageProvider storageProvider,
     required MetadataProvider metadataProvider,
     required ConfigProvider configProvider,
     this.mediaStorePollInterval = defaultMediaStorePollInterval,
+    this.mediaStoreDebounceInterval = defaultMediaStoreDebounceInterval,
   })  : _storageProvider = storageProvider,
         _metadataProvider = metadataProvider,
         _config = configProvider,
@@ -150,12 +159,13 @@ class HybridPhotoRepository implements PhotoRepository {
   
   /// Clean up all resources (watchers, timers, listeners)
   Future<void> _cleanup() async {
-    // Stop FileSystem watcher, poll timer and settle re-checks
-    await _scanner.stop();
-
-    // Remove MediaStore listener
+    // Remove the MediaStore listener and its poll first: a disposed repository
+    // must not read the album again, not even while the scanner stops.
     _setMediaStoreListener(false);
     _armMediaStorePoll(false);
+
+    // Stop FileSystem watcher, poll timer and settle re-checks
+    await _scanner.stop();
   }
 
   /// Scan photos based on current configuration
@@ -188,6 +198,8 @@ class HybridPhotoRepository implements PhotoRepository {
       unawaited(_startChangeNotifications());
     } else {
       PhotoManager.removeChangeCallback(_onMediaStoreChanged);
+      _mediaStoreDebounceTimer?.cancel();
+      _mediaStoreDebounceTimer = null;
       unawaited(_stopChangeNotifications());
     }
     _mediaStoreListenerRegistered = enabled;
@@ -228,9 +240,17 @@ class HybridPhotoRepository implements PhotoRepository {
     );
   }
   
+  /// Re-reads the album once the MediaStore went quiet.
+  ///
+  /// The platform notifies once per changed row, so a photo batch arrives as a
+  /// burst that would re-read the whole album once per photo.
   void _onMediaStoreChanged(dynamic call) {
     _log.info("MediaStore change detected");
-    _scanMediaStore();
+    _mediaStoreDebounceTimer?.cancel();
+    _mediaStoreDebounceTimer = Timer(
+      mediaStoreDebounceInterval,
+      () => unawaited(refresh()),
+    );
   }
   
   Future<void> _scanMediaStore() async {
