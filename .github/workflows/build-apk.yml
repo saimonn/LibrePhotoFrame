@@ -84,21 +84,37 @@ jobs:
           echo "$SDK/platform-tools" >> "$GITHUB_PATH"
           echo "$SDK/emulator" >> "$GITHUB_PATH"
           export PATH="$TOOLS:$SDK/platform-tools:$SDK/emulator:$PATH"
+          # avdmanager and the emulator only agree on the AVD directory when it
+          # is named: unnamed, avdmanager wrote to a directory the emulator does
+          # not search ("Unknown AVD name [lpf]") and the boot step then waited
+          # for a device that never appeared, until the job timeout.
+          echo "ANDROID_AVD_HOME=$RUNNER_TEMP/avd" >> "$GITHUB_ENV"
+          export ANDROID_AVD_HOME="$RUNNER_TEMP/avd"
+          mkdir -p "$ANDROID_AVD_HOME"
           yes | sdkmanager --licenses > /dev/null || true
           sdkmanager --install "emulator" "system-images;android-34;google_apis;x86_64"
           echo no | avdmanager create avd -n lpf -k "system-images;android-34;google_apis;x86_64" -d pixel_6 --force
+          # Fail here instead of in the boot step: a missing AVD used to cost a
+          # whole job timeout.
+          emulator -list-avds | tee /dev/stderr | grep -qx lpf
 
       - name: Boot the emulator, install the APK and measure the settings rows
         run: |
           # The emulator and the measurement share one step: a background
           # process does not survive the end of a step.
           emulator -avd lpf -no-window -no-audio -no-boot-anim -gpu swiftshader -no-snapshot -wipe-data &
-          adb wait-for-device
-          for _ in $(seq 1 150); do
-            [[ "$(adb shell getprop sys.boot_completed | tr -d '\r')" == "1" ]] && break
+          # Every wait is bounded, so an emulator that never boots says so
+          # instead of hanging until the job timeout.
+          timeout 300 adb wait-for-device
+          booted=
+          for _ in $(seq 1 240); do
+            [[ "$(adb shell getprop sys.boot_completed | tr -d '\r')" == "1" ]] && { booted=1; break; }
             sleep 2
           done
-          adb shell getprop sys.boot_completed
+          if [[ -z "$booted" ]]; then
+            echo "FAIL: the emulator did not finish booting"
+            exit 1
+          fi
           adb root
           adb wait-for-device
           adb install -r apks/*x86_64.apk
