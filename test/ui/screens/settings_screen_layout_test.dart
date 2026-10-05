@@ -11,8 +11,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-// ignore: depend_on_referenced_packages
-import 'package:test_api/scaffolding.dart' show Timeout;
 
 import 'package:libre_photo_frame/domain/interfaces/config_provider.dart';
 import 'package:libre_photo_frame/infrastructure/services/json_config_service.dart';
@@ -86,10 +84,15 @@ void main() {
           final overflows = <String>[];
           Object? error = tester.takeException();
           while (error != null) {
-            if (error.toString().contains('overflowed')) overflows.add('$error');
+            if (error.toString().contains('overflowed')) {
+              overflows.add('${tester.takeException() ?? error}');
+            } else {
+              overflows.add(error.toString());
+            }
             error = tester.takeException();
           }
-          expect(overflows, isEmpty);
+          expect(overflows, isEmpty,
+              reason: 'no row may overflow at any screen size or language');
         },
         // A broken widget test used to stall the whole suite for the default
         // ten minutes per test instead of failing.

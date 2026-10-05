@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -1971,7 +1972,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
           children: [
             Icon(icon, size: 20),
             const SizedBox(width: 8),
-            Text(label, overflow: TextOverflow.ellipsis),
+            Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
           ],
         ),
       );
@@ -1983,6 +1984,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
       subtitle: Text(getPhotoOrderLabel(_photoOrder), overflow: TextOverflow.ellipsis),
       trailing: _boundedDropdown(
         DropdownButton<String>(
+          isExpanded: true,
           value: _photoOrder,
           underline: const SizedBox(),
           items: [
@@ -2003,9 +2005,16 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
 
   /// A trailing dropdown is measured with the width of its widest item, which
   /// leaves the title so little room that it wraps one letter per line.
+  ///
+  /// The dropdown itself has to be expanded (see [DropdownButton.isExpanded]),
+  /// or it lays its label out at its natural width and overflows this box.
   Widget _boundedDropdown(Widget dropdown) {
+    // A narrow row must not hand most of its width to the dropdown either.
+    final maxWidth =
+        math.min(170.0, MediaQuery.sizeOf(context).width * 0.4);
+
     return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 170),
+      constraints: BoxConstraints(maxWidth: maxWidth),
       child: dropdown,
     );
   }
@@ -2109,6 +2118,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
       subtitle: Text(getOrientationLabel(_screenOrientation), overflow: TextOverflow.ellipsis),
       trailing: _boundedDropdown(
         DropdownButton<String>(
+          isExpanded: true,
           value: _screenOrientation,
           underline: const SizedBox(),
           items: [
@@ -2119,7 +2129,9 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
                 children: [
                   const Icon(Icons.screen_rotation, size: 20),
                   const SizedBox(width: 8),
-                  Text(AppLocalizations.of(context)!.screenOrientationAuto, overflow: TextOverflow.ellipsis),
+                  Flexible(
+                    child: Text(AppLocalizations.of(context)!.screenOrientationAuto, overflow: TextOverflow.ellipsis),
+                  ),
                 ],
               ),
             ),
@@ -2130,7 +2142,9 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
                 children: [
                   const Icon(Icons.stay_current_portrait, size: 20),
                   const SizedBox(width: 8),
-                  Text(AppLocalizations.of(context)!.screenOrientationPortraitUp, overflow: TextOverflow.ellipsis),
+                  Flexible(
+                    child: Text(AppLocalizations.of(context)!.screenOrientationPortraitUp, overflow: TextOverflow.ellipsis),
+                  ),
                 ],
               ),
             ),
@@ -2144,7 +2158,9 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
                     child: const Icon(Icons.stay_current_portrait, size: 20),
                   ),
                   const SizedBox(width: 8),
-                  Text(AppLocalizations.of(context)!.screenOrientationPortraitDown, overflow: TextOverflow.ellipsis),
+                  Flexible(
+                    child: Text(AppLocalizations.of(context)!.screenOrientationPortraitDown, overflow: TextOverflow.ellipsis),
+                  ),
                 ],
               ),
             ),
@@ -2155,7 +2171,9 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
                 children: [
                   const Icon(Icons.stay_current_landscape, size: 20),
                   const SizedBox(width: 8),
-                  Text(AppLocalizations.of(context)!.screenOrientationLandscapeLeft, overflow: TextOverflow.ellipsis),
+                  Flexible(
+                    child: Text(AppLocalizations.of(context)!.screenOrientationLandscapeLeft, overflow: TextOverflow.ellipsis),
+                  ),
                 ],
               ),
             ),
@@ -2169,7 +2187,9 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
                     child: const Icon(Icons.stay_current_landscape, size: 20),
                   ),
                   const SizedBox(width: 8),
-                  Text(AppLocalizations.of(context)!.screenOrientationLandscapeRight, overflow: TextOverflow.ellipsis),
+                  Flexible(
+                    child: Text(AppLocalizations.of(context)!.screenOrientationLandscapeRight, overflow: TextOverflow.ellipsis),
+                  ),
                 ],
               ),
             ),
