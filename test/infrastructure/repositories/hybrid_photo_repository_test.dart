@@ -10,12 +10,13 @@ import 'package:libre_photo_frame/infrastructure/repositories/hybrid_photo_repos
 
 class FakeConfigProvider extends ChangeNotifier implements ConfigProvider {
   FakeConfigProvider({
-    this.sourceType = '',
-    this.watchPhotoFolder = true,
-  });
+    String sourceType = '',
+    bool watchPhotoFolder = true,
+  })  : _sourceType = sourceType,
+        _watchPhotoFolder = watchPhotoFolder;
 
-  String sourceType;
-  bool watchPhotoFolder;
+  String _sourceType;
+  bool _watchPhotoFolder;
 
   @override
   Future<void> load() async {}
@@ -24,10 +25,10 @@ class FakeConfigProvider extends ChangeNotifier implements ConfigProvider {
   Future<void> save() async {}
 
   @override
-  String get activeSourceType => sourceType;
+  String get activeSourceType => _sourceType;
 
   @override
-  set activeSourceType(String value) => sourceType = value;
+  set activeSourceType(String value) => _sourceType = value;
 
   @override
   Map<String, dynamic> getSourceConfig(String type) => {};
@@ -66,10 +67,10 @@ class FakeConfigProvider extends ChangeNotifier implements ConfigProvider {
   set photoOrder(String value) {}
 
   @override
-  bool get watchPhotoFolder => this.watchPhotoFolder;
+  bool get watchPhotoFolder => _watchPhotoFolder;
 
   @override
-  set watchPhotoFolder(bool value) => this.watchPhotoFolder = value;
+  set watchPhotoFolder(bool value) => _watchPhotoFolder = value;
 
   @override
   int get syncIntervalMinutes => 0;
@@ -269,6 +270,26 @@ class FakeMetadataProvider implements MetadataProvider {
   Future<ExifMetadata> getExifMetadata(File file) async => const ExifMetadata();
 }
 
+/// Counts the periodic re-reads of the MediaStore album.
+///
+/// The scan itself needs the platform channels of photo_manager, so the poll is
+/// observed where it starts: [HybridPhotoRepository.refresh].
+class PollingRepository extends HybridPhotoRepository {
+  PollingRepository({
+    required super.storageProvider,
+    required super.metadataProvider,
+    required super.configProvider,
+    required super.mediaStorePollInterval,
+  });
+
+  int polls = 0;
+
+  @override
+  Future<void> refresh() async {
+    polls++;
+  }
+}
+
 void main() {
   group('HybridPhotoRepository filesystem mode', () {
     late Directory tempDir;
@@ -322,24 +343,6 @@ void main() {
   });
 
   group('HybridPhotoRepository MediaStore mode', () {
-    // The MediaStore scan needs the platform channels, which the poll interval
-    // makes observable through refresh() instead.
-    class PollingRepository extends HybridPhotoRepository {
-      PollingRepository({
-        required super.storageProvider,
-        required super.metadataProvider,
-        required super.configProvider,
-        required super.mediaStorePollInterval,
-      });
-
-      int polls = 0;
-
-      @override
-      Future<void> refresh() async {
-        polls++;
-      }
-    }
-
     late FakeStorageProvider storageProvider;
 
     PollingRepository buildRepository(FakeConfigProvider configProvider) {

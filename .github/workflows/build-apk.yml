@@ -78,11 +78,14 @@ jobs:
       - name: Create the emulator
         run: |
           # The image keeps the command line tools in a version directory and
-          # puts neither them, nor adb, nor the emulator on the PATH.
+          # puts neither them, nor adb, nor the emulator on the PATH. $GITHUB_PATH
+          # only reaches the steps that follow, so this step exports the PATH.
           SDK="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
-          find "$SDK/cmdline-tools" -name sdkmanager -type f | head -1 | xargs dirname >> $GITHUB_PATH
-          echo "$SDK/platform-tools" >> $GITHUB_PATH
-          echo "$SDK/emulator" >> $GITHUB_PATH
+          TOOLS="$(dirname "$(find "$SDK/cmdline-tools" -name sdkmanager -type f | head -1)")"
+          echo "$TOOLS" >> "$GITHUB_PATH"
+          echo "$SDK/platform-tools" >> "$GITHUB_PATH"
+          echo "$SDK/emulator" >> "$GITHUB_PATH"
+          export PATH="$TOOLS:$SDK/platform-tools:$SDK/emulator:$PATH"
           yes | sdkmanager --licenses > /dev/null || true
           sdkmanager --install "emulator" "system-images;android-34;google_apis;x86_64"
           echo no | avdmanager create avd -n lpf -k "system-images;android-34;google_apis;x86_64" -d pixel_6 --force
