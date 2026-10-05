@@ -21,6 +21,9 @@ const PermissionRequestOption _devicePhotoPermissionRequest =
 /// 
 /// - For 'app_folder' and 'local_folder': Uses FileSystem scanning
 /// - For 'device_photos': Uses Android MediaStore API
+///
+/// Both modes re-read their source periodically, so photos that appear while
+/// the frame runs are shown without restarting the app.
 class HybridPhotoRepository implements PhotoRepository {
   // ignore: unused_field
   final StorageProvider _storageProvider;
@@ -47,11 +50,26 @@ class HybridPhotoRepository implements PhotoRepository {
   // MediaStore mode resources
   String? _selectedAlbumId;
   bool _mediaStoreListenerRegistered = false;
+  Timer? _mediaStorePollTimer;
+
+  /// Interval of the periodic MediaStore re-read.
+  final Duration mediaStorePollInterval;
+
+  /// How often the MediaStore album is re-read while the frame runs.
+  ///
+  /// The MediaStore change callback cannot be trusted alone: Android indexes
+  /// files written by other apps (sync clients, camera apps) in its own time,
+  /// so a photo that lands after the last notification stays invisible until
+  /// the next poll - in practice until the app is restarted. A poll that runs
+  /// while the MediaProvider is still indexing also returns a partial album,
+  /// and the next poll is what repairs it.
+  static const Duration defaultMediaStorePollInterval = Duration(seconds: 60);
 
   HybridPhotoRepository({
     required StorageProvider storageProvider,
     required MetadataProvider metadataProvider,
     required ConfigProvider configProvider,
+    this.mediaStorePollInterval = defaultMediaStorePollInterval,
   })  : _storageProvider = storageProvider,
         _metadataProvider = metadataProvider,
         _config = configProvider,
@@ -79,6 +97,7 @@ class HybridPhotoRepository implements PhotoRepository {
 
     if (_useMediaStore) {
       _setMediaStoreListener(_watchPhotoFolder);
+      _armMediaStorePoll(_watchPhotoFolder);
     } else {
       _scanner.watchForChanges = _watchPhotoFolder;
       // Re-scan right away: enabling the watcher has to pick up the changes
@@ -136,6 +155,7 @@ class HybridPhotoRepository implements PhotoRepository {
 
     // Remove MediaStore listener
     _setMediaStoreListener(false);
+    _armMediaStorePoll(false);
   }
 
   /// Scan photos based on current configuration
@@ -143,6 +163,7 @@ class HybridPhotoRepository implements PhotoRepository {
     if (_useMediaStore) {
       await _scanMediaStore();
       _setMediaStoreListener(_watchPhotoFolder);
+      _armMediaStorePoll(_watchPhotoFolder);
     } else {
       // Scans the folder, watches it and arms the periodic rescan.
       await _scanner.start();
@@ -155,15 +176,56 @@ class HybridPhotoRepository implements PhotoRepository {
 
   /// Registers or removes the MediaStore change callback, which is what
   /// watches for new photos when the MediaStore source is selected.
+  ///
+  /// Both halves are needed: [PhotoManager.addChangeCallback] only stores the
+  /// Dart callback, the Android ContentObserver feeding it is started by
+  /// [PhotoManager.startChangeNotify].
   void _setMediaStoreListener(bool enabled) {
     if (enabled == _mediaStoreListenerRegistered) return;
 
     if (enabled) {
       PhotoManager.addChangeCallback(_onMediaStoreChanged);
+      unawaited(_startChangeNotifications());
     } else {
       PhotoManager.removeChangeCallback(_onMediaStoreChanged);
+      unawaited(_stopChangeNotifications());
     }
     _mediaStoreListenerRegistered = enabled;
+  }
+
+  /// Asks the platform to watch the MediaStore for changes.
+  ///
+  /// The poll is the safety net, so a platform that refuses the registration
+  /// must not take the frame down.
+  Future<void> _startChangeNotifications() async {
+    try {
+      await PhotoManager.startChangeNotify();
+    } catch (e, stackTrace) {
+      _log.warning("MediaStore change notifications unavailable", e, stackTrace);
+    }
+  }
+
+  Future<void> _stopChangeNotifications() async {
+    try {
+      await PhotoManager.stopChangeNotify();
+    } catch (e, stackTrace) {
+      _log.warning("MediaStore change notifications stop failed", e, stackTrace);
+    }
+  }
+
+  /// Arms the periodic MediaStore re-read, the safety net the filesystem
+  /// scanner has for the very same reason.
+  void _armMediaStorePoll(bool enabled) {
+    if (!enabled) {
+      _mediaStorePollTimer?.cancel();
+      _mediaStorePollTimer = null;
+      return;
+    }
+
+    _mediaStorePollTimer ??= Timer.periodic(
+      mediaStorePollInterval,
+      (_) => unawaited(refresh()),
+    );
   }
   
   void _onMediaStoreChanged(dynamic call) {

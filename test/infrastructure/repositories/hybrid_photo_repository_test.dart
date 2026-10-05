@@ -9,6 +9,14 @@ import 'package:libre_photo_frame/domain/interfaces/storage_provider.dart';
 import 'package:libre_photo_frame/infrastructure/repositories/hybrid_photo_repository.dart';
 
 class FakeConfigProvider extends ChangeNotifier implements ConfigProvider {
+  FakeConfigProvider({
+    this.sourceType = '',
+    this.watchPhotoFolder = true,
+  });
+
+  String sourceType;
+  bool watchPhotoFolder;
+
   @override
   Future<void> load() async {}
 
@@ -16,10 +24,10 @@ class FakeConfigProvider extends ChangeNotifier implements ConfigProvider {
   Future<void> save() async {}
 
   @override
-  String get activeSourceType => '';
+  String get activeSourceType => sourceType;
 
   @override
-  set activeSourceType(String value) {}
+  set activeSourceType(String value) => sourceType = value;
 
   @override
   Map<String, dynamic> getSourceConfig(String type) => {};
@@ -58,10 +66,10 @@ class FakeConfigProvider extends ChangeNotifier implements ConfigProvider {
   set photoOrder(String value) {}
 
   @override
-  bool get watchPhotoFolder => true;
+  bool get watchPhotoFolder => this.watchPhotoFolder;
 
   @override
-  set watchPhotoFolder(bool value) {}
+  set watchPhotoFolder(bool value) => this.watchPhotoFolder = value;
 
   @override
   int get syncIntervalMinutes => 0;
@@ -310,6 +318,79 @@ void main() {
 
       expect(repository.photos.length, 1);
       expect(repository.photos.first.file.path, nestedFile.path);
+    });
+  });
+
+  group('HybridPhotoRepository MediaStore mode', () {
+    // The MediaStore scan needs the platform channels, which the poll interval
+    // makes observable through refresh() instead.
+    class PollingRepository extends HybridPhotoRepository {
+      PollingRepository({
+        required super.storageProvider,
+        required super.metadataProvider,
+        required super.configProvider,
+        required super.mediaStorePollInterval,
+      });
+
+      int polls = 0;
+
+      @override
+      Future<void> refresh() async {
+        polls++;
+      }
+    }
+
+    late FakeStorageProvider storageProvider;
+
+    PollingRepository buildRepository(FakeConfigProvider configProvider) {
+      storageProvider = FakeStorageProvider(Directory.systemTemp);
+      return PollingRepository(
+        storageProvider: storageProvider,
+        metadataProvider: FakeMetadataProvider(),
+        configProvider: configProvider,
+        mediaStorePollInterval: const Duration(milliseconds: 5),
+      );
+    }
+
+    tearDown(() => storageProvider.dispose());
+
+    test('re-reads the album on every poll while the frame runs', () async {
+      final repository = buildRepository(
+        FakeConfigProvider(sourceType: 'device_photos'),
+      );
+
+      await repository.initialize();
+      await Future.delayed(const Duration(milliseconds: 200));
+
+      expect(repository.polls, greaterThanOrEqualTo(2));
+      repository.dispose();
+    });
+
+    test('does not poll when folder watching is turned off', () async {
+      final repository = buildRepository(
+        FakeConfigProvider(sourceType: 'device_photos', watchPhotoFolder: false),
+      );
+
+      await repository.initialize();
+      await Future.delayed(const Duration(milliseconds: 200));
+
+      expect(repository.polls, 0);
+      repository.dispose();
+    });
+
+    test('stops polling once disposed', () async {
+      final repository = buildRepository(
+        FakeConfigProvider(sourceType: 'device_photos'),
+      );
+
+      await repository.initialize();
+      await Future.delayed(const Duration(milliseconds: 50));
+      final pollsWhenRunning = repository.polls;
+
+      repository.dispose();
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      expect(repository.polls, pollsWhenRunning);
     });
   });
 }
