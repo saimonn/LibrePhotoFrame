@@ -311,7 +311,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
       // On Desktop, use a distinct folder name in Documents
       baseDir = await getApplicationDocumentsDirectory();
-      subDirName = 'OpenPhotoFrame';
+      subDirName = 'LibrePhotoFrame';
     } else if (Platform.isAndroid) {
       baseDir = await getExternalStorageDirectory();
     }
@@ -800,9 +800,10 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
               onTap: () {
                 showAboutDialog(
                   context: context,
-                  applicationName: 'Open Photo Frame',
+                  applicationName: 'LibrePhotoFrame',
                   applicationVersion: _appVersion.isEmpty ? '...' : _appVersion,
-                  applicationLegalese: '© 2026 Michael Wyraz',
+                  applicationLegalese:
+                      '© 2026 Michael Wyraz and the LibrePhotoFrame contributors',
                 );
               },
             ),
