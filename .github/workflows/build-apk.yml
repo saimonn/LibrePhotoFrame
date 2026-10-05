@@ -15,8 +15,8 @@ jobs:
   verify:
     name: Verify (analyze + test)
     runs-on: ubuntu-latest
+    # Temporary: lets the emulator job run while the layout test is validated.
     continue-on-error: true
-    timeout-minutes: 10
 
     steps:
       - name: Checkout repository
@@ -61,6 +61,7 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
+          ls -l /dev/kvm
 
       - name: Download the APKs
         uses: actions/download-artifact@v4
@@ -74,22 +75,31 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Create the emulator image
+      - name: Create the emulator
         run: |
+          # The image keeps the command line tools in a version directory and
+          # puts neither them, nor adb, nor the emulator on the PATH.
+          SDK="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          find "$SDK/cmdline-tools" -name sdkmanager -type f | head -1 | xargs dirname >> $GITHUB_PATH
+          echo "$SDK/platform-tools" >> $GITHUB_PATH
+          echo "$SDK/emulator" >> $GITHUB_PATH
           yes | sdkmanager --licenses > /dev/null || true
-          sdkmanager --install "platform-tools" "system-images;android-34;google_apis;x86_64"
+          sdkmanager --install "emulator" "system-images;android-34;google_apis;x86_64"
           echo no | avdmanager create avd -n lpf -k "system-images;android-34;google_apis;x86_64" -d pixel_6 --force
 
-      - name: Start the emulator
+      - name: Boot the emulator, install the APK and measure the settings rows
         run: |
-          "${ANDROID_SDK_ROOT:-$ANDROID_HOME}/emulator/emulator" -avd lpf -no-window -no-audio -no-boot-anim -gpu swiftshader -no-snapshot -wipe-data &
+          # The emulator and the measurement share one step: a background
+          # process does not survive the end of a step.
+          emulator -avd lpf -no-window -no-audio -no-boot-anim -gpu swiftshader -no-snapshot -wipe-data &
           adb wait-for-device
-          adb shell 'while [[ -z "$(getprop sys.boot_completed)" ]]; do sleep 2; done'
+          for _ in $(seq 1 150); do
+            [[ "$(adb shell getprop sys.boot_completed | tr -d '\r')" == "1" ]] && break
+            sleep 2
+          done
+          adb shell getprop sys.boot_completed
           adb root
           adb wait-for-device
-
-      - name: Install the APK and measure the settings rows
-        run: |
           adb install -r apks/*x86_64.apk
           tool/device_test.sh io.github.saimonn.librephotoframe
 

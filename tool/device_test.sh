@@ -56,6 +56,7 @@ for permission in READ_MEDIA_IMAGES READ_MEDIA_VIDEO READ_MEDIA_VISUAL_USER_SELE
 done
 
 adb shell am force-stop "$PACKAGE"
+adb shell input keyevent KEYCODE_WAKEUP
 adb shell am start -n "$ACTIVITY" >/dev/null
 # The app scans the media store and loads the first photo on start.
 sleep 30
@@ -73,6 +74,7 @@ fi
 if ! dump | grep -q 'content-desc="Paramètres"'; then
   echo "FAIL: the settings screen did not open"
   adb exec-out screencap -p > "$OUT_DIR/no-settings.png" || true
+  dump | grep -o 'content-desc="[^"]*"' | head -20
   exit 1
 fi
 
