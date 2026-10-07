@@ -127,6 +127,13 @@ class AppLocalizationsEs extends AppLocalizations {
       'Detectar automáticamente las fotos nuevas y borradas de la carpeta';
 
   @override
+  String get pollInterval => 'Intervalo de sondeo';
+
+  @override
+  String get pollIntervalSubtitle =>
+      'Con qué frecuencia se vuelve a leer la fuente de fotos para detectar cambios';
+
+  @override
   String get appFolder => 'Carpeta de la aplicación';
 
   @override

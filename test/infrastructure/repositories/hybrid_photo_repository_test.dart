@@ -12,11 +12,14 @@ class FakeConfigProvider extends ChangeNotifier implements ConfigProvider {
   FakeConfigProvider({
     String sourceType = '',
     bool watchPhotoFolder = true,
+    int pollIntervalSeconds = defaultPollIntervalSeconds,
   })  : _sourceType = sourceType,
-        _watchPhotoFolder = watchPhotoFolder;
+        _watchPhotoFolder = watchPhotoFolder,
+        _pollIntervalSeconds = pollIntervalSeconds;
 
   String _sourceType;
   bool _watchPhotoFolder;
+  int _pollIntervalSeconds;
 
   @override
   Future<void> load() async {}
@@ -71,6 +74,12 @@ class FakeConfigProvider extends ChangeNotifier implements ConfigProvider {
 
   @override
   set watchPhotoFolder(bool value) => _watchPhotoFolder = value;
+
+  @override
+  int get pollIntervalSeconds => _pollIntervalSeconds;
+
+  @override
+  set pollIntervalSeconds(int value) => _pollIntervalSeconds = value;
 
   @override
   int get syncIntervalMinutes => 0;
@@ -279,7 +288,7 @@ class PollingRepository extends HybridPhotoRepository {
     required super.storageProvider,
     required super.metadataProvider,
     required super.configProvider,
-    required super.mediaStorePollInterval,
+    super.mediaStorePollInterval,
   });
 
   int polls = 0;
@@ -345,13 +354,16 @@ void main() {
   group('HybridPhotoRepository MediaStore mode', () {
     late FakeStorageProvider storageProvider;
 
-    PollingRepository buildRepository(FakeConfigProvider configProvider) {
+    PollingRepository buildRepository(
+      FakeConfigProvider configProvider, {
+      Duration? mediaStorePollInterval = const Duration(milliseconds: 5),
+    }) {
       storageProvider = FakeStorageProvider(Directory.systemTemp);
       return PollingRepository(
         storageProvider: storageProvider,
         metadataProvider: FakeMetadataProvider(),
         configProvider: configProvider,
-        mediaStorePollInterval: const Duration(milliseconds: 5),
+        mediaStorePollInterval: mediaStorePollInterval,
       );
     }
 
@@ -378,6 +390,23 @@ void main() {
       await Future.delayed(const Duration(milliseconds: 200));
 
       expect(repository.polls, 0);
+      repository.dispose();
+    });
+
+    test('polls with the configured interval when none is pinned', () async {
+      final repository = buildRepository(
+        FakeConfigProvider(
+          sourceType: 'device_photos',
+          // The shortest interval the settings offer.
+          pollIntervalSeconds: 1,
+        ),
+        mediaStorePollInterval: null,
+      );
+
+      await repository.initialize();
+      await Future.delayed(const Duration(milliseconds: 1500));
+
+      expect(repository.polls, greaterThanOrEqualTo(1));
       repository.dispose();
     });
 

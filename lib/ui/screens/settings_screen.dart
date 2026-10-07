@@ -86,6 +86,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
   late bool _blurBorders;
   late bool _pairPhotos;
   late bool _watchPhotoFolder;
+  late int _pollIntervalSeconds;
   late String _syncType;
   late TextEditingController _nextcloudUrlController;
   late WebDavAuthMode _webdavAuthMode;
@@ -177,6 +178,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     _pairPhotos = config.pairPhotosEnabled;
     _photoOrder = config.photoOrder;
     _watchPhotoFolder = config.watchPhotoFolder;
+    _pollIntervalSeconds = config.pollIntervalSeconds;
     // Default sync type: app_folder on Android, local_folder on Desktop
     final defaultSyncType = Platform.isAndroid ? 'app_folder' : 'local_folder';
     _syncType = config.activeSourceType.isEmpty ? defaultSyncType : config.activeSourceType;
@@ -382,6 +384,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     config.pairPhotosEnabled = _pairPhotos;
     config.photoOrder = _photoOrder;
     config.watchPhotoFolder = _watchPhotoFolder;
+    config.pollIntervalSeconds = _pollIntervalSeconds;
     // app_folder and local_folder both use empty activeSourceType (no sync)
     final isLocalMode = _syncType == 'local_folder' || _syncType == 'app_folder';
     config.activeSourceType = isLocalMode ? '' : _syncType;
@@ -665,6 +668,33 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
               onChanged: (value) {
                 setState(() => _watchPhotoFolder = value);
               },
+            ),
+
+            // Re-read interval: the safety net that picks up the changes no
+            // event reported, for the folder sources and the device photos.
+            ListTile(
+              leading: const Icon(Icons.timer),
+              title: Text(AppLocalizations.of(context)!.pollInterval),
+              subtitle: Text(AppLocalizations.of(context)!.pollIntervalSubtitle),
+              trailing: _boundedDropdown(
+                DropdownButton<int>(
+                  isExpanded: true,
+                  value: _pollIntervalSeconds,
+                  underline: const SizedBox(),
+                  items: [
+                    for (final seconds in pollIntervalChoices)
+                      DropdownMenuItem(
+                        value: seconds,
+                        child: Text(_pollIntervalLabel(context, seconds)),
+                      ),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() => _pollIntervalSeconds = value);
+                    }
+                  },
+                ),
+              ),
             ),
           
             // Nextcloud URL (only visible if nextcloud selected)
@@ -1992,6 +2022,14 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
         ),
       ),
     );
+  }
+
+  /// Poll interval choices are stored in seconds, but nobody reads "1800" in
+  /// a dropdown: whole minutes are shown as minutes.
+  String _pollIntervalLabel(BuildContext context, int seconds) {
+    final l10n = AppLocalizations.of(context)!;
+    if (seconds % 60 == 0) return '${seconds ~/ 60} ${l10n.unitMinutes}';
+    return '$seconds ${l10n.unitSeconds}';
   }
 
   /// A trailing dropdown is measured with the width of its widest item, which

@@ -1,5 +1,11 @@
 import 'package:flutter/foundation.dart';
 
+/// Default interval between two re-reads of the photo source, in seconds.
+const int defaultPollIntervalSeconds = 60;
+
+/// Poll intervals offered in the settings, in seconds.
+const List<int> pollIntervalChoices = [1, 5, 10, 30, 60, 300, 600, 1800, 3600];
+
 abstract class ConfigProvider extends ChangeNotifier {
   Future<void> load();
   Future<void> save();
@@ -32,6 +38,9 @@ abstract class ConfigProvider extends ChangeNotifier {
   
   bool get watchPhotoFolder; // Watch the photo folder for changes
   set watchPhotoFolder(bool value);
+
+  int get pollIntervalSeconds; // How often the photo source is re-read
+  set pollIntervalSeconds(int value);
   
   bool get deleteOrphanedFiles; // Delete local files not on server
   set deleteOrphanedFiles(bool value);

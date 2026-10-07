@@ -42,6 +42,8 @@
   "sectionPhotoSource": "Origen de las fotos",
   "watchPhotoFolder": "Vigilando la carpeta",
   "watchPhotoFolderSubtitle": "Detectar automáticamente las fotos nuevas y borradas de la carpeta",
+  "pollInterval": "Intervalo de sondeo",
+  "pollIntervalSubtitle": "Con qué frecuencia se vuelve a leer la fuente de fotos para detectar cambios",
   "appFolder": "Carpeta de la aplicación",
   "appFolderSubtitle": "Fotos guardadas en la carpeta de la aplicación",
   "appFolderWarning": "Copia las fotos a esta carpeta. Se eliminarán al desinstalar la aplicación.",

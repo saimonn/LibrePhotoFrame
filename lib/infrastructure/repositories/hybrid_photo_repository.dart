@@ -78,21 +78,20 @@ class HybridPhotoRepository implements PhotoRepository {
   Timer? _mediaStorePollTimer;
   Timer? _mediaStoreDebounceTimer;
 
-  /// Interval of the periodic MediaStore re-read.
-  final Duration mediaStorePollInterval;
+  /// Interval of the periodic MediaStore re-read, null to follow the
+  /// configured poll interval.
+  ///
+  /// The re-read itself is not optional: the MediaStore change callback cannot
+  /// be trusted alone, Android indexes files written by other apps (sync
+  /// clients, camera apps) in its own time, so a photo that lands after the
+  /// last notification stays invisible until the next poll - in practice until
+  /// the app is restarted. A poll that runs while the MediaProvider is still
+  /// indexing also returns a partial album, and the next poll is what repairs
+  /// it.
+  final Duration? mediaStorePollInterval;
 
   /// Quiet period the MediaStore change notifications are coalesced over.
   final Duration mediaStoreDebounceInterval;
-
-  /// How often the MediaStore album is re-read while the frame runs.
-  ///
-  /// The MediaStore change callback cannot be trusted alone: Android indexes
-  /// files written by other apps (sync clients, camera apps) in its own time,
-  /// so a photo that lands after the last notification stays invisible until
-  /// the next poll - in practice until the app is restarted. A poll that runs
-  /// while the MediaProvider is still indexing also returns a partial album,
-  /// and the next poll is what repairs it.
-  static const Duration defaultMediaStorePollInterval = Duration(seconds: 60);
 
   /// Android notifies once per changed row, so the re-read waits for the burst
   /// to end instead of scanning the album once per photo.
@@ -102,12 +101,15 @@ class HybridPhotoRepository implements PhotoRepository {
     required StorageProvider storageProvider,
     required MetadataProvider metadataProvider,
     required ConfigProvider configProvider,
-    this.mediaStorePollInterval = defaultMediaStorePollInterval,
+    this.mediaStorePollInterval,
     this.mediaStoreDebounceInterval = defaultMediaStoreDebounceInterval,
   })  : _storageProvider = storageProvider,
         _metadataProvider = metadataProvider,
         _config = configProvider,
-        _scanner = FileSystemPhotoScanner(storageProvider: storageProvider) {
+        _scanner = FileSystemPhotoScanner(
+          storageProvider: storageProvider,
+          pollInterval: Duration(seconds: configProvider.pollIntervalSeconds),
+        ) {
     _watchPhotoFolder = configProvider.watchPhotoFolder;
     _scanner.watchForChanges = _watchPhotoFolder;
 
@@ -123,9 +125,12 @@ class HybridPhotoRepository implements PhotoRepository {
     configProvider.addListener(_onConfigChanged);
   }
 
-  /// Applies the photo change watching setting as soon as it is toggled, so no
-  /// restart is needed.
+  /// Applies the poll interval and the photo change watching setting as soon
+  /// as they change, so no restart is needed.
   void _onConfigChanged() {
+    _scanner.pollInterval = Duration(seconds: _config.pollIntervalSeconds);
+    if (_useMediaStore) _armMediaStorePoll(_watchPhotoFolder);
+
     if (_watchPhotoFolder == _config.watchPhotoFolder) return;
     _watchPhotoFolder = _config.watchPhotoFolder;
 
@@ -259,8 +264,9 @@ class HybridPhotoRepository implements PhotoRepository {
       return;
     }
 
-    _mediaStorePollTimer ??= Timer.periodic(
-      mediaStorePollInterval,
+    _mediaStorePollTimer?.cancel();
+    _mediaStorePollTimer = Timer.periodic(
+      mediaStorePollInterval ?? Duration(seconds: _config.pollIntervalSeconds),
       (_) => unawaited(refresh()),
     );
   }

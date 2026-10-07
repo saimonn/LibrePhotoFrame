@@ -264,6 +264,25 @@ void main() {
       expect(scanner.photos, isEmpty);
     });
 
+    test('changing the poll interval re-arms the running timer', () async {
+      final scanner = FileSystemPhotoScanner(
+        storageProvider: storageProvider,
+        // Without a watcher only the poll can find the new file.
+        watchForChanges: false,
+        pollInterval: const Duration(seconds: 60),
+        settleRecheckInterval: const Duration(seconds: 30),
+      );
+      addTearDown(scanner.dispose);
+
+      await scanner.start();
+      scanner.pollInterval = const Duration(milliseconds: 100);
+
+      await writePhoto(tempDir, 'incoming.jpg');
+      await Future.delayed(const Duration(milliseconds: 600));
+
+      expect(scanner.photos.length, 1);
+    });
+
     test('stop() ends the periodic rescan', () async {
       final scanner = FileSystemPhotoScanner(
         storageProvider: storageProvider,

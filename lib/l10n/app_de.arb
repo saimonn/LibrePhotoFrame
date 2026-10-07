@@ -42,6 +42,8 @@
   "sectionPhotoSource": "Fotoquelle",
   "watchPhotoFolder": "Ordner überwachen",
   "watchPhotoFolderSubtitle": "Neue und gelöschte Fotos im Fotoordner automatisch erkennen",
+  "pollInterval": "Abfrageintervall",
+  "pollIntervalSubtitle": "Wie oft die Fotoquelle neu gelesen wird, um Änderungen zu erkennen",
   "appFolder": "App-Ordner",
   "appFolderSubtitle": "Fotos im App-Ordner gespeichert",
   "appFolderWarning": "Kopiere Fotos in diesen Ordner. Sie werden beim Deinstallieren der App gelöscht.",

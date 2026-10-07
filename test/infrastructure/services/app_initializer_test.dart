@@ -70,6 +70,12 @@ class FakeConfigProvider extends ChangeNotifier implements ConfigProvider {
   set watchPhotoFolder(bool value) {}
 
   @override
+  int get pollIntervalSeconds => defaultPollIntervalSeconds;
+
+  @override
+  set pollIntervalSeconds(int value) {}
+
+  @override
   int get syncIntervalMinutes => 0;
 
   @override

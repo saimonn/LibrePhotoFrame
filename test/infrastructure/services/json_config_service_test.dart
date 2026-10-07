@@ -131,6 +131,29 @@ void main() {
     });
   });
 
+  group('poll interval', () {
+    test('is one minute until another offered interval is set', () async {
+      final service = createService();
+
+      await service.load();
+      expect(service.pollIntervalSeconds, 60);
+
+      service.pollIntervalSeconds = 300;
+      expect(service.pollIntervalSeconds, 300);
+    });
+
+    test('ignores an interval the settings do not offer', () async {
+      await configDirectory().create(recursive: true);
+      await configFile().writeAsString(json.encode({'poll_interval_seconds': 7}));
+
+      final service = createService();
+
+      await service.load();
+
+      expect(service.pollIntervalSeconds, 60);
+    });
+  });
+
   group('clock format', () {
     test('is automatic until 12 or 24 hours is set', () async {
       final service = createService();

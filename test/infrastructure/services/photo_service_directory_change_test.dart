@@ -105,6 +105,12 @@ class MockConfigProvider extends ChangeNotifier implements ConfigProvider {
   bool get watchPhotoFolder => true;
   @override
   set watchPhotoFolder(bool value) {}
+
+  @override
+  int get pollIntervalSeconds => defaultPollIntervalSeconds;
+
+  @override
+  set pollIntervalSeconds(int value) {}
   
   @override
   int get syncIntervalMinutes => _syncIntervalMinutes;

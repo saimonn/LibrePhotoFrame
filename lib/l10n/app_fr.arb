@@ -42,6 +42,8 @@
   "sectionPhotoSource": "Source des photos",
   "watchPhotoFolder": "Surveiller le dossier",
   "watchPhotoFolderSubtitle": "Détecter automatiquement les photos ajoutées et supprimées du dossier",
+  "pollInterval": "Intervalle d'analyse",
+  "pollIntervalSubtitle": "Fréquence de relecture de la source de photos pour détecter les changements",
   "appFolder": "Dossier de l'application",
   "appFolderSubtitle": "Photos stockées dans le dossier de l'application",
   "appFolderWarning": "Copiez les photos dans ce dossier. Elles seront supprimées lors de la désinstallation de l'application.",

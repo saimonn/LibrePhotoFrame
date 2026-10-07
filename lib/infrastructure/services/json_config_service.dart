@@ -308,6 +308,19 @@ class JsonConfigService extends ConfigProvider {
   set watchPhotoFolder(bool value) {
     _config['watch_photo_folder'] = value;
   }
+
+  @override
+  int get pollIntervalSeconds {
+    final value = _config['poll_interval_seconds'];
+    return value is int && pollIntervalChoices.contains(value)
+        ? value
+        : defaultPollIntervalSeconds;
+  }
+
+  @override
+  set pollIntervalSeconds(int value) {
+    _config['poll_interval_seconds'] = value;
+  }
   
   @override
   bool get deleteOrphanedFiles => _config['delete_orphaned_files'] ?? true;

@@ -126,6 +126,13 @@ class AppLocalizationsFr extends AppLocalizations {
       'Détecter automatiquement les photos ajoutées et supprimées du dossier';
 
   @override
+  String get pollInterval => 'Intervalle d\'analyse';
+
+  @override
+  String get pollIntervalSubtitle =>
+      'Fréquence de relecture de la source de photos pour détecter les changements';
+
+  @override
   String get appFolder => 'Dossier de l\'application';
 
   @override

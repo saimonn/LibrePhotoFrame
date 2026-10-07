@@ -324,6 +324,18 @@ abstract class AppLocalizations {
   /// **'Detect new and deleted photos in the photo folder automatically'**
   String get watchPhotoFolderSubtitle;
 
+  /// No description provided for @pollInterval.
+  ///
+  /// In en, this message translates to:
+  /// **'Poll Interval'**
+  String get pollInterval;
+
+  /// No description provided for @pollIntervalSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How often the photo source is re-read to pick up changes that no event reported'**
+  String get pollIntervalSubtitle;
+
   /// No description provided for @appFolder.
   ///
   /// In en, this message translates to:

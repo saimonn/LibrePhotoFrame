@@ -42,6 +42,8 @@
   "sectionPhotoSource": "Photo Source",
   "watchPhotoFolder": "Watch Folder",
   "watchPhotoFolderSubtitle": "Detect new and deleted photos in the photo folder automatically",
+  "pollInterval": "Poll Interval",
+  "pollIntervalSubtitle": "How often the photo source is re-read to pick up changes that no event reported",
   "appFolder": "App Folder",
   "appFolderSubtitle": "Photos stored in app folder",
   "appFolderWarning": "Copy photos to this folder. They will be deleted when uninstalling the app.",

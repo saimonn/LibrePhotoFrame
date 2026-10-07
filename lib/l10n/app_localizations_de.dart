@@ -126,6 +126,13 @@ class AppLocalizationsDe extends AppLocalizations {
       'Neue und gelöschte Fotos im Fotoordner automatisch erkennen';
 
   @override
+  String get pollInterval => 'Abfrageintervall';
+
+  @override
+  String get pollIntervalSubtitle =>
+      'Wie oft die Fotoquelle neu gelesen wird, um Änderungen zu erkennen';
+
+  @override
   String get appFolder => 'App-Ordner';
 
   @override

@@ -125,6 +125,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Detect new and deleted photos in the photo folder automatically';
 
   @override
+  String get pollInterval => 'Poll Interval';
+
+  @override
+  String get pollIntervalSubtitle =>
+      'How often the photo source is re-read to pick up changes that no event reported';
+
+  @override
   String get appFolder => 'App Folder';
 
   @override

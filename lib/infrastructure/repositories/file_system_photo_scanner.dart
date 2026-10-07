@@ -27,12 +27,13 @@ import '../../domain/models/photo_entry.dart';
 class FileSystemPhotoScanner {
   FileSystemPhotoScanner({
     required StorageProvider storageProvider,
-    this.pollInterval = defaultPollInterval,
+    Duration pollInterval = defaultPollInterval,
     this.debounceInterval = defaultDebounceInterval,
     this.settleAge = defaultSettleAge,
     this.settleRecheckInterval = defaultSettleRecheckInterval,
     bool watchForChanges = true,
   })  : _storageProvider = storageProvider,
+        _pollInterval = pollInterval,
         _watchForChanges = watchForChanges,
         // Start with the configured recheck delay instead of the static default.
         _settleDelay = settleRecheckInterval;
@@ -58,7 +59,7 @@ class FileSystemPhotoScanner {
   static const String _incompleteSuffix = '.part';
 
   final StorageProvider _storageProvider;
-  final Duration pollInterval;
+  Duration _pollInterval;
   final Duration debounceInterval;
   final Duration settleAge;
   final Duration settleRecheckInterval;
@@ -76,6 +77,18 @@ class FileSystemPhotoScanner {
     if (!value) {
       unawaited(_cancelWatcher());
     }
+  }
+
+  /// How often the folder is re-read. Changing it re-arms a running timer, so
+  /// the new interval applies without restarting the app.
+  Duration get pollInterval => _pollInterval;
+
+  set pollInterval(Duration value) {
+    if (value == _pollInterval) return;
+    _pollInterval = value;
+    if (_pollTimer == null) return;
+    _pollTimer!.cancel();
+    _pollTimer = Timer.periodic(value, (_) => unawaited(scan()));
   }
 
   final _log = Logger('FileSystemPhotoScanner');
