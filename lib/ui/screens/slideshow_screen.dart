@@ -729,7 +729,8 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
         final metadataProvider = context.read<MetadataProvider>();
         final exif = await metadataProvider.getExifMetadata(photo.file);
         photo.setExifMetadata(
-          captureDate: exif.captureDate,
+          // Keep the media store date when the file carries no EXIF date.
+          captureDate: exif.captureDate ?? photo.captureDate,
           latitude: exif.location?.latitude,
           longitude: exif.location?.longitude,
         );

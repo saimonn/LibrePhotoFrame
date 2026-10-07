@@ -71,6 +71,13 @@ class PhotoEntry {
     _longitude = longitude;
   }
 
+  /// Records a capture date known without reading the file, MediaStore's
+  /// creation date for instance.
+  ///
+  /// The EXIF is deliberately left unloaded: the file is read when the photo
+  /// is displayed, which brings the GPS position and a more precise date.
+  void setCaptureDate(DateTime? value) => _captureDate = value;
+
   // ===== Pixel dimensions =====
 
   /// Whether the dimensions were already loaded (or loading was attempted).

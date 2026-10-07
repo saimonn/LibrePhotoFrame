@@ -356,22 +356,15 @@ class HybridPhotoRepository implements PhotoRepository {
         if (existingIndex != -1) {
           newPhotos.add(_mediaStorePhotos[existingIndex]);
         } else {
-          // Get GPS coordinates from AssetEntity if available (fast - no file I/O)
-          final latLng = await asset.latlngAsync();
-          final hasLocation = latLng != null && (latLng.latitude != 0 || latLng.longitude != 0);
-          
-          // For MediaStore: modifiedDateTime for shuffle, createDateTime as captureDate
+          // For MediaStore: modifiedDateTime for shuffle, createDateTime as captureDate.
+          // The EXIF itself stays unread: GPS and the exact capture date are
+          // loaded from the file when the photo is displayed.
           final entry = PhotoEntry(
             file: file,
             date: asset.modifiedDateTime,  // File date for shuffle algorithm
             sizeBytes: asset.width * asset.height,  // Approximate size from dimensions
           );
-          // Set EXIF data from MediaStore (already available, no need for lazy loading)
-          entry.setExifMetadata(
-            captureDate: asset.createDateTime,
-            latitude: hasLocation ? latLng.latitude : null,
-            longitude: hasLocation ? latLng.longitude : null,
-          );
+          entry.setCaptureDate(asset.createDateTime);
           newPhotos.add(entry);
         }
       }
