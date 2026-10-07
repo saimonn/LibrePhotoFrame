@@ -23,14 +23,6 @@ import '../../infrastructure/services/native_screen_control_service.dart';
 import '../../infrastructure/services/keep_alive_service.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-const PermissionRequestOption _devicePhotoPermissionRequest =
-    PermissionRequestOption(
-      androidPermission: AndroidPermission(
-        type: RequestType.image,
-        mediaLocation: false,
-      ),
-    );
-
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
@@ -1118,11 +1110,9 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     setState(() => _isLoadingAlbums = true);
     
     try {
-      final permission = await PhotoManager.requestPermissionExtend(
-        requestOption: _devicePhotoPermissionRequest,
-      );
-      if (!permission.hasAccess) {
+      if (!await ensureDevicePhotoAccess()) {
         if (mounted) {
+          setState(() => _isLoadingAlbums = false);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(AppLocalizations.of(context)!.photoPermissionDenied)),
           );
