@@ -78,6 +78,10 @@ class HybridPhotoRepository implements PhotoRepository {
   Timer? _mediaStorePollTimer;
   Timer? _mediaStoreDebounceTimer;
 
+  /// Details of the last scan reported to the log, used to keep repeated
+  /// polls quiet.
+  String? _lastScanReport;
+
   /// Interval of the periodic MediaStore re-read, null to follow the
   /// configured poll interval.
   ///
@@ -295,7 +299,9 @@ class HybridPhotoRepository implements PhotoRepository {
       // Load selected album from config (persistence across restarts)
       final sourceConfig = _config.getSourceConfig('device_photos');
       _selectedAlbumId = sourceConfig['albumId'] as String?;
-      _log.fine("Loaded album selection from config: $_selectedAlbumId");
+      final details = [
+        "Loaded album selection from config: $_selectedAlbumId",
+      ];
       
       // Get the selected album or use all photos
       List<AssetEntity> assets;
@@ -314,13 +320,13 @@ class HybridPhotoRepository implements PhotoRepository {
           type: RequestType.image,
           filterOption: filterOption,
         );
-        _log.fine("Available albums: ${albums.map((a) => '${a.name}(${a.id})').join(', ')}");
+        details.add("Available albums: ${albums.map((a) => '${a.name}(${a.id})').join(', ')}");
         
         // Find the selected album, or null if not found
         AssetPathEntity? album;
         try {
           album = albums.firstWhere((a) => a.id == _selectedAlbumId);
-          _log.fine("Found matching album: ${album.name}");
+          details.add("Found matching album: ${album.name}");
         } catch (e) {
           _log.warning("Selected album not found: $_selectedAlbumId, falling back to all photos");
           album = null;
@@ -328,12 +334,12 @@ class HybridPhotoRepository implements PhotoRepository {
         
         if (album != null) {
           final count = await album.assetCountAsync;
-          _log.fine("Album '${album.name}' has $count photos");
+          details.add("Album '${album.name}' has $count photos");
           if (count > 0) {
             assets = await album.getAssetListRange(start: 0, end: count);
           } else {
-            // Album is empty
-            _log.info("Selected album is empty");
+            // Album is empty: the count detail above already reports it.
+            _reportScan(details);
             _publishMediaStorePhotos(const []);
             return;
           }
@@ -346,7 +352,7 @@ class HybridPhotoRepository implements PhotoRepository {
         assets = await _getAllPhotos();
       }
       
-      _log.fine("Found ${assets.length} assets in MediaStore");
+      details.add("Found ${assets.length} assets in MediaStore");
       
       // Convert AssetEntity to PhotoEntry
       final newPhotos = <PhotoEntry>[];
@@ -375,10 +381,30 @@ class HybridPhotoRepository implements PhotoRepository {
         }
       }
       
+      _reportScan(details);
       _publishMediaStorePhotos(newPhotos);
       
     } catch (e) {
       _log.severe("Error scanning photos from MediaStore", e);
+    }
+  }
+
+  /// Reports what a scan found: the details when they changed, one line
+  /// otherwise.
+  ///
+  /// The poll can run every second while the album stays the same, and
+  /// repeating its description every time would flood logcat.
+  void _reportScan(List<String> details) {
+    final report = details.join(' | ');
+    if (report == _lastScanReport) {
+      _log.fine(
+        "MediaStore scan unchanged: ${_selectedAlbumId ?? 'all photos'}",
+      );
+      return;
+    }
+    _lastScanReport = report;
+    for (final line in details) {
+      _log.fine(line);
     }
   }
   
