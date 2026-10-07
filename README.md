@@ -56,11 +56,11 @@ The frame needs no sync client of its own. Point it at a folder that something e
 Two independent mechanisms keep the list in sync, because neither is enough alone:
 
 - **File system events** (`Directory.watch`) react within milliseconds, but Android external storage and SD cards are mounted through FUSE, and files written by another app frequently produce no event at all.
-- **A rescan every 60 seconds** is the safety net and picks up everything an event missed.
+- **A periodic rescan** (60 seconds by default) is the safety net and picks up everything an event missed. The interval is set in **Settings → Photo Source → Poll interval**.
 
-A photo a sync client drops into the folder therefore appears within about a minute even when no event is delivered, and immediately when one is. Deleted files drop out of the list on the next scan, and subfolders are scanned too. A new photo is published only once it stopped growing, so a file that is still being copied is never shown half-written.
+A photo a sync client drops into the folder therefore appears within about a minute by default even when no event is delivered, and immediately when one is. Deleted files drop out of the list on the next scan, and subfolders are scanned too. A new photo is published only once it stopped growing, so a file that is still being copied is never shown half-written.
 
-Turning **Watch Folder** off leaves only the 60-second rescan. In folder mode the app reads `.jpg`, `.jpeg`, `.png` and `.webp` (case insensitive); other formats such as HEIC, AVIF or RAW are ignored.
+Turning **Watch Folder** off leaves only the periodic rescan. In folder mode the app reads `.jpg`, `.jpeg`, `.png` and `.webp` (case insensitive); other formats such as HEIC, AVIF or RAW are ignored.
 
 ## 🔄 Automatic Updates
 
