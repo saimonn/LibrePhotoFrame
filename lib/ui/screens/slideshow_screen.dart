@@ -90,8 +90,10 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
   // Display off state for black overlay
   bool _isDisplayOff = false;
   
-  // Current photo location name (from geocoding)
-  String? _currentLocationName;
+  // Location names (from geocoding) of the photos on screen, by file path.
+  // Cleared whenever a photo takes the frame, so a name never outlives the
+  // photo it belongs to.
+  final Map<String, String> _locationNames = {};
 
   @override
   void initState() {
@@ -617,8 +619,8 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
       slideDirection: slideDirection,
     );
 
-    // Log EXIF metadata when displaying a photo
-    _logPhotoMetadata(photo);
+    // Load the metadata the info overlay shows, for both photos of the frame
+    _logDisplayedPhotos(photo, partner);
 
     setState(() {
       _isLoading = false;
@@ -708,20 +710,69 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
         }
       });
 
+      // The new pair needs its own dates and places in the info overlay.
+      _logDisplayedPhotos(photo, found);
+
       // The frame shows a pair now, so the photo order gets both photos at the
       // same rank.
       context.read<PhotoService>().noteDisplayed(photo, found);
     }());
   }
 
+  /// The info overlays to paint over the photos on screen, each one aligned
+  /// inside the box of the photo it belongs to: the whole frame in a single
+  /// layout, one per half in a split one.
+  List<Widget> _photoInfoOverlays(ConfigProvider config) {
+    final photo = _currentPhoto;
+    if (photo == null) return const [];
+
+    Widget overlay(PhotoEntry entry) => PhotoInfoOverlay(
+          key: ValueKey(
+            'photo_info_${entry.file.path}_${config.photoInfoPosition}_${config.photoInfoSize}_${config.useScriptFontForMetadata}',
+          ),
+          photo: entry,
+          position: config.photoInfoPosition,
+          size: config.photoInfoSize,
+          locationName:
+              config.geocodingEnabled ? _locationNames[entry.file.path] : null,
+          useScriptFont: config.useScriptFontForMetadata,
+        );
+
+    final size = _screenSize;
+    final partner = _currentPartner;
+    final pairing = size == null
+        ? PhotoPairing.single
+        : PhotoPairLayout.forScreen(size.width, size.height);
+    if (size == null || partner == null || !PhotoPairLayout.isPaired(pairing)) {
+      // A single photo takes the frame, the overlay aligns itself in it.
+      return [overlay(photo)];
+    }
+
+    final boxes = PhotoSlide.cellRects(size, pairing);
+    return [
+      Positioned.fromRect(rect: boxes[0], child: overlay(photo)),
+      Positioned.fromRect(rect: boxes[1], child: overlay(partner)),
+    ];
+  }
+
+  /// Loads the metadata the info overlay shows (EXIF and place name) for the
+  /// photos that take the frame, forgetting the ones that leave it.
+  void _logDisplayedPhotos(PhotoEntry photo, PhotoEntry? partner) {
+    _locationNames.clear();
+    _logPhotoMetadata(photo);
+    if (partner != null) {
+      _logPhotoMetadata(partner);
+    }
+  }
+
+  /// Whether [photo] is one of the photos the frame currently shows.
+  bool _isOnScreen(PhotoEntry photo) =>
+      _currentPhoto?.file.path == photo.file.path ||
+      _currentPartner?.file.path == photo.file.path;
+
   /// Loads EXIF metadata lazily and logs it
   Future<void> _logPhotoMetadata(PhotoEntry photo) async {
     final config = context.read<ConfigProvider>();
-    
-    // Reset location name for new photo
-    if (mounted) {
-      setState(() => _currentLocationName = null);
-    }
     
     // Load EXIF data lazily if not already loaded
     if (!photo.exifLoaded) {
@@ -757,13 +808,11 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
       // Reverse geocode only if enabled in settings
       if (config.geocodingEnabled) {
         _geocodingService.getLocationName(photo.latitude!, photo.longitude!).then((location) {
-          if (location != null) {
-            _log.info('Location: $location');
-            // Update UI with location name
-            if (mounted && _currentPhoto == photo) {
-              setState(() => _currentLocationName = location);
-            }
-          }
+          if (location == null || location.isEmpty) return;
+          _log.info('Location: $location');
+          // A photo that left the frame meanwhile keeps no name on screen.
+          if (!mounted || !_isOnScreen(photo)) return;
+          setState(() => _locationNames[photo.file.path] = location);
         });
       }
     }
@@ -935,16 +984,10 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
               format: config.clockFormat,
             ),
 
-          // 3. Photo Info Overlay
+          // 3. Photo Info Overlay: one per photo on screen, each aligned in the
+          // box of the picture it belongs to (issues 09 and 10)
           if (config.showPhotoInfo && _currentPhoto != null)
-            PhotoInfoOverlay(
-              key: ValueKey('photo_info_${_currentPhoto!.file.path}_${config.photoInfoPosition}_${config.photoInfoSize}_${config.useScriptFontForMetadata}'),
-              photo: _currentPhoto!,
-              position: config.photoInfoPosition,
-              size: config.photoInfoSize,
-              locationName: config.geocodingEnabled ? _currentLocationName : null,
-              useScriptFont: config.useScriptFontForMetadata,
-            ),
+            ..._photoInfoOverlays(config),
 
           // 4. Touch Layer (Invisible, on top)
           Positioned.fill(

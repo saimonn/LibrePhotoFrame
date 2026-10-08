@@ -50,6 +50,29 @@ class PhotoSlide extends StatelessWidget {
     }
   }
 
+  /// Boxes the photos of [pairing] occupy on a frame of [screenSize], in the
+  /// order [build] paints them: the main photo first, the partner second.
+  ///
+  /// The photo info overlay aligns itself inside these boxes, so each photo of
+  /// a split screen gets its own corner instead of one overlay for the frame.
+  static List<Rect> cellRects(Size screenSize, PhotoPairing pairing) {
+    final cell = cellSize(screenSize, pairing);
+    switch (pairing) {
+      case PhotoPairing.portraitSideBySide:
+        return [
+          Rect.fromLTWH(0, 0, cell.width, screenSize.height),
+          Rect.fromLTWH(cell.width + pairGap, 0, cell.width, screenSize.height),
+        ];
+      case PhotoPairing.landscapeStacked:
+        return [
+          Rect.fromLTWH(0, 0, screenSize.width, cell.height),
+          Rect.fromLTWH(0, cell.height + pairGap, screenSize.width, cell.height),
+        ];
+      case PhotoPairing.single:
+        return [Rect.fromLTWH(0, 0, screenSize.width, screenSize.height)];
+    }
+  }
+
   /// Creates a ResizeImage provider optimized for [boxSize].
   /// This significantly speeds up decoding on slower devices.
   static ImageProvider createOptimizedProvider(File file, Size boxSize) {
