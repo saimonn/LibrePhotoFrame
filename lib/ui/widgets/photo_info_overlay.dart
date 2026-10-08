@@ -66,6 +66,14 @@ class PhotoInfoOverlay extends StatelessWidget {
     return format.format(date);
   }
 
+  /// Coordinates as shown when no place name is known: readable without a map,
+  /// and always available, geocoding or not.
+  String _formatCoordinates() {
+    final latitude = photo.latitude!.toStringAsFixed(3);
+    final longitude = photo.longitude!.toStringAsFixed(3);
+    return '$latitude, $longitude';
+  }
+
   @override
   Widget build(BuildContext context) {
     // Build info lines
@@ -76,9 +84,12 @@ class PhotoInfoOverlay extends StatelessWidget {
       infoLines.add(_formatDate(context, photo.captureDate!));
     }
     
-    // Add location if available
+    // Add location if available: the place name when geocoding resolved one,
+    // the coordinates otherwise, so a photo carrying GPS is never silent.
     if (locationName != null && locationName!.isNotEmpty) {
       infoLines.add(locationName!);
+    } else if (photo.hasLocation) {
+      infoLines.add(_formatCoordinates());
     }
     
     if (infoLines.isEmpty) {
