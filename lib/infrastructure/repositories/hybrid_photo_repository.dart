@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:logging/logging.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 import '../../domain/interfaces/photo_repository.dart';
@@ -27,6 +28,19 @@ Future<bool> hasDevicePhotoAccess() async {
   return state.hasAccess;
 }
 
+/// Asks for `ACCESS_MEDIA_LOCATION` when it is not granted yet. Call it from
+/// the UI only.
+///
+/// Android 10+ redacts the GPS values of a photo's EXIF for apps that do not
+/// hold this permission: the GPS tags are still readable but their values all
+/// come back as 0, so the frame never shows a location. The permission is not
+/// part of the photo access check, so it is requested separately.
+Future<void> ensureMediaLocationAccess() async {
+  if (!await Permission.accessMediaLocation.isGranted) {
+    await Permission.accessMediaLocation.request();
+  }
+}
+
 /// Whether the app may read the device photos, prompting the user when access
 /// was never granted. Call it from the UI only.
 ///
@@ -35,11 +49,14 @@ Future<bool> hasDevicePhotoAccess() async {
 /// declared in the manifest, so its own pre-check never passes and the system
 /// prompt is relaunched on every call - the loop behind issue 08.
 Future<bool> ensureDevicePhotoAccess() async {
-  if (await hasDevicePhotoAccess()) return true;
-  final requested = await PhotoManager.requestPermissionExtend(
-    requestOption: devicePhotoPermissionOption,
-  );
-  return requested.hasAccess;
+  if (!await hasDevicePhotoAccess()) {
+    final requested = await PhotoManager.requestPermissionExtend(
+      requestOption: devicePhotoPermissionOption,
+    );
+    if (!requested.hasAccess) return false;
+  }
+  await ensureMediaLocationAccess();
+  return true;
 }
 
 /// A PhotoRepository that can switch between FileSystem and MediaStore sources.

@@ -19,6 +19,7 @@ import '../../domain/models/photo_entry.dart';
 import '../../domain/models/calendar_event.dart';
 import '../../domain/services/photo_pair_layout.dart';
 import '../../infrastructure/services/photo_dimensions_service.dart';
+import '../../infrastructure/repositories/hybrid_photo_repository.dart';
 import '../widgets/photo_slide.dart';
 import '../widgets/clock_overlay.dart';
 import '../widgets/calendar_overlay.dart';
@@ -122,9 +123,19 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
       _initService();
       _initKeepAliveService();
       _initCalendarEvents();
+      _requestMediaLocationIfNeeded();
       _showStartupConfigNoticeIfNeeded();
       // Schedule init is now handled reactively in build() via _updateDisplaySchedule()
     });
+  }
+
+  /// Asks once for `ACCESS_MEDIA_LOCATION`: without it Android redacts the GPS
+  /// values of the device photos and the frame can never show a place.
+  void _requestMediaLocationIfNeeded() {
+    if (context.read<ConfigProvider>().activeSourceType != 'device_photos') {
+      return;
+    }
+    unawaited(ensureMediaLocationAccess());
   }
 
   void _showStartupConfigNoticeIfNeeded() {
