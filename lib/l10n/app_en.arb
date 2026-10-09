@@ -39,6 +39,14 @@
   "resolveLocationNamesSubtitle": "Use OpenStreetMap to show place names instead of coordinates",
   "nominatimHint": "Uses Nominatim (OpenStreetMap). No API key required.",
   
+  "sectionCalendar": "Calendar",
+  "showCalendarEvents": "Show Calendar Events",
+  "showCalendarEventsSubtitle": "Display today's and tomorrow's events from the device calendar",
+  "calendarPermissionDenied": "Calendar permission denied. Grant it to show events.",
+  "calendarOpenSettings": "Open app settings",
+  "calendarToday": "Today",
+  "calendarTomorrow": "Tomorrow",
+  
   "sectionPhotoSource": "Photo Source",
   "watchPhotoFolder": "Watch Folder",
   "watchPhotoFolderSubtitle": "Detect new and deleted photos in the photo folder automatically",

@@ -119,7 +119,17 @@ abstract class ConfigProvider extends ChangeNotifier {
   
   bool get useScriptFontForMetadata; // Use handwritten script font (Rouge Script) for metadata
   set useScriptFontForMetadata(bool value);
-  
+
+  // Calendar events overlay settings
+  bool get showCalendarEvents; // Show today's and tomorrow's calendar events
+  set showCalendarEvents(bool value);
+
+  String get calendarPosition; // 'bottomRight', 'bottomLeft', 'topRight', 'topLeft'
+  set calendarPosition(String value);
+
+  String get calendarSize; // 'small', 'medium', 'large'
+  set calendarSize(String value);
+
   // Geocoding settings
   bool get geocodingEnabled; // Enable reverse geocoding for GPS coordinates
   set geocodingEnabled(bool value);

@@ -306,6 +306,48 @@ abstract class AppLocalizations {
   /// **'Uses Nominatim (OpenStreetMap). No API key required.'**
   String get nominatimHint;
 
+  /// No description provided for @sectionCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar'**
+  String get sectionCalendar;
+
+  /// No description provided for @showCalendarEvents.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Calendar Events'**
+  String get showCalendarEvents;
+
+  /// No description provided for @showCalendarEventsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Display today\'s and tomorrow\'s events from the device calendar'**
+  String get showCalendarEventsSubtitle;
+
+  /// No description provided for @calendarPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar permission denied. Grant it to show events.'**
+  String get calendarPermissionDenied;
+
+  /// No description provided for @calendarOpenSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Open app settings'**
+  String get calendarOpenSettings;
+
+  /// No description provided for @calendarToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get calendarToday;
+
+  /// No description provided for @calendarTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow'**
+  String get calendarTomorrow;
+
   /// No description provided for @sectionPhotoSource.
   ///
   /// In en, this message translates to:

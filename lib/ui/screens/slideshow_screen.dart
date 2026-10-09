@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import '../../l10n/app_localizations.dart';
 import '../../domain/interfaces/config_provider.dart';
+import '../../domain/interfaces/calendar_event_source.dart';
 import '../../domain/interfaces/display_controller.dart';
 import '../../domain/interfaces/metadata_provider.dart';
 import '../../infrastructure/services/photo_service.dart';
@@ -15,10 +16,12 @@ import '../../infrastructure/services/native_screen_control_service.dart';
 import '../../infrastructure/services/geocoding_service.dart';
 import '../../infrastructure/services/keep_alive_service.dart';
 import '../../domain/models/photo_entry.dart';
+import '../../domain/models/calendar_event.dart';
 import '../../domain/services/photo_pair_layout.dart';
 import '../../infrastructure/services/photo_dimensions_service.dart';
 import '../widgets/photo_slide.dart';
 import '../widgets/clock_overlay.dart';
+import '../widgets/calendar_overlay.dart';
 import '../widgets/photo_info_overlay.dart';
 import '../../infrastructure/services/json_config_service.dart';
 import 'settings_screen.dart';
@@ -95,6 +98,10 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
   // photo it belongs to.
   final Map<String, String> _locationNames = {};
 
+  // Events of today and tomorrow from the device calendar.
+  List<CalendarEvent> _calendarEvents = const [];
+  Timer? _calendarTimer;
+
   @override
   void initState() {
     super.initState();
@@ -113,6 +120,7 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initService();
       _initKeepAliveService();
+      _initCalendarEvents();
       _showStartupConfigNoticeIfNeeded();
       // Schedule init is now handled reactively in build() via _updateDisplaySchedule()
     });
@@ -174,7 +182,10 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
         // while the app was suspended, so new incoming pictures would only
         // show up on the next periodic refresh otherwise.
         unawaited(context.read<PhotoService>().refreshPhotos());
-        
+
+        // A sync may have added or moved calendar events while suspended.
+        unawaited(_refreshCalendarEvents());
+
         // Resume slideshow if it was paused
         _resumeSlideshow();
         break;
@@ -858,6 +869,7 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
     _photosSubscription?.cancel();
     _scheduleSubscription?.cancel();
     _scheduleTimer?.cancel();
+    _calendarTimer?.cancel();
     _photoDimensions.dispose();
     for (var slide in _slides) {
       slide.controller.dispose();
@@ -989,7 +1001,16 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
           if (config.showPhotoInfo && _currentPhoto != null)
             ..._photoInfoOverlays(config),
 
-          // 4. Touch Layer (Invisible, on top)
+          // 4. Calendar Overlay: the events of today and tomorrow
+          if (config.showCalendarEvents && _calendarEvents.isNotEmpty)
+            CalendarOverlay(
+              key: const ValueKey('calendar_overlay'),
+              events: _calendarEvents,
+              position: config.calendarPosition,
+              size: config.calendarSize,
+            ),
+
+          // 5. Touch Layer (Invisible, on top)
           Positioned.fill(
             child: GestureDetector(
               behavior: HitTestBehavior.translucent,
@@ -1037,6 +1058,48 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
     );
   }
 
+  /// Loads the calendar events of today and tomorrow, then keeps them fresh.
+  void _initCalendarEvents() {
+    unawaited(_refreshCalendarEvents());
+    _calendarTimer?.cancel();
+    // A quarter hour keeps the two days current after a sync, without querying
+    // the calendar provider on every slide change.
+    _calendarTimer = Timer.periodic(
+      const Duration(minutes: 15),
+      (_) => unawaited(_refreshCalendarEvents()),
+    );
+  }
+
+  /// Re-reads the events of today and tomorrow, or clears them when the
+  /// overlay is disabled or the calendar is not readable.
+  Future<void> _refreshCalendarEvents() async {
+    final config = context.read<ConfigProvider>();
+    if (!config.showCalendarEvents) {
+      if (mounted && _calendarEvents.isNotEmpty) {
+        setState(() => _calendarEvents = const []);
+      }
+      return;
+    }
+
+    final source = context.read<CalendarEventSource>();
+    try {
+      if (!await source.hasPermission()) {
+        if (mounted && _calendarEvents.isNotEmpty) {
+          setState(() => _calendarEvents = const []);
+        }
+        return;
+      }
+      final now = DateTime.now();
+      final start = DateTime(now.year, now.month, now.day);
+      final end = start.add(const Duration(days: 2));
+      final events = await source.eventsBetween(start, end);
+      if (!mounted) return;
+      setState(() => _calendarEvents = events);
+    } catch (e) {
+      _log.warning('Failed to load calendar events: $e');
+    }
+  }
+
   /// Initialize Keep Alive service based on config
   Future<void> _initKeepAliveService() async {
     final config = context.read<ConfigProvider>();
@@ -1048,7 +1111,7 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
     config.addListener(_onConfigChanged);
   }
 
-  /// Handle config changes for Keep Alive service
+  /// Handle config changes for the Keep Alive service and the calendar overlay
   void _onConfigChanged() {
     final config = context.read<ConfigProvider>();
     final shouldRun = config.keepAliveEnabled;
@@ -1059,6 +1122,10 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
     } else {
       KeepAliveService.stopService();
     }
+
+    // Enabling the calendar overlay (or changing which calendar is readable)
+    // must load the events right away.
+    unawaited(_refreshCalendarEvents());
   }
 }
 

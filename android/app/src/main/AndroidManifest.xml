@@ -14,6 +14,9 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
     <!-- Opt-in self-update from GitHub releases (not shipped on Play Store) -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
+    <!-- Calendar events overlay: reads the device calendar (Nextcloud via DAVx5) -->
+    <uses-permission android:name="android.permission.READ_CALENDAR"/>
+    <uses-permission android:name="android.permission.WRITE_CALENDAR"/>
     <application
         android:label="LibrePhotoFrame"
         android:name="${applicationName}"

@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -115,6 +116,29 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get nominatimHint =>
       'Usa Nominatim (OpenStreetMap). No se necesita clave de API.';
+
+  @override
+  String get sectionCalendar => 'Calendario';
+
+  @override
+  String get showCalendarEvents => 'Mostrar eventos del calendario';
+
+  @override
+  String get showCalendarEventsSubtitle =>
+      'Mostrar los eventos de hoy y de mañana del calendario del dispositivo';
+
+  @override
+  String get calendarPermissionDenied =>
+      'Permiso de calendario denegado. Concédelo para mostrar los eventos.';
+
+  @override
+  String get calendarOpenSettings => 'Abrir los ajustes de la aplicación';
+
+  @override
+  String get calendarToday => 'Hoy';
+
+  @override
+  String get calendarTomorrow => 'Mañana';
 
   @override
   String get sectionPhotoSource => 'Origen de las fotos';

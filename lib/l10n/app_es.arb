@@ -39,6 +39,14 @@
   "resolveLocationNamesSubtitle": "Usar OpenStreetMap para mostrar nombres de lugar en lugar de coordenadas",
   "nominatimHint": "Usa Nominatim (OpenStreetMap). No se necesita clave de API.",
   
+  "sectionCalendar": "Calendario",
+  "showCalendarEvents": "Mostrar eventos del calendario",
+  "showCalendarEventsSubtitle": "Mostrar los eventos de hoy y de mañana del calendario del dispositivo",
+  "calendarPermissionDenied": "Permiso de calendario denegado. Concédelo para mostrar los eventos.",
+  "calendarOpenSettings": "Abrir los ajustes de la aplicación",
+  "calendarToday": "Hoy",
+  "calendarTomorrow": "Mañana",
+  
   "sectionPhotoSource": "Origen de las fotos",
   "watchPhotoFolder": "Vigilando la carpeta",
   "watchPhotoFolderSubtitle": "Detectar automáticamente las fotos nuevas y borradas de la carpeta",

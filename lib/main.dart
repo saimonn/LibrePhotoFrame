@@ -6,6 +6,7 @@ import 'package:logging/logging.dart';
 import 'package:provider/provider.dart';
 
 import 'domain/interfaces/config_provider.dart';
+import 'domain/interfaces/calendar_event_source.dart';
 import 'domain/interfaces/metadata_provider.dart';
 import 'domain/interfaces/playlist_strategy.dart';
 import 'domain/interfaces/sync_provider.dart';
@@ -15,6 +16,7 @@ import 'domain/interfaces/display_controller.dart';
 import 'infrastructure/services/app_initializer.dart';
 import 'infrastructure/services/json_config_service.dart';
 import 'infrastructure/services/exif_metadata_provider.dart';
+import 'infrastructure/services/device_calendar_event_source.dart';
 import 'infrastructure/services/webdav_source_config.dart';
 import 'infrastructure/services/webdav_sync_service.dart';
 import 'infrastructure/services/noop_sync_service.dart';
@@ -83,6 +85,9 @@ class LibrePhotoFrameApp extends StatelessWidget {
         ),
         Provider<MetadataProvider>(
           create: (_) => ExifMetadataProvider(),
+        ),
+        Provider<CalendarEventSource>(
+          create: (_) => DeviceCalendarEventSource(),
         ),
         // Playlist strategy of the configured photo order. The instance is kept
         // while the order does not change, so its shuffle history survives.

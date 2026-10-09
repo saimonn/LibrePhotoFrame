@@ -9,6 +9,7 @@ import '../../l10n/app_localizations.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:photo_manager/photo_manager.dart';
 import '../../domain/interfaces/config_provider.dart';
+import '../../domain/interfaces/calendar_event_source.dart';
 import '../../domain/interfaces/photo_repository.dart';
 import '../../domain/interfaces/storage_provider.dart';
 import '../../domain/interfaces/sync_provider.dart';
@@ -115,6 +116,12 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
   late String _photoInfoSize;
   late bool _geocodingEnabled;
   late bool _useScriptFontForMetadata;
+
+  // Calendar events settings
+  late bool _showCalendarEvents;
+  late String _calendarPosition;
+  late String _calendarSize;
+  bool _calendarPermissionGranted = false;
   
   // Display schedule settings
   late bool _scheduleEnabled;
@@ -208,6 +215,14 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     _photoInfoSize = config.photoInfoSize;
     _geocodingEnabled = config.geocodingEnabled;
     _useScriptFontForMetadata = config.useScriptFontForMetadata;
+
+    // Calendar events settings
+    _showCalendarEvents = config.showCalendarEvents;
+    _calendarPosition = config.calendarPosition;
+    _calendarSize = config.calendarSize;
+    if (_showCalendarEvents) {
+      _checkCalendarPermission();
+    }
     
     // Display schedule settings
     _scheduleEnabled = config.scheduleEnabled;
@@ -412,6 +427,11 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     config.photoInfoSize = _photoInfoSize;
     config.geocodingEnabled = _geocodingEnabled;
     config.useScriptFontForMetadata = _useScriptFontForMetadata;
+
+    // Calendar events settings
+    config.showCalendarEvents = _showCalendarEvents;
+    config.calendarPosition = _calendarPosition;
+    config.calendarSize = _calendarSize;
     
     // Display schedule settings
     config.scheduleEnabled = _scheduleEnabled;
@@ -584,9 +604,15 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
           
             if (_showClock) ...[
               const SizedBox(height: 8),
-              _buildClockSizeSelector(),
+              _buildSizeSelector(
+                _clockSize,
+                (value) => setState(() => _clockSize = value),
+              ),
               const SizedBox(height: 8),
-              _buildClockPositionSelector(),
+              _buildPositionSelector(
+                _clockPosition,
+                (value) => setState(() => _clockPosition = value),
+              ),
               const SizedBox(height: 8),
               _buildClockFormatSelector(),
             ],
@@ -611,9 +637,15 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
           
             if (_showPhotoInfo) ...[
               const SizedBox(height: 8),
-              _buildPhotoInfoPositionSelector(),
+              _buildPositionSelector(
+                _photoInfoPosition,
+                (value) => setState(() => _photoInfoPosition = value),
+              ),
               const SizedBox(height: 8),
-              _buildPhotoInfoSizeSelector(),
+              _buildSizeSelector(
+                _photoInfoSize,
+                (value) => setState(() => _photoInfoSize = value),
+              ),
               const SizedBox(height: 16),
               SwitchListTile(
                 title: Text(AppLocalizations.of(context)!.useScriptFont),
@@ -642,6 +674,77 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
                     style: TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ),
+            ],
+          
+            const SizedBox(height: 24),
+            const Divider(),
+            const SizedBox(height: 16),
+          
+            // === CALENDAR SETTINGS ===
+            _buildSectionHeader(AppLocalizations.of(context)!.sectionCalendar),
+            const SizedBox(height: 8),
+          
+            SwitchListTile(
+              title: Text(AppLocalizations.of(context)!.showCalendarEvents),
+              subtitle: Text(AppLocalizations.of(context)!.showCalendarEventsSubtitle),
+              secondary: const Icon(Icons.calendar_month),
+              value: _showCalendarEvents,
+              onChanged: (value) async {
+                if (!value) {
+                  setState(() => _showCalendarEvents = false);
+                  return;
+                }
+                // The system dialog may only appear from a user action, so the
+                // permission is requested when the setting is switched on.
+                final granted = await _requestCalendarPermission();
+                if (!granted) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(AppLocalizations.of(context)!.calendarPermissionDenied),
+                        duration: const Duration(seconds: 4),
+                      ),
+                    );
+                  }
+                  return;
+                }
+                setState(() {
+                  _showCalendarEvents = true;
+                  _calendarPermissionGranted = true;
+                });
+              },
+            ),
+          
+            if (_showCalendarEvents) ...[
+              if (!_calendarPermissionGranted)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          AppLocalizations.of(context)!.calendarPermissionDenied,
+                          style: const TextStyle(fontSize: 12, color: Colors.orange),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () =>
+                            context.read<CalendarEventSource>().openAppSettings(),
+                        child: Text(AppLocalizations.of(context)!.calendarOpenSettings),
+                      ),
+                    ],
+                  ),
+                ),
+              const SizedBox(height: 8),
+              _buildPositionSelector(
+                _calendarPosition,
+                (value) => setState(() => _calendarPosition = value),
+              ),
+              const SizedBox(height: 8),
+              _buildSizeSelector(
+                _calendarSize,
+                (value) => setState(() => _calendarSize = value),
+              ),
             ],
           
             const SizedBox(height: 24),
@@ -2243,7 +2346,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     );
   }
   
-  Widget _buildClockSizeSelector() {
+  Widget _buildSizeSelector(String size, ValueChanged<String> onChanged) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
@@ -2258,17 +2361,18 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
               ButtonSegment(value: 'medium', label: Text('M')),
               ButtonSegment(value: 'large', label: Text('L')),
             ],
-            selected: {_clockSize},
-            onSelectionChanged: (value) {
-              setState(() => _clockSize = value.first);
-            },
+            selected: {size},
+            onSelectionChanged: (value) => onChanged(value.first),
           ),
         ],
       ),
     );
   }
-  
-  Widget _buildClockPositionSelector() {
+
+  Widget _buildPositionSelector(String position, ValueChanged<String> onChanged) {
+    Widget button(String label, String corner) =>
+        _buildPositionButton(label, position == corner, () => onChanged(corner));
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -2293,29 +2397,13 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
               child: Stack(
                 children: [
                   // Top Left
-                  Positioned(
-                    top: 8,
-                    left: 8,
-                    child: _buildPositionButton('topLeft', '⌜'),
-                  ),
+                  Positioned(top: 8, left: 8, child: button('⌜', 'topLeft')),
                   // Top Right
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: _buildPositionButton('topRight', '⌝'),
-                  ),
+                  Positioned(top: 8, right: 8, child: button('⌝', 'topRight')),
                   // Bottom Left
-                  Positioned(
-                    bottom: 8,
-                    left: 8,
-                    child: _buildPositionButton('bottomLeft', '⌞'),
-                  ),
+                  Positioned(bottom: 8, left: 8, child: button('⌞', 'bottomLeft')),
                   // Bottom Right
-                  Positioned(
-                    bottom: 8,
-                    right: 8,
-                    child: _buildPositionButton('bottomRight', '⌟'),
-                  ),
+                  Positioned(bottom: 8, right: 8, child: button('⌟', 'bottomRight')),
                 ],
               ),
             ),
@@ -2324,11 +2412,10 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
       ),
     );
   }
-  
-  Widget _buildPositionButton(String position, String label) {
-    final isSelected = _clockPosition == position;
+
+  Widget _buildPositionButton(String label, bool isSelected, VoidCallback onTap) {
     return GestureDetector(
-      onTap: () => setState(() => _clockPosition = position),
+      onTap: onTap,
       child: Container(
         width: 32,
         height: 32,
@@ -2343,7 +2430,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
           child: Text(
             label,
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 16,
               color: isSelected ? Colors.white : Colors.grey,
             ),
           ),
@@ -2645,86 +2732,18 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     return '$hour:$minute';
   }
   
-  Widget _buildPhotoInfoSizeSelector() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children: [
-          const Icon(Icons.format_size, size: 20),
-          const SizedBox(width: 12),
-          Text(AppLocalizations.of(context)!.size),
-          const Spacer(),
-          SegmentedButton<String>(
-            segments: const [
-              ButtonSegment(value: 'small', label: Text('S')),
-              ButtonSegment(value: 'medium', label: Text('M')),
-              ButtonSegment(value: 'large', label: Text('L')),
-            ],
-            selected: {_photoInfoSize},
-            onSelectionChanged: (value) {
-              setState(() => _photoInfoSize = value.first);
-            },
-          ),
-        ],
-      ),
-    );
+  /// Reads the current calendar permission without prompting, to show the user
+  /// how to grant it again after a denial.
+  Future<void> _checkCalendarPermission() async {
+    final granted = await context.read<CalendarEventSource>().hasPermission();
+    if (mounted) {
+      setState(() => _calendarPermissionGranted = granted);
+    }
   }
 
-  Widget _buildPhotoInfoPositionSelector() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.grid_view, size: 20),
-              const SizedBox(width: 12),
-              Text(AppLocalizations.of(context)!.position),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Center(
-            child: Container(
-              width: 160,
-              height: 100,
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Stack(
-                children: [
-                  // Top Left
-                  Positioned(
-                    top: 8,
-                    left: 8,
-                    child: _buildPhotoInfoPositionButton('topLeft', '⌜'),
-                  ),
-                  // Top Right
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: _buildPhotoInfoPositionButton('topRight', '⌝'),
-                  ),
-                  // Bottom Left
-                  Positioned(
-                    bottom: 8,
-                    left: 8,
-                    child: _buildPhotoInfoPositionButton('bottomLeft', '⌞'),
-                  ),
-                  // Bottom Right
-                  Positioned(
-                    bottom: 8,
-                    right: 8,
-                    child: _buildPhotoInfoPositionButton('bottomRight', '⌟'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+  /// Asks for calendar access, showing the system dialog when it can.
+  Future<bool> _requestCalendarPermission() async {
+    return context.read<CalendarEventSource>().requestPermission();
   }
 
   /// Show explanation dialog for Keep App Running feature
@@ -2787,32 +2806,5 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
   Future<bool> _requestNotificationPermission() async {
     final status = await Permission.notification.request();
     return status.isGranted;
-  }
-  
-  Widget _buildPhotoInfoPositionButton(String position, String label) {
-    final isSelected = _photoInfoPosition == position;
-    return GestureDetector(
-      onTap: () => setState(() => _photoInfoPosition = position),
-      child: Container(
-        width: 32,
-        height: 32,
-        decoration: BoxDecoration(
-          color: isSelected ? Theme.of(context).colorScheme.primary : Colors.transparent,
-          borderRadius: BorderRadius.circular(4),
-          border: Border.all(
-            color: isSelected ? Theme.of(context).colorScheme.primary : Colors.grey,
-          ),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 16,
-              color: isSelected ? Colors.white : Colors.grey,
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }

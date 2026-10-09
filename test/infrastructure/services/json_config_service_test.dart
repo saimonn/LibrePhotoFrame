@@ -179,4 +179,22 @@ void main() {
       expect(service.clockFormat, 'auto');
     });
   });
+
+  group('calendar events', () {
+    test('are hidden until switched on', () async {
+      final service = createService();
+
+      await service.load();
+      expect(service.showCalendarEvents, false);
+      expect(service.calendarPosition, 'topRight');
+      expect(service.calendarSize, 'medium');
+
+      service.showCalendarEvents = true;
+      service.calendarPosition = 'bottomLeft';
+      service.calendarSize = 'large';
+      expect(service.showCalendarEvents, true);
+      expect(service.calendarPosition, 'bottomLeft');
+      expect(service.calendarSize, 'large');
+    });
+  });
 }

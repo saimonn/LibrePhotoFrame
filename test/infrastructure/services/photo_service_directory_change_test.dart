@@ -193,6 +193,21 @@ class MockConfigProvider extends ChangeNotifier implements ConfigProvider {
   bool get geocodingEnabled => false;
   @override
   set geocodingEnabled(bool value) {}
+
+  @override
+  bool get showCalendarEvents => false;
+  @override
+  set showCalendarEvents(bool value) {}
+
+  @override
+  String get calendarPosition => 'topRight';
+  @override
+  set calendarPosition(String value) {}
+
+  @override
+  String get calendarSize => 'medium';
+  @override
+  set calendarSize(String value) {}
   
   @override
   bool get scheduleEnabled => false;

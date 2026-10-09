@@ -546,6 +546,31 @@ class JsonConfigService extends ConfigProvider {
   set useScriptFontForMetadata(bool value) {
     _config['use_script_font_for_metadata'] = value;
   }
+
+  // Calendar events overlay settings
+  @override
+  bool get showCalendarEvents => _config['show_calendar_events'] ?? false;
+
+  @override
+  set showCalendarEvents(bool value) {
+    _config['show_calendar_events'] = value;
+  }
+
+  @override
+  String get calendarPosition => _config['calendar_position'] ?? 'topRight';
+
+  @override
+  set calendarPosition(String value) {
+    _config['calendar_position'] = value;
+  }
+
+  @override
+  String get calendarSize => _config['calendar_size'] ?? 'medium';
+
+  @override
+  set calendarSize(String value) {
+    _config['calendar_size'] = value;
+  }
   
   // Geocoding settings
   @override
