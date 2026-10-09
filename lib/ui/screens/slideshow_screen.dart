@@ -23,6 +23,7 @@ import '../widgets/photo_slide.dart';
 import '../widgets/clock_overlay.dart';
 import '../widgets/calendar_overlay.dart';
 import '../widgets/photo_info_overlay.dart';
+import '../widgets/photo_info_layers.dart';
 import '../../infrastructure/services/json_config_service.dart';
 import 'settings_screen.dart';
 
@@ -733,37 +734,22 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
   /// The info overlays to paint over the photos on screen, each one aligned
   /// inside the box of the photo it belongs to: the whole frame in a single
   /// layout, one per half in a split one.
-  List<Widget> _photoInfoOverlays(ConfigProvider config) {
-    final photo = _currentPhoto;
-    if (photo == null) return const [];
-
-    Widget overlay(PhotoEntry entry) => PhotoInfoOverlay(
-          key: ValueKey(
-            'photo_info_${entry.file.path}_${config.photoInfoPosition}_${config.photoInfoSize}_${config.useScriptFontForMetadata}',
-          ),
-          photo: entry,
-          position: config.photoInfoPosition,
-          size: config.photoInfoSize,
-          locationName:
-              config.geocodingEnabled ? _locationNames[entry.file.path] : null,
-          useScriptFont: config.useScriptFontForMetadata,
-        );
-
-    final size = _screenSize;
-    final partner = _currentPartner;
-    final pairing = size == null
-        ? PhotoPairing.single
-        : PhotoPairLayout.forScreen(size.width, size.height);
-    if (size == null || partner == null || !PhotoPairLayout.isPaired(pairing)) {
-      // A single photo takes the frame, the overlay aligns itself in it.
-      return [overlay(photo)];
-    }
-
-    final boxes = PhotoSlide.cellRects(size, pairing);
-    return [
-      Positioned.fromRect(rect: boxes[0], child: overlay(photo)),
-      Positioned.fromRect(rect: boxes[1], child: overlay(partner)),
-    ];
+  Widget _photoInfoOverlays(ConfigProvider config) {
+    return PhotoInfoLayers(
+      photo: _currentPhoto!,
+      partner: _currentPartner,
+      overlayBuilder: (entry) => PhotoInfoOverlay(
+        key: ValueKey(
+          'photo_info_${entry.file.path}_${config.photoInfoPosition}_${config.photoInfoSize}_${config.useScriptFontForMetadata}',
+        ),
+        photo: entry,
+        position: config.photoInfoPosition,
+        size: config.photoInfoSize,
+        locationName:
+            config.geocodingEnabled ? _locationNames[entry.file.path] : null,
+        useScriptFont: config.useScriptFontForMetadata,
+      ),
+    );
   }
 
   /// Loads the metadata the info overlay shows (EXIF and place name) for the
@@ -999,7 +985,7 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
           // 3. Photo Info Overlay: one per photo on screen, each aligned in the
           // box of the picture it belongs to (issues 09 and 10)
           if (config.showPhotoInfo && _currentPhoto != null)
-            ..._photoInfoOverlays(config),
+            _photoInfoOverlays(config),
 
           // 4. Calendar Overlay: the events of today and tomorrow
           if (config.showCalendarEvents && _calendarEvents.isNotEmpty)
