@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -46,7 +47,7 @@ class KeepAliveService {
       final result = await _channel.invokeMethod<bool>('startService');
       return result ?? false;
     } catch (e) {
-      print('Error starting Keep Alive service: $e');
+      debugPrint('Error starting Keep Alive service: $e');
       return false;
     }
   }
@@ -58,7 +59,7 @@ class KeepAliveService {
     try {
       await _channel.invokeMethod('stopService');
     } catch (e) {
-      print('Error stopping Keep Alive service: $e');
+      debugPrint('Error stopping Keep Alive service: $e');
     }
   }
 
@@ -72,7 +73,7 @@ class KeepAliveService {
       final result = await _channel.invokeMethod<bool>('hasNotificationPermission');
       return result ?? false;
     } catch (e) {
-      print('Error checking notification permission: $e');
+      debugPrint('Error checking notification permission: $e');
       return false;
     }
   }
@@ -87,7 +88,7 @@ class KeepAliveService {
       final result = await _channel.invokeMethod<bool>('shouldRequestNotificationPermission');
       return result ?? false;
     } catch (e) {
-      print('Error checking if should request permission: $e');
+      debugPrint('Error checking if should request permission: $e');
       return false;
     }
   }
@@ -100,7 +101,7 @@ class KeepAliveService {
       final result = await _channel.invokeMethod<bool>('isServiceRunning');
       return result ?? false;
     } catch (e) {
-      print('Error checking service status: $e');
+      debugPrint('Error checking service status: $e');
       return false;
     }
   }

@@ -21,22 +21,36 @@ class ClockOverlay extends StatefulWidget {
 }
 
 class _ClockOverlayState extends State<ClockOverlay> {
-  late Timer _timer;
+  Timer? _timer;
   DateTime _now = DateTime.now();
 
   @override
   void initState() {
     super.initState();
-    // Update every second
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      setState(() => _now = DateTime.now());
-    });
+    _scheduleNextMinute();
   }
 
   @override
   void dispose() {
-    _timer.cancel();
+    _timer?.cancel();
     super.dispose();
+  }
+
+  /// The label only shows minutes, so wake up at the next minute boundary
+  /// instead of once a second (59 of 60 rebuilds repainted the same text).
+  void _scheduleNextMinute() {
+    final now = DateTime.now();
+    final nextMinute =
+        DateTime(now.year, now.month, now.day, now.hour, now.minute)
+            .add(const Duration(minutes: 1));
+    // Small margin so the callback lands after the boundary even if the timer
+    // fires a moment early; the next schedule is computed from the new time.
+    final wait = nextMinute.difference(now) + const Duration(milliseconds: 200);
+    _timer = Timer(wait, () {
+      if (!mounted) return;
+      setState(() => _now = DateTime.now());
+      _scheduleNextMinute();
+    });
   }
 
   double get _fontSize {

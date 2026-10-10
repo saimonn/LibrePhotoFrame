@@ -134,19 +134,30 @@ class PhotoSlide extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          if (blurBorders) ...[
-            Image(
-              image: imageProvider,
-              fit: BoxFit.cover,
-              gaplessPlayback: true,
-            ),
-            BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-              child: Container(
-                color: Colors.black.withOpacity(0.4),
+          if (blurBorders)
+            // The blurred backdrop is self-contained (the Image below feeds the
+            // BackdropFilter) and does not change while the slide fades, so it
+            // is cached in its own layer: the 20 px blur is rasterized once per
+            // photo instead of on every frame of the transition (issue 17).
+            RepaintBoundary(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image(
+                    image: imageProvider,
+                    fit: BoxFit.cover,
+                    gaplessPlayback: true,
+                  ),
+                  BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                    child: Container(
+                      color: Colors.black.withOpacity(0.4),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ] else
+            )
+          else
             Container(
               color: Colors.black,
             ),
