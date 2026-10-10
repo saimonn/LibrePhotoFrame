@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../domain/models/calendar_event.dart';
 import '../../l10n/app_localizations.dart';
+import 'overlay_position.dart';
 
 /// Shows the events of today and tomorrow in one corner of the frame.
 class CalendarOverlay extends StatelessWidget {
@@ -22,47 +23,6 @@ class CalendarOverlay extends StatelessWidget {
 
   /// Upper bound on the event lines, so a busy day cannot cover the photo.
   final int maxEvents;
-
-  Alignment get _alignment {
-    switch (position) {
-      case 'bottomLeft':
-        return Alignment.bottomLeft;
-      case 'topRight':
-        return Alignment.topRight;
-      case 'topLeft':
-        return Alignment.topLeft;
-      case 'bottomRight':
-      default:
-        return Alignment.bottomRight;
-    }
-  }
-
-  EdgeInsets get _padding {
-    const base = 24.0;
-    switch (position) {
-      case 'bottomLeft':
-        return const EdgeInsets.only(left: base, bottom: base);
-      case 'topRight':
-        return const EdgeInsets.only(right: base, top: base);
-      case 'topLeft':
-        return const EdgeInsets.only(left: base, top: base);
-      case 'bottomRight':
-      default:
-        return const EdgeInsets.only(right: base, bottom: base);
-    }
-  }
-
-  CrossAxisAlignment get _crossAxisAlignment {
-    switch (position) {
-      case 'bottomLeft':
-      case 'topLeft':
-        return CrossAxisAlignment.start;
-      case 'bottomRight':
-      case 'topRight':
-      default:
-        return CrossAxisAlignment.end;
-    }
-  }
 
   double get _fontSize {
     switch (size) {
@@ -116,17 +76,18 @@ class CalendarOverlay extends StatelessWidget {
     if (truncated) lines.add(_buildText('…'));
 
     final screen = MediaQuery.of(context).size;
+    final placement = OverlayPosition.of(position);
     return Align(
-      alignment: _alignment,
+      alignment: placement.alignment,
       child: Padding(
-        padding: _padding,
+        padding: placement.padding,
         child: ConstrainedBox(
           // Only the width is capped: the event count is already bounded, so
           // the block stays a corner label instead of covering the photo.
           constraints: BoxConstraints(maxWidth: screen.width * 0.45),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: _crossAxisAlignment,
+            crossAxisAlignment: placement.crossAxisAlignment,
             children: lines,
           ),
         ),

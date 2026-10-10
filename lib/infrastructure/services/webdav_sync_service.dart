@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:logging/logging.dart';
 import '../../domain/interfaces/sync_provider.dart';
 import '../../domain/interfaces/storage_provider.dart';
+import '../../domain/services/photo_files.dart';
 import 'webdav_remote_client.dart';
 import 'webdav_source_config.dart';
 
@@ -181,57 +182,7 @@ class WebDavSyncService implements SyncProvider {
   String get id => 'nextcloud_public';
 
   static String describeError(Object error) {
-    if (error is WebDavSyncException) {
-      return error.toString();
-    }
-
-    if (error is TimeoutException) {
-      return const WebDavSyncException(
-        WebDavSyncErrorCode.downloadStalled,
-      ).toString();
-    }
-
-    if (error is SocketException) {
-      return const WebDavSyncException(
-        WebDavSyncErrorCode.connectionFailed,
-      ).toString();
-    }
-
-    if (error is DioException) {
-      final statusCode = error.response?.statusCode;
-      if (statusCode == 401 || statusCode == 404) {
-        return const WebDavSyncException(
-          WebDavSyncErrorCode.invalidShareLink,
-        ).toString();
-      }
-      if (statusCode == 403) {
-        return const WebDavSyncException(
-          WebDavSyncErrorCode.shareInaccessible,
-        ).toString();
-      }
-
-      if (error.type == DioExceptionType.connectionTimeout) {
-        return const WebDavSyncException(
-          WebDavSyncErrorCode.connectionTimeout,
-        ).toString();
-      }
-      if (error.type == DioExceptionType.connectionError) {
-        return const WebDavSyncException(
-          WebDavSyncErrorCode.connectionFailed,
-        ).toString();
-      }
-      if (error.type == DioExceptionType.receiveTimeout) {
-        return const WebDavSyncException(
-          WebDavSyncErrorCode.downloadStalled,
-        ).toString();
-      }
-    }
-
-    return WebDavSyncException(
-      WebDavSyncErrorCode.unknown,
-      cause: error,
-      details: error.toString(),
-    ).toString();
+    return normalizeError(error).toString();
   }
 
   static WebDavSyncException normalizeError(Object error) {
@@ -520,14 +471,6 @@ class WebDavSyncService implements SyncProvider {
     }
   }
 
-  static bool _isImage(String name) {
-    final lower = name.toLowerCase();
-    return lower.endsWith('.jpg') || 
-           lower.endsWith('.jpeg') || 
-           lower.endsWith('.png') || 
-           lower.endsWith('.webp');
-  }
-
   Future<List<_RemoteImage>> _collectRemoteImages(
     WebDavRemoteClient client, {
     required String remoteDirectoryPath,
@@ -549,7 +492,7 @@ class WebDavSyncService implements SyncProvider {
         continue;
       }
 
-      if (!_isImage(entry.name) || !_sourceConfig.includesRelativeFile(entryRelativePath)) {
+      if (!isImageFile(entry.name) || !_sourceConfig.includesRelativeFile(entryRelativePath)) {
         continue;
       }
 
@@ -574,7 +517,7 @@ class WebDavSyncService implements SyncProvider {
 
     for (final entity in localEntities.whereType<File>()) {
       final relativePath = _relativePathFromLocalFile(localDirectory, entity);
-      if (!_isImage(relativePath) || relativePath.endsWith('.part')) {
+      if (!isImageFile(relativePath) || relativePath.endsWith('.part')) {
         continue;
       }
 
@@ -619,7 +562,7 @@ class WebDavSyncService implements SyncProvider {
     for (final entry in entries) {
       if (entry.isDirectory) {
         subDirectories.add(entry);
-      } else if (_isImage(entry.name)) {
+      } else if (isImageFile(entry.name)) {
         imageCount++;
       }
     }

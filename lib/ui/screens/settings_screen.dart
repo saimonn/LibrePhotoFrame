@@ -13,13 +13,14 @@ import '../../domain/interfaces/calendar_event_source.dart';
 import '../../domain/interfaces/photo_repository.dart';
 import '../../domain/interfaces/storage_provider.dart';
 import '../../domain/interfaces/sync_provider.dart';
+import '../../domain/services/photo_files.dart';
 import '../../infrastructure/repositories/hybrid_photo_repository.dart';
 import '../../infrastructure/services/photo_service.dart';
 import '../../infrastructure/services/native_updater_service.dart';
 import '../../infrastructure/services/update_service.dart';
 import '../../infrastructure/services/webdav_source_config.dart';
 import '../../infrastructure/services/webdav_sync_service.dart';
-import '../../infrastructure/services/autostart_service.dart';
+import '../../infrastructure/services/android_runtime_settings_sync.dart';
 import '../../infrastructure/services/native_screen_control_service.dart';
 import '../../infrastructure/services/keep_alive_service.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -448,11 +449,9 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     config.screenOrientation = _screenOrientation;
     
 
-    // Sync autostart setting to SharedPreferences for BootReceiver
-    await AutostartService.setEnabled(_autostartOnBoot);
-    
-    // Sync keep alive setting to SharedPreferences for WakeReceiver
-    await KeepAliveService.setEnabled(_keepAliveEnabled);
+    // Generate the Android SharedPreferences mirror from the config (the
+    // BootReceiver/WakeReceiver read it before Flutter starts).
+    await AndroidRuntimeSettingsSync().syncFromConfig(config);
     
     if (_syncType == 'nextcloud_link') {
       config.setSourceConfig('nextcloud_link', newWebDavSourceConfig.toMap());
@@ -1740,7 +1739,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
             continue;
           }
           final name = entity.path.split('/').last;
-          if (name.endsWith('.part') || !_isImageFileName(name)) {
+          if (name.endsWith('.part') || !isImageFile(name)) {
             continue;
           }
           final relativePath = entity.path.length > prefixLength
@@ -1758,14 +1757,6 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     } catch (_) {
       // Local counts are a nice-to-have; ignore failures (e.g. missing dir).
     }
-  }
-
-  bool _isImageFileName(String name) {
-    final lower = name.toLowerCase();
-    return lower.endsWith('.jpg') ||
-        lower.endsWith('.jpeg') ||
-        lower.endsWith('.png') ||
-        lower.endsWith('.webp');
   }
 
   WebDavSourceConfig _buildWebDavSourceConfig({required String url}) {

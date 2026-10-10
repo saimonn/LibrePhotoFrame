@@ -9,6 +9,7 @@ import '../../domain/interfaces/metadata_provider.dart';
 import '../../domain/interfaces/storage_provider.dart';
 import '../../domain/interfaces/config_provider.dart';
 import '../../domain/models/photo_entry.dart';
+import '../../domain/services/photo_lists.dart';
 import '../services/photo_metadata_database.dart';
 import 'file_system_photo_scanner.dart';
 
@@ -478,20 +479,12 @@ class HybridPhotoRepository implements PhotoRepository {
   
   /// Replaces the MediaStore photo list and notifies listeners when it changed
   void _publishMediaStorePhotos(List<PhotoEntry> next) {
-    final changed = !_samePaths(_mediaStorePhotos, next);
+    final changed = !isSamePhotoList(_mediaStorePhotos, next);
     _mediaStorePhotos = next;
     if (!changed) return;
 
     _log.info("Scanned ${next.length} photos from MediaStore.");
     _notifyChanged();
-  }
-  
-  bool _samePaths(List<PhotoEntry> left, List<PhotoEntry> right) {
-    if (left.length != right.length) return false;
-    for (var i = 0; i < left.length; i++) {
-      if (left[i].file.path != right[i].file.path) return false;
-    }
-    return true;
   }
   
   /// Helper to get all photos from MediaStore
