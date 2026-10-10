@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 import 'package:logging/logging.dart';
 import 'photo_metadata_database.dart';
 
@@ -12,15 +12,15 @@ import 'photo_metadata_database.dart';
 /// request instead of two. Without a database the service degrades to the
 /// network call only.
 class GeocodingService {
-  GeocodingService({PhotoMetadataDatabase? database, http.Client? client})
+  GeocodingService({PhotoMetadataDatabase? database, Dio? dio})
       : _database = database,
-        _client = client;
+        _dio = dio ?? Dio();
 
   final PhotoMetadataDatabase? _database;
 
-  /// Optional HTTP client, injected by tests. Production uses the stateless
-  /// [http.get] helper, which creates and closes a client per request.
-  final http.Client? _client;
+  /// Optional HTTP client, injected by tests. Uses the same [Dio] stack as the
+  /// WebDAV and update services (see issue 13).
+  final Dio _dio;
   final _log = Logger('GeocodingService');
 
   /// In-memory single-flight map: coordinate key → in-flight request.
@@ -81,23 +81,21 @@ class GeocodingService {
         '&addressdetails=1',
       );
 
-      const headers = {
-        'User-Agent': _userAgent,
-        'Accept-Language': 'de,en', // Prefer German, fallback English
-      };
-      final response = _client != null
-          ? await _client.get(url, headers: headers)
-              .timeout(const Duration(seconds: 5))
-          : await http.get(url, headers: headers)
-              .timeout(const Duration(seconds: 5));
+      final response = await _dio.get(
+        url.toString(),
+        options: Options(
+          responseType: ResponseType.plain,
+          headers: const {
+            // User-Agent required by Nominatim usage policy.
+            'User-Agent': _userAgent,
+            'Accept-Language': 'de,en', // Prefer German, fallback English
+          },
+          sendTimeout: const Duration(seconds: 5),
+          receiveTimeout: const Duration(seconds: 5),
+        ),
+      );
 
-      if (response.statusCode != 200) {
-        _log.warning('Geocoding failed: HTTP ${response.statusCode}');
-        // Don't cache HTTP errors - might be temporary
-        return null;
-      }
-
-      final json = jsonDecode(response.body) as Map<String, dynamic>;
+      final json = jsonDecode(response.data as String) as Map<String, dynamic>;
       final address = json['address'] as Map<String, dynamic>?;
 
       final result = address == null ? null : _buildName(address);
@@ -105,6 +103,10 @@ class GeocodingService {
 
       _log.fine('Geocoded ($latitude, $longitude) → $result');
       return result;
+    } on DioException catch (e) {
+      _log.warning('Geocoding failed: ${e.message}');
+      // Don't cache HTTP errors - might be temporary
+      return null;
     } catch (e) {
       _log.warning('Geocoding error for ($latitude, $longitude): $e');
       // Don't cache network errors - might be temporary

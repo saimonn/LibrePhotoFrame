@@ -1,18 +1,20 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:http/http.dart' as http;
 import 'package:libre_photo_frame/infrastructure/services/geocoding_service.dart';
 import 'package:libre_photo_frame/infrastructure/services/photo_metadata_database.dart';
 
-/// Mimics the Nominatim /reverse response, counting every request.
-class FakeHttpClient extends http.BaseClient {
-  FakeHttpClient({
-    Map<String, dynamic>? address,
+/// Mimics the Nominatim /reverse response at the dio transport level,
+/// counting every request.
+class FakeDioAdapter implements HttpClientAdapter {
+  FakeDioAdapter({
+    this.address = const {},
     this.statusCode = 200,
     this.delay = Duration.zero,
-  }) : address = address;
+  });
 
   final Map<String, dynamic>? address;
   final int statusCode;
@@ -20,16 +22,25 @@ class FakeHttpClient extends http.BaseClient {
   int calls = 0;
 
   @override
-  Future<http.StreamedResponse> send(http.BaseRequest request) async {
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
     calls++;
     if (delay > Duration.zero) await Future<void>.delayed(delay);
     final body = jsonEncode({'address': address});
-    return http.StreamedResponse(
-      Stream.fromIterable([utf8.encode(body)]),
+    return ResponseBody.fromString(
+      body,
       statusCode,
-      headers: {'content-type': 'application/json'},
+      headers: {
+        Headers.contentTypeHeader: [Headers.jsonContentType],
+      },
     );
   }
+
+  @override
+  void close({bool force = false}) {}
 }
 
 const _lat = 48.137108;
@@ -38,17 +49,22 @@ const _lon = 11.575383;
 void main() {
   group('GeocodingService', () {
     late PhotoMetadataDatabase database;
-    late FakeHttpClient client;
+    late FakeDioAdapter adapter;
     late GeocodingService service;
+
+    GeocodingService buildService() {
+      final dio = Dio()..httpClientAdapter = adapter;
+      return GeocodingService(database: database, dio: dio);
+    }
 
     setUp(() {
       database = PhotoMetadataDatabase.openInMemory();
-      client = FakeHttpClient(address: const {
+      adapter = FakeDioAdapter(address: const {
         'city': 'Munich',
         'state': 'Bayern',
         'country': 'Germany',
       });
-      service = GeocodingService(database: database, client: client);
+      service = buildService();
     });
 
     test('builds "City, State, Country" and caches the result', () async {
@@ -58,15 +74,15 @@ void main() {
       expect(first, 'Munich, Bayern, Germany');
       expect(second, first);
       // The second call was served from the cache.
-      expect(client.calls, 1);
+      expect(adapter.calls, 1);
     });
 
     test('concurrent identical requests share one HTTP call', () async {
-      client = FakeHttpClient(
+      adapter = FakeDioAdapter(
         address: const {'city': 'Munich'},
         delay: const Duration(milliseconds: 50),
       );
-      service = GeocodingService(database: database, client: client);
+      service = buildService();
 
       final results = await Future.wait([
         service.getLocationName(_lat, _lon),
@@ -74,39 +90,39 @@ void main() {
       ]);
 
       expect(results, ['Munich', 'Munich']);
-      expect(client.calls, 1);
+      expect(adapter.calls, 1);
     });
 
     test('a cached negative result is not requested again', () async {
-      client = FakeHttpClient(address: null);
-      service = GeocodingService(database: database, client: client);
+      adapter = FakeDioAdapter(address: null);
+      service = buildService();
 
       final first = await service.getLocationName(_lat, _lon);
       final second = await service.getLocationName(_lat, _lon);
 
       expect(first, isNull);
       expect(second, isNull);
-      expect(client.calls, 1);
+      expect(adapter.calls, 1);
     });
 
     test('an HTTP error is not cached', () async {
-      client = FakeHttpClient(statusCode: 500);
-      service = GeocodingService(database: database, client: client);
+      adapter = FakeDioAdapter(statusCode: 500);
+      service = buildService();
 
       expect(await service.getLocationName(_lat, _lon), isNull);
       expect(await service.getLocationName(_lat, _lon), isNull);
-      expect(client.calls, 2);
+      expect(adapter.calls, 2);
     });
 
     test('a result survives a service restart through the database', () async {
-      final firstService = GeocodingService(database: database, client: client);
+      final firstService = buildService();
       await firstService.getLocationName(_lat, _lon);
 
-      final restarted = GeocodingService(database: database, client: client);
+      final restarted = buildService();
       final result = await restarted.getLocationName(_lat, _lon);
 
       expect(result, 'Munich, Bayern, Germany');
-      expect(client.calls, 1);
+      expect(adapter.calls, 1);
     });
 
     test('clearCache forces a new request', () async {
@@ -115,17 +131,18 @@ void main() {
 
       await service.getLocationName(_lat, _lon);
 
-      expect(client.calls, 2);
+      expect(adapter.calls, 2);
     });
   });
 
   group('GeocodingService without a database', () {
     test('still resolves a place name', () async {
-      final client = FakeHttpClient(address: const {'city': 'Berlin'});
-      final service = GeocodingService(client: client);
+      final adapter = FakeDioAdapter(address: const {'city': 'Berlin'});
+      final dio = Dio()..httpClientAdapter = adapter;
+      final service = GeocodingService(dio: dio);
 
       expect(await service.getLocationName(52.52, 13.404954), 'Berlin');
-      expect(client.calls, 1);
+      expect(adapter.calls, 1);
     });
   });
 }
