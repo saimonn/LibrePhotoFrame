@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:libre_photo_frame/domain/interfaces/storage_provider.dart';
 import 'package:libre_photo_frame/infrastructure/repositories/file_system_photo_scanner.dart';
+import 'package:libre_photo_frame/infrastructure/services/photo_metadata_database.dart';
 
 class MockStorageProvider implements StorageProvider {
   Directory _dir;
@@ -394,6 +395,105 @@ void main() {
 
       expect(scanner.photos.length, 1);
       expect(scanner.photos.single.file.path, '${otherDir.path}/second.jpg');
+    });
+  });
+
+  group('FileSystemPhotoScanner with metadata database', () {
+    late Directory tempDir;
+    late MockStorageProvider storageProvider;
+    late PhotoMetadataDatabase database;
+
+    setUp(() async {
+      tempDir = await Directory.systemTemp.createTemp('photo_scanner_db_test_');
+      storageProvider = MockStorageProvider(tempDir);
+      database = PhotoMetadataDatabase.openInMemory();
+    });
+
+    tearDown(() async {
+      database.close();
+      if (await tempDir.exists()) {
+        await tempDir.delete(recursive: true);
+      }
+    });
+
+    FileSystemPhotoScanner buildScanner() => FileSystemPhotoScanner(
+          storageProvider: storageProvider,
+          // Only the explicit scans of the test drive the list.
+          watchForChanges: false,
+          settleRecheckInterval: const Duration(seconds: 30),
+          metadataDatabase: database,
+        );
+
+    test('a full scan stores the scan state of every file', () async {
+      await writePhoto(tempDir, 'one.jpg');
+      await writePhoto(tempDir, 'nested/two.png');
+
+      final scanner = buildScanner();
+      addTearDown(scanner.dispose);
+
+      await scanner.start();
+
+      expect(scanner.photos.length, 2);
+      expect(database.filePhotos().length, 2);
+      expect(database.lastFullScan, isNotNull);
+    });
+
+    test('a lazy rescan picks up a new file', () async {
+      await writePhoto(tempDir, 'one.jpg');
+
+      final scanner = buildScanner();
+      addTearDown(scanner.dispose);
+      await scanner.start();
+      expect(scanner.photos.length, 1);
+
+      final added = await writePhoto(tempDir, 'arrived.jpg');
+      // The full scan just ran, so this is a lazy scan.
+      await scanner.scan();
+
+      expect(scanner.photos.length, 2);
+      expect(scanner.photos.map((p) => p.file.path), contains(added.path));
+    });
+
+    test('a full rescan catches an in-place content change', () async {
+      final file = await writePhoto(tempDir, 'one.jpg');
+
+      final scanner = buildScanner();
+      addTearDown(scanner.dispose);
+      await scanner.start();
+      final before = scanner.photos.single;
+
+      // Replace the content under the same name, and keep the old timestamp
+      // so the scanner does not treat it as "still being written".
+      await file.writeAsString('a completely different, longer image');
+      await file.setLastModified(DateTime(2020, 1, 1));
+
+      // A lazy scan trusts the stored scan state: the change goes unnoticed.
+      await scanner.scan();
+      expect(identical(scanner.photos.single, before), isTrue);
+
+      // After the full-scan interval a full rescan stats every file again.
+      database.lastFullScan = DateTime.now().subtract(const Duration(hours: 5));
+      await scanner.scan();
+
+      final after = scanner.photos.single;
+      expect(identical(before, after), isFalse);
+      expect(after.sizeBytes, greaterThan(before.sizeBytes));
+    });
+
+    test('a removed file is dropped and its row deleted', () async {
+      final keep = await writePhoto(tempDir, 'keep.jpg');
+      final remove = await writePhoto(tempDir, 'remove.jpg');
+
+      final scanner = buildScanner();
+      addTearDown(scanner.dispose);
+      await scanner.start();
+      expect(scanner.photos.length, 2);
+
+      await remove.delete();
+      await scanner.scan();
+
+      expect(scanner.photos.single.file.path, keep.path);
+      expect(database.filePhotos().keys, [keep.path]);
     });
   });
 }

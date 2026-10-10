@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
 import 'package:logging/logging.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
 import 'domain/interfaces/config_provider.dart';
@@ -16,6 +17,7 @@ import 'domain/interfaces/display_controller.dart';
 import 'infrastructure/services/app_initializer.dart';
 import 'infrastructure/services/json_config_service.dart';
 import 'infrastructure/services/exif_metadata_provider.dart';
+import 'infrastructure/services/photo_metadata_database.dart';
 import 'infrastructure/services/device_calendar_event_source.dart';
 import 'infrastructure/services/webdav_source_config.dart';
 import 'infrastructure/services/webdav_sync_service.dart';
@@ -54,10 +56,22 @@ void main() async {
   final appInitializer = AppInitializer(configProvider: configService);
   final initializationResult = await appInitializer.initialize();
 
+  // Shared metadata cache (SQLite). Without a writable directory the app
+  // still runs, the services then just have no persistent cache.
+  PhotoMetadataDatabase? metadataDatabase;
+  try {
+    final cacheDir = await getApplicationCacheDirectory();
+    metadataDatabase =
+        PhotoMetadataDatabase.open('${cacheDir.path}/frame_metadata.db');
+  } catch (e) {
+    Logger('main').warning('Could not open the metadata database', e);
+  }
+
   runApp(
     LibrePhotoFrameApp(
       configProvider: configService,
       initialConfigLoadResult: initializationResult.configLoadResult,
+      database: metadataDatabase,
     ),
   );
 }
@@ -65,11 +79,13 @@ void main() async {
 class LibrePhotoFrameApp extends StatelessWidget {
   final JsonConfigService configProvider;
   final ConfigLoadResult initialConfigLoadResult;
+  final PhotoMetadataDatabase? database;
 
   const LibrePhotoFrameApp({
     super.key,
     required this.configProvider,
     this.initialConfigLoadResult = const ConfigLoadResult.clean(),
+    this.database,
   });
 
   @override
@@ -84,7 +100,7 @@ class LibrePhotoFrameApp extends StatelessWidget {
           dispose: (_, storage) => (storage as LocalStorageProvider).dispose(),
         ),
         Provider<MetadataProvider>(
-          create: (_) => ExifMetadataProvider(),
+          create: (_) => ExifMetadataProvider(database),
         ),
         Provider<CalendarEventSource>(
           create: (_) => DeviceCalendarEventSource(),
@@ -111,6 +127,7 @@ class LibrePhotoFrameApp extends StatelessWidget {
                 storageProvider: storage,
                 metadataProvider: metadata,
                 configProvider: config,
+                metadataDatabase: database,
               ),
           dispose: (_, repo) => repo.dispose(),
         ),
@@ -218,6 +235,7 @@ class LibrePhotoFrameApp extends StatelessWidget {
             ),
             home: SlideshowScreen(
               initialConfigLoadResult: initialConfigLoadResult,
+              database: database,
             ),
           );
         },

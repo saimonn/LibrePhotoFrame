@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:libre_photo_frame/domain/interfaces/metadata_provider.dart';
 import 'package:libre_photo_frame/infrastructure/services/exif_metadata_provider.dart';
+import 'package:libre_photo_frame/infrastructure/services/photo_metadata_database.dart';
 
 /// GPS reading (issue 10): a photo carrying coordinates must report them, a
 /// photo without a GPS block must report none.
@@ -19,9 +20,11 @@ import 'package:libre_photo_frame/infrastructure/services/exif_metadata_provider
 void main() {
   group('ExifMetadataProvider GPS', () {
     late Directory cacheDir;
+    late File dbFile;
 
     setUp(() async {
       cacheDir = await Directory.systemTemp.createTemp('exif_gps_test_');
+      dbFile = File('${cacheDir.path}/frame_metadata.db');
     });
 
     tearDown(() async {
@@ -30,7 +33,7 @@ void main() {
 
     Future<ExifMetadata> read(String name) {
       final provider = ExifMetadataProvider(
-        cacheDirectoryProvider: () async => cacheDir,
+        PhotoMetadataDatabase.open(dbFile.path),
       );
       return provider.getExifMetadata(File('test/fixtures/exif/$name'));
     }

@@ -3,15 +3,20 @@ import 'dart:ui' as ui;
 import 'package:logging/logging.dart';
 
 import '../../domain/models/photo_entry.dart';
+import 'photo_metadata_database.dart';
 
 /// Reads the pixel dimensions of a photo without decoding the whole image.
 ///
 /// Decoding every photo up front would be far too slow on a Raspberry Pi-class
 /// frame, so dimensions are resolved lazily and then cached on the
-/// [PhotoEntry] for the lifetime of the scan.
+/// [PhotoEntry] for the lifetime of the scan. The result is also persisted in
+/// the [PhotoMetadataDatabase], so a restart does not decode the header of a
+/// photo that was already measured.
 class PhotoDimensionsService {
-  PhotoDimensionsService();
+  PhotoDimensionsService({PhotoMetadataDatabase? database})
+      : _database = database;
 
+  final PhotoMetadataDatabase? _database;
   final _log = Logger('PhotoDimensionsService');
 
   final Map<String, Future<PhotoShape?>> _inFlight = {};
@@ -22,6 +27,12 @@ class PhotoDimensionsService {
   /// no image. Concurrent calls for the same entry share one decode.
   Future<PhotoShape?> shapeOf(PhotoEntry photo) async {
     if (photo.dimensionsResolved) return photo.shape;
+
+    final cached = _database?.photoByPath(photo.file.path);
+    if (cached != null && cached.width != null && cached.height != null) {
+      photo.setDimensions(cached.width, cached.height);
+      return photo.shape;
+    }
 
     final inFlight = _inFlight[photo.file.path];
     if (inFlight != null) return inFlight;
@@ -49,6 +60,7 @@ class PhotoDimensionsService {
           return null;
         }
         photo.setDimensions(width, height);
+        _database?.saveDimensions(path: photo.file.path, width: width, height: height);
         return photo.shape;
       } finally {
         descriptor.dispose();

@@ -1,63 +1,62 @@
-import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:exif_reader/exif_reader.dart';
 import 'package:logging/logging.dart';
-import 'package:path_provider/path_provider.dart';
 import '../../domain/interfaces/metadata_provider.dart';
+import 'photo_metadata_database.dart';
 
 /// MetadataProvider that extracts EXIF data (capture date, GPS) from photos.
 /// Only reads the first 512KB of the file for performance (EXIF is typically at the start).
 ///
-/// Results are kept in a small cache in the application cache directory, keyed
-/// by file path and modification date: reading and parsing EXIF costs a file
-/// read per photo, and the frames that show a photo again after a restart
-/// would otherwise pay it every time.
+/// Results are kept in the [PhotoMetadataDatabase], keyed by file path and
+/// modification date: reading and parsing EXIF costs a file read per photo,
+/// and the frames that show a photo again after a restart would otherwise pay
+/// it every time. When no database is available the provider degrades to
+/// reading every time.
 class ExifMetadataProvider implements MetadataProvider {
-  static const String _cacheFileName = 'exif_metadata_cache.json';
-
-  /// How long new results are collected before the cache is written.
-  static const Duration defaultSaveDelay = Duration(seconds: 2);
-
-  final _log = Logger('ExifMetadataProvider');
-
   /// Maximum bytes to read for EXIF data (512KB ensures we catch all GPS data)
   static const int _maxExifBytes = 512 * 1024;
 
-  final Future<Directory> Function() _cacheDirectoryProvider;
-  final Duration _saveDelay;
+  final PhotoMetadataDatabase? _database;
+  final _log = Logger('ExifMetadataProvider');
 
-  /// EXIF results of the photos read so far, by path.
-  final Map<String, _CachedMetadata> _cache = {};
-
-  File? _cacheFile;
-  Future<void>? _loadingCache;
-  Timer? _saveTimer;
-
-  ExifMetadataProvider({
-    Future<Directory> Function()? cacheDirectoryProvider,
-    Duration saveDelay = defaultSaveDelay,
-  })  : _cacheDirectoryProvider =
-            cacheDirectoryProvider ?? getApplicationCacheDirectory,
-        _saveDelay = saveDelay;
+  ExifMetadataProvider([this._database]);
 
   @override
   Future<ExifMetadata> getExifMetadata(File file) async {
-    await _loadCache();
+    final db = _database;
+    final modified = await _modified(file);
 
-    final cached = await _lookup(file);
-    if (cached != null) {
-      return cached;
+    if (db != null) {
+      final cached = db.photoByPath(file.path);
+      if (cached != null &&
+          cached.exifLoaded &&
+          _sameInstant(modified, cached.modified)) {
+        // The file was already decoded and did not change since.
+        return ExifMetadata(
+          captureDate: cached.captureDate,
+          location: cached.latitude != null && cached.longitude != null
+              ? GpsCoordinates(cached.latitude!, cached.longitude!)
+              : null,
+        );
+      }
     }
 
     final metadata = await _readExif(file);
-    final modified = await _modified(file);
-    if (modified != null) {
-      _cache[file.path] = _CachedMetadata(modified, metadata);
-      _scheduleSave();
-    }
+    db?.saveExif(
+      path: file.path,
+      modified: modified,
+      captureDate: metadata.captureDate,
+      latitude: metadata.location?.latitude,
+      longitude: metadata.location?.longitude,
+    );
     return metadata;
+  }
+
+  /// Whether the file kept its modification date since it was cached.
+  static bool _sameInstant(DateTime? left, DateTime? right) {
+    if (left == null || right == null) return false;
+    return left.millisecondsSinceEpoch == right.millisecondsSinceEpoch;
   }
 
   Future<ExifMetadata> _readExif(File file) async {
@@ -84,64 +83,12 @@ class ExifMetadataProvider implements MetadataProvider {
     }
   }
 
-  /// Returns the cached metadata of [file] when the file did not change since
-  /// it was cached.
-  Future<ExifMetadata?> _lookup(File file) async {
-    final modified = await _modified(file);
-    final cached = _cache[file.path];
-    if (modified == null || cached == null || cached.modified != modified) {
-      return null;
-    }
-    return cached.metadata;
-  }
-
   Future<DateTime?> _modified(File file) async {
     try {
       return (await file.stat()).modified;
     } catch (e) {
       _log.fine('Could not stat ${file.path}: $e');
       return null;
-    }
-  }
-
-  Future<void> _loadCache() => _loadingCache ??= _readCache();
-
-  Future<void> _readCache() async {
-    try {
-      final directory = await _cacheDirectoryProvider();
-      _cacheFile = File('${directory.path}/$_cacheFileName');
-      if (!await _cacheFile!.exists()) return;
-
-      final decoded = jsonDecode(await _cacheFile!.readAsString());
-      if (decoded is! Map<String, dynamic>) return;
-
-      for (final entry in decoded.entries) {
-        final value = entry.value;
-        if (value is Map<String, dynamic>) {
-          final cached = _CachedMetadata.tryParse(value);
-          if (cached != null) _cache[entry.key] = cached;
-        }
-      }
-      _log.fine('EXIF cache holds ${_cache.length} photo(s)');
-    } catch (e) {
-      _log.warning('Could not read the EXIF cache: $e');
-    }
-  }
-
-  void _scheduleSave() {
-    _saveTimer?.cancel();
-    _saveTimer = Timer(_saveDelay, _writeCache);
-  }
-
-  Future<void> _writeCache() async {
-    final file = _cacheFile;
-    if (file == null) return;
-    try {
-      await file.writeAsString(jsonEncode({
-        for (final entry in _cache.entries) entry.key: entry.value.toJson(),
-      }));
-    } catch (e) {
-      _log.warning('Could not write the EXIF cache: $e');
     }
   }
 
@@ -255,41 +202,5 @@ class ExifMetadataProvider implements MetadataProvider {
       return value;
     }
     return null;
-  }
-}
-
-/// EXIF result of one photo, together with the modification date of the file it
-/// was read from: a changed file has to be read again.
-class _CachedMetadata {
-  _CachedMetadata(this.modified, this.metadata);
-
-  final DateTime modified;
-  final ExifMetadata metadata;
-
-  Map<String, dynamic> toJson() => {
-        'm': modified.millisecondsSinceEpoch,
-        'c': metadata.captureDate?.millisecondsSinceEpoch,
-        'lat': metadata.location?.latitude,
-        'lon': metadata.location?.longitude,
-      };
-
-  static _CachedMetadata? tryParse(Map<String, dynamic> json) {
-    final modified = json['m'];
-    if (modified is! int) return null;
-
-    final capture = json['c'];
-    final latitude = json['lat'];
-    final longitude = json['lon'];
-    return _CachedMetadata(
-      DateTime.fromMillisecondsSinceEpoch(modified),
-      ExifMetadata(
-        captureDate: capture is int
-            ? DateTime.fromMillisecondsSinceEpoch(capture)
-            : null,
-        location: latitude is num && longitude is num
-            ? GpsCoordinates(latitude.toDouble(), longitude.toDouble())
-            : null,
-      ),
-    );
   }
 }

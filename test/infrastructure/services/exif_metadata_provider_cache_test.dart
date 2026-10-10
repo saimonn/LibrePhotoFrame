@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:libre_photo_frame/infrastructure/services/exif_metadata_provider.dart';
+import 'package:libre_photo_frame/infrastructure/services/photo_metadata_database.dart';
 
 /// 8x8 JPEG holding one EXIF DateTimeOriginal tag, capture date 2026-06-01.
 const String _photoWithExifBase64 =
@@ -24,6 +25,7 @@ void main() {
   group('ExifMetadataProvider cache', () {
     late Directory cacheDir;
     late File photo;
+    late File dbFile;
 
     /// A file system only keeps whole seconds here, and the tests need a
     /// modification date they can restore exactly.
@@ -31,6 +33,7 @@ void main() {
 
     setUp(() async {
       cacheDir = await Directory.systemTemp.createTemp('exif_cache_test_');
+      dbFile = File('${cacheDir.path}/frame_metadata.db');
       photo = File('${cacheDir.path}/photo.jpg');
       await photo.writeAsBytes(base64Decode(_photoWithExifBase64));
       await photo.setLastModified(modified);
@@ -42,38 +45,12 @@ void main() {
 
     final captureDate = DateTime(2026, 6, 1, 12);
 
-    ExifMetadataProvider createProvider() {
-      return ExifMetadataProvider(
-        cacheDirectoryProvider: () async => cacheDir,
-        saveDelay: const Duration(milliseconds: 10),
-      );
-    }
+    ExifMetadataProvider createProvider() =>
+        ExifMetadataProvider(PhotoMetadataDatabase.open(dbFile.path));
 
-    File cacheFile() => File('${cacheDir.path}/exif_metadata_cache.json');
-
-    /// Returns the cache file as soon as [check] holds, the provider writes it
-    /// after its save delay.
-    Future<Map<String, dynamic>> waitForCache(
-      bool Function(Map<String, dynamic>) check,
-    ) async {
-      final deadline = DateTime.now().add(const Duration(seconds: 5));
-      while (DateTime.now().isBefore(deadline)) {
-        try {
-          final decoded = jsonDecode(await cacheFile().readAsString());
-          if (decoded is Map<String, dynamic> && check(decoded)) {
-            return decoded;
-          }
-        } catch (_) {
-          // Not written yet, or not readable.
-        }
-        await Future<void>.delayed(const Duration(milliseconds: 20));
-      }
-      fail('the provider did not write the expected cache');
-      return {};
-    }
-
-    bool holdsPhoto(Map<String, dynamic> cache) =>
-        cache.containsKey(photo.path);
+    /// Returns the row the provider persisted for [photo].
+    PhotoMetadata? storedRow() =>
+        PhotoMetadataDatabase.open(dbFile.path).photoByPath(photo.path);
 
     /// Replaces the content of the photo, keeping its modification date, so
     /// only a provider that reads the file again can see the difference.
@@ -82,23 +59,20 @@ void main() {
       await photo.setLastModified(modified);
     }
 
-    test('reads the capture date and writes it to the cache', () async {
-      final provider = createProvider();
-
-      final metadata = await provider.getExifMetadata(photo);
+    test('reads the capture date and persists it', () async {
+      final metadata = await createProvider().getExifMetadata(photo);
 
       expect(metadata.captureDate, captureDate);
-      final cache = await waitForCache(holdsPhoto);
-      expect(cache[photo.path]!['m'], isA<int>());
-      expect(cache[photo.path]!['c'], captureDate.millisecondsSinceEpoch);
+      final row = storedRow();
+      expect(row?.captureDate, captureDate);
+      expect(row?.exifLoaded, isTrue);
     });
 
     test('serves a cached capture date without reading the file', () async {
       await createProvider().getExifMetadata(photo);
-      await waitForCache(holdsPhoto);
       await replaceContent();
 
-      // A provider that starts now only has what the cache file holds.
+      // A provider that starts now only has what the database holds.
       final restarted = createProvider();
       final metadata = await restarted.getExifMetadata(photo);
 
@@ -107,26 +81,22 @@ void main() {
 
     test('reads the file again after it changed', () async {
       await createProvider().getExifMetadata(photo);
-      final before = (await waitForCache(holdsPhoto))[photo.path]!['m'];
       await replaceContent();
 
       await photo.setLastModified(modified.add(const Duration(days: 1)));
       final metadata = await createProvider().getExifMetadata(photo);
 
       expect(metadata.captureDate, isNull);
-      final cache = await waitForCache(
-        (cache) => cache[photo.path]?['m'] != before,
-      );
-      expect(cache[photo.path]!['c'], isNull);
+      final row = storedRow();
+      expect(row?.captureDate, isNull);
     });
 
-    test('ignores a corrupted cache file', () async {
-      await cacheFile().writeAsString('{ not json');
+    test('recovers from a corrupted database file', () async {
+      await dbFile.writeAsString('{ not sqlite');
 
       final metadata = await createProvider().getExifMetadata(photo);
 
       expect(metadata.captureDate, captureDate);
-      await waitForCache(holdsPhoto);
     });
   });
 }

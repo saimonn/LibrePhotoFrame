@@ -5,6 +5,7 @@ import 'package:logging/logging.dart';
 
 import '../../domain/interfaces/storage_provider.dart';
 import '../../domain/models/photo_entry.dart';
+import '../services/photo_metadata_database.dart';
 
 /// Keeps a [PhotoEntry] list in sync with the content of a photo directory.
 ///
@@ -31,6 +32,7 @@ class FileSystemPhotoScanner {
     this.debounceInterval = defaultDebounceInterval,
     this.settleAge = defaultSettleAge,
     this.settleRecheckInterval = defaultSettleRecheckInterval,
+    this.metadataDatabase,
     bool watchForChanges = true,
   })  : _storageProvider = storageProvider,
         _pollInterval = pollInterval,
@@ -41,6 +43,12 @@ class FileSystemPhotoScanner {
   /// Fallback rescan interval. The watcher is normally much faster, this only
   /// guarantees that changes are noticed at all.
   static const Duration defaultPollInterval = Duration(seconds: 60);
+
+  /// Interval after which every file is `stat`ed again, even with a metadata
+  /// database: the periodic scans only `stat` names that are new to the scan
+  /// state, so an edit that keeps the file name (and is not accompanied by a
+  /// file system event) is only noticed by a full rescan.
+  static const Duration fullScanInterval = Duration(hours: 4);
 
   /// Copying a single photo produces a burst of create/modify events; scanning
   /// on each of them is pure waste.
@@ -59,6 +67,7 @@ class FileSystemPhotoScanner {
   static const String _incompleteSuffix = '.part';
 
   final StorageProvider _storageProvider;
+  final PhotoMetadataDatabase? metadataDatabase;
   Duration _pollInterval;
   final Duration debounceInterval;
   final Duration settleAge;
@@ -219,10 +228,10 @@ class FileSystemPhotoScanner {
 
     final List<File> files;
     try {
-      files = dir
-          .listSync(recursive: true, followLinks: false)
-          .whereType<File>()
-          .toList()
+      // Collect the whole listing first: `list` streams the entries, so the
+      // directory read stays async instead of blocking the UI isolate.
+      final entities = await dir.list(recursive: true, followLinks: false).toList();
+      files = entities.whereType<File>().toList()
         ..sort((left, right) => left.path.compareTo(right.path));
     } catch (e) {
       // Directory vanished or is unreadable while scanning (unmounted card,
@@ -237,9 +246,60 @@ class FileSystemPhotoScanner {
     final stillPending = <String>{};
     final stillPendingSince = <String, DateTime>{};
     final next = <PhotoEntry>[];
+    final scanUpdates = <({String path, DateTime modified, int size})>[];
+
+    final database = metadataDatabase;
+    // A full scan re-`stat`s every file. Between two full scans only names
+    // that are new to the stored scan state are `stat`ed; the rest reuses the
+    // mtime and size already persisted, which replaces the per-file `stat`
+    // calls of the previous poll.
+    final fullScan = database == null ||
+        !_hasBaseline ||
+        database.lastFullScan == null ||
+        now.difference(database.lastFullScan!) >= fullScanInterval;
+    final known = database?.filePhotos() ?? const <String, PhotoMetadata>{};
+
+    // Paths of the image files the listing reports, so the cache stays in sync
+    // with what is actually on disk.
+    final currentImagePaths = {
+      for (final file in files)
+        if (_isImage(file.path)) file.path,
+    };
 
     for (final file in files) {
       if (!_isImage(file.path)) continue;
+
+      final path = file.path;
+      final existing = previous[path];
+      final record = known[path];
+
+      if (!fullScan && (existing != null || record?.modified != null)) {
+        // Known name: reuse the stored scan state instead of stat'ing the file
+        // again. The PhotoEntry instance is kept so runtime state (lastShown,
+        // weight, lazily loaded EXIF) survives rescans.
+        if (existing != null) {
+          next.add(existing);
+          if (record == null) {
+            // The instance exists without a cache row (cache was cleared or a
+            // file reappeared): re-create the row from its last observation.
+            scanUpdates.add(
+              (path: path, modified: existing.date, size: existing.sizeBytes),
+            );
+          }
+        } else {
+          next.add(
+            PhotoEntry(
+              file: file,
+              date: record!.modified!,
+              sizeBytes: record.size ?? 0,
+              width: record.width,
+              height: record.height,
+            ),
+          );
+          scanUpdates.add((path: path, modified: record.modified!, size: record.size ?? 0));
+        }
+        continue;
+      }
 
       final FileStat stat;
       try {
@@ -250,14 +310,13 @@ class FileSystemPhotoScanner {
         continue;
       }
 
-      final path = file.path;
       observed[path] = stat.size;
 
-      final existing = previous[path];
       if (existing != null && existing.sizeBytes == stat.size) {
         // Untouched file: keep the instance so runtime state (lastShown,
         // weight, lazily loaded EXIF) survives rescans.
         next.add(existing);
+        scanUpdates.add((path: path, modified: stat.modified, size: stat.size));
         continue;
       }
 
@@ -278,6 +337,7 @@ class FileSystemPhotoScanner {
           sizeBytes: stat.size,
         ),
       );
+      scanUpdates.add((path: path, modified: stat.modified, size: stat.size));
     }
 
     _observedSizes
@@ -290,6 +350,12 @@ class FileSystemPhotoScanner {
       ..clear()
       ..addAll(stillPendingSince);
     _hasBaseline = true;
+
+    if (database != null) {
+      database.saveScannedFiles(scanUpdates);
+      database.deleteScannedFilesNotIn(currentImagePaths);
+      if (fullScan) database.lastFullScan = now;
+    }
 
     if (stillPending.isNotEmpty) {
       _log.fine(
