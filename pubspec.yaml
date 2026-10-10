@@ -53,7 +53,7 @@ dependencies:
   http: ^1.2.0
   intl: ^0.20.2
   device_calendar_plus: ^0.10.1
-
+  sqlite3: ^3.7.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

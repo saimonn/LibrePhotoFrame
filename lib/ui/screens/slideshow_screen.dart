@@ -26,10 +26,10 @@ import '../widgets/calendar_overlay.dart';
 import '../widgets/photo_info_overlay.dart';
 import '../widgets/photo_info_layers.dart';
 import '../../infrastructure/services/json_config_service.dart';
+import '../../infrastructure/services/photo_metadata_database.dart';
 import 'settings_screen.dart';
 
 final _log = Logger('SlideshowScreen');
-final _geocodingService = GeocodingService();
 
 /// Upper bound on how many photos get their dimensions read for pairing.
 const int _maxPairCandidates = 24;
@@ -55,9 +55,14 @@ class SlideshowScreen extends StatefulWidget {
   const SlideshowScreen({
     super.key,
     this.initialConfigLoadResult = const ConfigLoadResult.clean(),
+    this.database,
   });
 
   final ConfigLoadResult initialConfigLoadResult;
+
+  /// Shared metadata cache, used by the geocoding and dimensions services.
+  /// Null when no database is available (tests, no writable directory).
+  final PhotoMetadataDatabase? database;
 
   @override
   State<SlideshowScreen> createState() => _SlideshowScreenState();
@@ -83,6 +88,9 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
 
   // Resolves photo pixel dimensions for pairing
   late final PhotoDimensionsService _photoDimensions;
+
+  // Reverse geocodes the coordinates of the photos on screen
+  late final GeocodingService _geocodingService;
   
   // Screen size for optimized image loading
   Size? _screenSize;
@@ -107,7 +115,8 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
   @override
   void initState() {
     super.initState();
-    _photoDimensions = PhotoDimensionsService();
+    _photoDimensions = PhotoDimensionsService(database: widget.database);
+    _geocodingService = GeocodingService(database: widget.database);
     // Register lifecycle observer
     WidgetsBinding.instance.addObserver(this);
     

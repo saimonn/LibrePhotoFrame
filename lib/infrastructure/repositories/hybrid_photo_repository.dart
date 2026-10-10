@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:logging/logging.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:photo_manager/photo_manager.dart';
@@ -8,6 +9,7 @@ import '../../domain/interfaces/metadata_provider.dart';
 import '../../domain/interfaces/storage_provider.dart';
 import '../../domain/interfaces/config_provider.dart';
 import '../../domain/models/photo_entry.dart';
+import '../services/photo_metadata_database.dart';
 import 'file_system_photo_scanner.dart';
 
 /// Photo access used by every device photos permission check: images only,
@@ -89,6 +91,11 @@ class HybridPhotoRepository implements PhotoRepository {
   /// detected.
   bool _watchPhotoFolder = true;
 
+  /// Shared metadata cache. Optional so the repository keeps working without
+  /// it (tests, no writable directory); the scan then behaves like a full scan
+  /// every time.
+  final PhotoMetadataDatabase? metadataDatabase;
+
   // MediaStore mode resources
   String? _selectedAlbumId;
   bool _mediaStoreListenerRegistered = false;
@@ -122,6 +129,7 @@ class HybridPhotoRepository implements PhotoRepository {
     required StorageProvider storageProvider,
     required MetadataProvider metadataProvider,
     required ConfigProvider configProvider,
+    this.metadataDatabase,
     this.mediaStorePollInterval,
     this.mediaStoreDebounceInterval = defaultMediaStoreDebounceInterval,
   })  : _storageProvider = storageProvider,
@@ -130,6 +138,7 @@ class HybridPhotoRepository implements PhotoRepository {
         _scanner = FileSystemPhotoScanner(
           storageProvider: storageProvider,
           pollInterval: Duration(seconds: configProvider.pollIntervalSeconds),
+          metadataDatabase: metadataDatabase,
         ) {
     _watchPhotoFolder = configProvider.watchPhotoFolder;
     _scanner.watchForChanges = _watchPhotoFolder;
@@ -370,34 +379,76 @@ class HybridPhotoRepository implements PhotoRepository {
       }
       
       details.add("Found ${assets.length} assets in MediaStore");
-      
+
+      final database = metadataDatabase;
+      final now = DateTime.now();
+      // Between two full scans the previously resolved file path of an asset
+      // is reused, so `asset.file` (a platform call per photo) only runs for
+      // assets that are new to the cache.
+      final fullScan = database == null ||
+          database.lastFullScan == null ||
+          now.difference(database.lastFullScan!) >=
+              FileSystemPhotoScanner.fullScanInterval;
+      final knownByAsset = database?.mediaStorePhotos() ?? const {};
+
+      // Preserve existing PhotoEntry instances by path, so runtime state
+      // (lastShown, weight, lazily loaded EXIF) survives polls.
+      final existingByPath = {
+        for (final photo in _mediaStorePhotos) photo.file.path: photo,
+      };
+
       // Convert AssetEntity to PhotoEntry
       final newPhotos = <PhotoEntry>[];
-      
+      final observedAssetIds = <String>{};
+
       for (final asset in assets) {
-        // Get the actual file
-        final file = await asset.file;
-        if (file == null) continue;
-        
-        // Preserve existing PhotoEntry instances
-        final existingIndex = _mediaStorePhotos.indexWhere((p) => p.file.path == file.path);
-        
-        if (existingIndex != -1) {
-          newPhotos.add(_mediaStorePhotos[existingIndex]);
+        observedAssetIds.add(asset.id);
+
+        // Get the actual file, or reuse the path resolved by a previous scan.
+        final File? file;
+        final record = knownByAsset[asset.id];
+        if (!fullScan && record != null) {
+          file = File(record.path);
         } else {
-          // For MediaStore: modifiedDateTime for shuffle, createDateTime as captureDate.
-          // The EXIF itself stays unread: GPS and the exact capture date are
-          // loaded from the file when the photo is displayed.
-          final entry = PhotoEntry(
-            file: file,
-            date: asset.modifiedDateTime,  // File date for shuffle algorithm
-            sizeBytes: asset.width * asset.height,  // Approximate size from dimensions
-          );
-          entry.setCaptureDate(asset.createDateTime);
-          newPhotos.add(entry);
+          file = await asset.file;
         }
+        if (file == null) continue;
+
+        final existing = existingByPath[file.path];
+        if (existing != null) {
+          newPhotos.add(existing);
+          continue;
+        }
+
+        // For MediaStore: modifiedDateTime for shuffle, createDateTime as
+        // capture date. The dimensions are known without decoding and are
+        // stored, so the EXIF file read is only needed for GPS.
+        final entry = PhotoEntry(
+          file: file,
+          date: asset.modifiedDateTime, // File date for shuffle algorithm
+          sizeBytes: asset.width * asset.height, // Approximate size from dimensions
+          width: asset.width,
+          height: asset.height,
+        );
+        entry.setCaptureDate(asset.createDateTime);
+        newPhotos.add(entry);
+
+        database?.saveMediaStorePhoto(
+          path: file.path,
+          assetId: asset.id,
+          modified: asset.modifiedDateTime,
+          size: asset.width * asset.height,
+          width: asset.width,
+          height: asset.height,
+          captureDate: asset.createDateTime,
+        );
       }
-      
+
+      if (database != null) {
+        database.deleteMediaStorePhotosNotIn(observedAssetIds);
+        if (fullScan) database.lastFullScan = now;
+      }
+
       _reportScan(details);
       _publishMediaStorePhotos(newPhotos);
       
