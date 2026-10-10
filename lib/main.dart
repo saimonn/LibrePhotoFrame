@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -35,15 +36,17 @@ import 'ui/screens/slideshow_screen.dart';
 final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
-  // Setup Logging
-  Logger.root.level = Level.ALL;
+  // Setup Logging. In release builds only warnings and errors are emitted:
+  // the fine/info chatter of a continuously running frame would otherwise
+  // spam logcat for days on end (issue 17).
+  Logger.root.level = kReleaseMode ? Level.INFO : Level.ALL;
   Logger.root.onRecord.listen((record) {
-    print('${record.level.name}: ${record.time}: ${record.message}');
+    debugPrint('${record.level.name}: ${record.time}: ${record.message}');
     if (record.error != null) {
-      print('ERROR: ${record.error}');
+      debugPrint('ERROR: ${record.error}');
     }
     if (record.stackTrace != null) {
-      print(record.stackTrace);
+      debugPrint(record.stackTrace.toString());
     }
   });
 

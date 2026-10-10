@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 /// Native screen control service using Android Device Admin API.
@@ -23,7 +24,7 @@ class NativeScreenControlService {
       final result = await _channel.invokeMethod<bool>('isDeviceAdminEnabled');
       return result ?? false;
     } catch (e) {
-      print('Error checking Device Admin status: $e');
+      debugPrint('Error checking Device Admin status: $e');
       return false;
     }
   }
@@ -37,7 +38,7 @@ class NativeScreenControlService {
     try {
       await _channel.invokeMethod('requestDeviceAdmin');
     } catch (e) {
-      print('Error requesting Device Admin: $e');
+      debugPrint('Error requesting Device Admin: $e');
     }
   }
 
@@ -51,7 +52,7 @@ class NativeScreenControlService {
     try {
       await _channel.invokeMethod('openDeviceAdminSettings');
     } catch (e) {
-      print('Error opening Device Admin settings: $e');
+      debugPrint('Error opening Device Admin settings: $e');
     }
   }
   
@@ -65,7 +66,7 @@ class NativeScreenControlService {
       final result = await _channel.invokeMethod<bool>('turnScreenOff');
       return result ?? false;
     } catch (e) {
-      print('Error turning screen off: $e');
+      debugPrint('Error turning screen off: $e');
       return false;
     }
   }
@@ -82,7 +83,7 @@ class NativeScreenControlService {
       });
       return result ?? false;
     } catch (e) {
-      print('Error scheduling wake-up: $e');
+      debugPrint('Error scheduling wake-up: $e');
       return false;
     }
   }
@@ -95,7 +96,7 @@ class NativeScreenControlService {
       final result = await _channel.invokeMethod<bool>('cancelScheduledWakeUp');
       return result ?? false;
     } catch (e) {
-      print('Error cancelling wake-up: $e');
+      debugPrint('Error cancelling wake-up: $e');
       return false;
     }
   }
@@ -108,7 +109,7 @@ class NativeScreenControlService {
       final result = await _channel.invokeMethod<bool>('wakeScreenNow');
       return result ?? false;
     } catch (e) {
-      print('Error waking screen: $e');
+      debugPrint('Error waking screen: $e');
       return false;
     }
   }
@@ -121,7 +122,7 @@ class NativeScreenControlService {
       final result = await _channel.invokeMethod<bool>('isScreenOn');
       return result ?? true;
     } catch (e) {
-      print('Error checking screen state: $e');
+      debugPrint('Error checking screen state: $e');
       return true;
     }
   }

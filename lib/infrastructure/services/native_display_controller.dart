@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 import '../../domain/interfaces/display_controller.dart';
 import 'native_screen_control_service.dart';
@@ -26,7 +27,7 @@ class NativeDisplayController implements DisplayController {
   
   Future<void> _checkDeviceAdmin() async {
     _deviceAdminEnabled = await NativeScreenControlService.isDeviceAdminEnabled();
-    print('📺 Device Admin enabled: $_deviceAdminEnabled');
+    debugPrint('📺 Device Admin enabled: $_deviceAdminEnabled');
   }
   
   @override
@@ -72,7 +73,7 @@ class NativeDisplayController implements DisplayController {
   }
   
   Future<DisplayControlResult> _setNormalMode() async {
-    print('📺 Setting mode: NORMAL');
+    debugPrint('📺 Setting mode: NORMAL');
     
     // Cancel any scheduled wake-up
     if (_scheduledWakeTime != null) {
@@ -98,7 +99,7 @@ class NativeDisplayController implements DisplayController {
   }
   
   Future<DisplayControlResult> _setDimmedMode() async {
-    print('📺 Setting mode: DIMMED (brightness: $_dimmedBrightness)');
+    debugPrint('📺 Setting mode: DIMMED (brightness: $_dimmedBrightness)');
     
     try {
       if (_isPlatformSupported) {
@@ -112,7 +113,7 @@ class NativeDisplayController implements DisplayController {
   }
   
   Future<DisplayControlResult> _setOffMode() async {
-    print('📺 Setting mode: OFF (Device Admin: $_deviceAdminEnabled)');
+    debugPrint('📺 Setting mode: OFF (Device Admin: $_deviceAdminEnabled)');
     
     if (_deviceAdminEnabled) {
       // Use native screen off
@@ -122,7 +123,7 @@ class NativeDisplayController implements DisplayController {
         return const DisplayControlResult.success(actualBrightness: 0.0);
       } else {
         // Fall through to brightness fallback
-        print('📺 lockNow() failed, falling back to brightness control');
+        debugPrint('📺 lockNow() failed, falling back to brightness control');
       }
     }
     
@@ -140,7 +141,7 @@ class NativeDisplayController implements DisplayController {
   
   /// Turn off the screen and schedule a wake-up at the specified time.
   Future<DisplayControlResult> sleepUntil(DateTime wakeTime) async {
-    print('📺 Sleeping until: $wakeTime');
+    debugPrint('📺 Sleeping until: $wakeTime');
     
     // First, schedule the wake-up
     if (Platform.isAndroid) {
@@ -154,7 +155,7 @@ class NativeDisplayController implements DisplayController {
   
   /// Wake up the screen immediately.
   Future<void> wakeNow() async {
-    print('📺 Waking now');
+    debugPrint('📺 Waking now');
     
     if (Platform.isAndroid) {
       await NativeScreenControlService.cancelScheduledWakeUp();

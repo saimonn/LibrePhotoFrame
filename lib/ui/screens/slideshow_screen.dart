@@ -223,7 +223,7 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
     if (_isPaused || _isDisplayOff) return;
     _isPaused = true;
     
-    print('⏸️ App paused - stopping timers and wakelock');
+    debugPrint('⏸️ App paused - stopping timers and wakelock');
     _timer?.cancel();
     _scheduleTimer?.cancel();
     WakelockPlus.disable();
@@ -234,7 +234,7 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
     if (!_isPaused) return;
     _isPaused = false;
     
-    print('▶️ App resumed - restarting timers and wakelock');
+    debugPrint('▶️ App resumed - restarting timers and wakelock');
     _enableWakelock();
     
     // Restart slideshow timer if we have photos
@@ -261,12 +261,12 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
     
     // Detect state change
     if (scheduleEnabled != _scheduleWasEnabled) {
-      print('📺 Schedule enabled changed: $_scheduleWasEnabled -> $scheduleEnabled');
+      debugPrint('📺 Schedule enabled changed: $_scheduleWasEnabled -> $scheduleEnabled');
       _scheduleWasEnabled = scheduleEnabled;
       
       if (scheduleEnabled) {
         // Schedule was just enabled - start timer
-        print('📺 Display schedule enabled: Day ${config.dayStartHour}:${config.dayStartMinute.toString().padLeft(2, '0')}, Night ${config.nightStartHour}:${config.nightStartMinute.toString().padLeft(2, '0')}');
+        debugPrint('📺 Display schedule enabled: Day ${config.dayStartHour}:${config.dayStartMinute.toString().padLeft(2, '0')}, Night ${config.nightStartHour}:${config.nightStartMinute.toString().padLeft(2, '0')}');
         
         // Cancel any existing timer
         _scheduleTimer?.cancel();
@@ -280,7 +280,7 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
         });
       } else {
         // Schedule was just disabled - stop timer and restore display
-        print('📺 Display schedule disabled');
+        debugPrint('📺 Display schedule disabled');
         _scheduleTimer?.cancel();
         _scheduleTimer = null;
         
@@ -299,7 +299,7 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
         ? displayController 
         : null;
     
-    print('📺 Restoring display to normal');
+    debugPrint('📺 Restoring display to normal');
     if (nativeController != null) {
       await nativeController.wakeNow();
     } else {
@@ -348,7 +348,7 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
     
     if (isNight && !_isDisplayOff) {
       // Switch to night mode (screen off)
-      print('📺 Switching to NIGHT mode (screen off), wake at $nextTransition');
+      debugPrint('📺 Switching to NIGHT mode (screen off), wake at $nextTransition');
       
       if (config.useNativeScreenOff && nativeController != null) {
         await nativeController.sleepUntil(nextTransition);
@@ -359,7 +359,7 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
       
     } else if (!isNight && _isDisplayOff) {
       // Switch to day mode (screen on)
-      print('📺 Switching to DAY mode (screen on)');
+      debugPrint('📺 Switching to DAY mode (screen on)');
       
       if (nativeController != null) {
         await nativeController.wakeNow();
@@ -373,7 +373,7 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
       // and _isDisplayOff is false (default) but the screen is actually off.
       final screenOn = await NativeScreenControlService.isScreenOn();
       if (!screenOn) {
-        print('📺 Screen is physically off but should be on (e.g. after crash) - waking up');
+        debugPrint('📺 Screen is physically off but should be on (e.g. after crash) - waking up');
         if (nativeController != null) {
           await nativeController.wakeNow();
         } else {
@@ -403,7 +403,7 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
     try {
       await WakelockPlus.enable();
     } catch (e) {
-      print("Wakelock not supported or failed on this platform (ignoring): $e");
+      debugPrint("Wakelock not supported or failed on this platform (ignoring): $e");
     }
   }
 
@@ -613,7 +613,7 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
         );
       }
     } catch (e) {
-      print('Failed to preload image: $e');
+      debugPrint('Failed to preload image: $e');
       // Continue anyway - the image might still load
     }
 
@@ -728,7 +728,7 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
           ),
         );
       } catch (e) {
-        print('Failed to preload image: $e');
+        debugPrint('Failed to preload image: $e');
       }
       if (!mounted || id != _transitionId) return;
       if (_currentPhoto?.file.path != photo.file.path) return;
@@ -896,7 +896,7 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
     );
     if (_screenSize != physicalSize) {
       if (kDebugMode) {
-        print('Screen size changed: ${_screenSize?.width.toInt()}x${_screenSize?.height.toInt()} -> ${physicalSize.width.toInt()}x${physicalSize.height.toInt()} (logical: ${mediaQuerySize.width.toInt()}x${mediaQuerySize.height.toInt()}, dpr: $devicePixelRatio)');
+        debugPrint('Screen size changed: ${_screenSize?.width.toInt()}x${_screenSize?.height.toInt()} -> ${physicalSize.width.toInt()}x${physicalSize.height.toInt()} (logical: ${mediaQuerySize.width.toInt()}x${mediaQuerySize.height.toInt()}, dpr: $devicePixelRatio)');
       }
       _screenSize = physicalSize;
       // The pair on screen was picked for the previous frame shape: it may no
@@ -1023,28 +1023,28 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
               onTapUp: (details) {
                 final width = MediaQuery.of(context).size.width;
                 final dx = details.globalPosition.dx;
-                print("Tap detected at x=$dx (Screen width: $width)");
+                debugPrint("Tap detected at x=$dx (Screen width: $width)");
                 
                 if (dx > width * 0.75) {
-                  print("Action: Tap Next");
+                  debugPrint("Action: Tap Next");
                   _manualNavigation(true); // Right 25% -> Next
                 } else if (dx < width * 0.25) {
-                  print("Action: Tap Previous");
+                  debugPrint("Action: Tap Previous");
                   _manualNavigation(false); // Left 25% -> Previous
                 } else {
-                  print("Action: Open Settings");
+                  debugPrint("Action: Open Settings");
                   _openSettings();
                 }
               },
               onHorizontalDragEnd: (details) {
                 final velocity = details.primaryVelocity!;
-                print("Drag ended with velocity: $velocity");
+                debugPrint("Drag ended with velocity: $velocity");
                 
                 if (velocity < 0) {
-                  print("Action: Swipe Left -> Next");
+                  debugPrint("Action: Swipe Left -> Next");
                   _manualNavigation(true); // Swipe Left -> Next
                 } else if (velocity > 0) {
-                  print("Action: Swipe Right -> Previous");
+                  debugPrint("Action: Swipe Right -> Previous");
                   _manualNavigation(false); // Swipe Right -> Previous
                 }
               },
