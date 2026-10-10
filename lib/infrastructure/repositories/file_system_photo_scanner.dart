@@ -5,6 +5,8 @@ import 'package:logging/logging.dart';
 
 import '../../domain/interfaces/storage_provider.dart';
 import '../../domain/models/photo_entry.dart';
+import '../../domain/services/photo_files.dart';
+import '../../domain/services/photo_lists.dart';
 import '../services/photo_metadata_database.dart';
 
 /// Keeps a [PhotoEntry] list in sync with the content of a photo directory.
@@ -60,8 +62,6 @@ class FileSystemPhotoScanner {
 
   /// Delay before re-scanning to find out whether pending files stopped growing.
   static const Duration defaultSettleRecheckInterval = Duration(seconds: 1);
-
-  static const Set<String> _imageExtensions = {'.jpg', '.jpeg', '.png', '.webp'};
 
   /// Suffix used for in-progress downloads (see WebDavSyncService).
   static const String _incompleteSuffix = '.part';
@@ -263,11 +263,11 @@ class FileSystemPhotoScanner {
     // with what is actually on disk.
     final currentImagePaths = {
       for (final file in files)
-        if (_isImage(file.path)) file.path,
+        if (isImageFile(file.path)) file.path,
     };
 
     for (final file in files) {
-      if (!_isImage(file.path)) continue;
+      if (!isImageFile(file.path)) continue;
 
       final path = file.path;
       final existing = previous[path];
@@ -418,21 +418,13 @@ class FileSystemPhotoScanner {
   }
 
   void _publish(List<PhotoEntry> next) {
-    final changed = !_samePhotos(_photos, next);
+    final changed = !isSamePhotoList(_photos, next);
     _photos = next;
     if (!changed) return;
 
     if (_disposed || _changedController.isClosed) return;
     _log.info("Photo list changed: ${next.length} photo(s).");
     _changedController.add(null);
-  }
-
-  bool _samePhotos(List<PhotoEntry> left, List<PhotoEntry> right) {
-    if (left.length != right.length) return false;
-    for (var i = 0; i < left.length; i++) {
-      if (!identical(left[i], right[i])) return false;
-    }
-    return true;
   }
 
   // ============================================================
@@ -505,14 +497,6 @@ class FileSystemPhotoScanner {
       return destination == null || !_isIncomplete(destination);
     }
     return !_isIncomplete(event.path);
-  }
-
-  static bool _isImage(String path) {
-    final lower = path.toLowerCase();
-    for (final extension in _imageExtensions) {
-      if (lower.endsWith(extension)) return true;
-    }
-    return false;
   }
 
   static bool _isIncomplete(String path) => path.endsWith(_incompleteSuffix);

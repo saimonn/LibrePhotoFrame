@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'overlay_position.dart';
 
 /// A beautiful clock overlay widget with customizable size and position.
 class ClockOverlay extends StatefulWidget {
@@ -50,35 +51,6 @@ class _ClockOverlayState extends State<ClockOverlay> {
     }
   }
 
-  Alignment get _alignment {
-    switch (widget.position) {
-      case 'bottomLeft':
-        return Alignment.bottomLeft;
-      case 'topRight':
-        return Alignment.topRight;
-      case 'topLeft':
-        return Alignment.topLeft;
-      case 'bottomRight':
-      default:
-        return Alignment.bottomRight;
-    }
-  }
-
-  EdgeInsets get _padding {
-    const base = 24.0;
-    switch (widget.position) {
-      case 'bottomLeft':
-        return const EdgeInsets.only(left: base, bottom: base);
-      case 'topRight':
-        return const EdgeInsets.only(right: base, top: base);
-      case 'topLeft':
-        return const EdgeInsets.only(left: base, top: base);
-      case 'bottomRight':
-      default:
-        return const EdgeInsets.only(right: base, bottom: base);
-    }
-  }
-
   String _time(BuildContext context) {
     // 'auto' follows the region of the chosen language, which is 12 h in en.
     final locale = Localizations.localeOf(context).toString();
@@ -94,10 +66,11 @@ class _ClockOverlayState extends State<ClockOverlay> {
   Widget build(BuildContext context) {
     final timeString = _time(context);
     
+    final placement = OverlayPosition.of(widget.position);
     return Align(
-      alignment: _alignment,
+      alignment: placement.alignment,
       child: Padding(
-        padding: _padding,
+        padding: placement.padding,
         child: Text(
           timeString,
           style: TextStyle(

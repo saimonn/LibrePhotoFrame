@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../domain/models/photo_entry.dart';
+import 'overlay_position.dart';
 
 /// Overlay widget that displays photo metadata (date, location).
 class PhotoInfoOverlay extends StatelessWidget {
@@ -18,47 +19,6 @@ class PhotoInfoOverlay extends StatelessWidget {
     this.locationName,
     this.useScriptFont = false,
   });
-
-  Alignment get _alignment {
-    switch (position) {
-      case 'bottomLeft':
-        return Alignment.bottomLeft;
-      case 'topRight':
-        return Alignment.topRight;
-      case 'topLeft':
-        return Alignment.topLeft;
-      case 'bottomRight':
-      default:
-        return Alignment.bottomRight;
-    }
-  }
-
-  EdgeInsets get _padding {
-    const base = 24.0;
-    switch (position) {
-      case 'bottomLeft':
-        return const EdgeInsets.only(left: base, bottom: base);
-      case 'topRight':
-        return const EdgeInsets.only(right: base, top: base);
-      case 'topLeft':
-        return const EdgeInsets.only(left: base, top: base);
-      case 'bottomRight':
-      default:
-        return const EdgeInsets.only(right: base, bottom: base);
-    }
-  }
-
-  CrossAxisAlignment get _crossAxisAlignment {
-    switch (position) {
-      case 'bottomLeft':
-      case 'topLeft':
-        return CrossAxisAlignment.start;
-      case 'bottomRight':
-      case 'topRight':
-      default:
-        return CrossAxisAlignment.end;
-    }
-  }
 
   String _formatDate(BuildContext context, DateTime date) {
     // The date follows the language of the app, not the one of the platform.
@@ -96,13 +56,14 @@ class PhotoInfoOverlay extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
+    final placement = OverlayPosition.of(position);
     return Align(
-      alignment: _alignment,
+      alignment: placement.alignment,
       child: Padding(
-        padding: _padding,
+        padding: placement.padding,
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: _crossAxisAlignment,
+          crossAxisAlignment: placement.crossAxisAlignment,
           children: infoLines.map((line) => _buildTextLine(line)).toList(),
         ),
       ),

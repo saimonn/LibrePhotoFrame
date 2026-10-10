@@ -21,6 +21,19 @@ class SharedPreferencesAndroidRuntimeSettingsWriter
   }
 }
 
+/// Bridges the config.json store and the Android SharedPreferences mirror.
+///
+/// Two stores hold autostart/keep-alive on Android:
+///
+///  * [ConfigProvider] (config.json) is the canonical store and the only one a
+///    user edits.
+///  * The SharedPreferences mirror written here is a *runtime copy*: the
+///    Android BootReceiver and WakeReceiver run before Flutter starts and can
+///    only read the platform preferences.
+///
+/// [syncFromConfig] is the single write funnel for the mirror - it is called
+/// at boot (AppInitializer) and every time the settings are saved, so the two
+/// stores cannot drift (issue 16).
 class AndroidRuntimeSettingsSync {
   final AndroidRuntimeSettingsWriter _writer;
 
