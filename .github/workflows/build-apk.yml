@@ -44,9 +44,8 @@ jobs:
   device-test:
     name: Device test (emulator)
     needs: build
-    # On demand only: booting an emulator adds minutes to the run and its
-    # flakiness must not hold back a build.
-    if: github.event_name == 'workflow_dispatch'
+    # Run on PRs and manual dispatch to ensure visual tests execute in CI
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
