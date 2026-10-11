@@ -768,6 +768,7 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
         locationName:
             config.geocodingEnabled ? _locationNames[entry.file.path] : null,
         useScriptFont: config.useScriptFontForMetadata,
+        enhancedContrast: config.photoInfoUseEnhancedContrast,
       ),
     );
   }
@@ -1000,6 +1001,7 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
               size: config.clockSize,
               position: config.clockPosition,
               format: config.clockFormat,
+              enhancedContrast: config.clockUseEnhancedContrast,
             ),
 
           // 3. Photo Info Overlay: one per photo on screen, each aligned in the
@@ -1014,6 +1016,7 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
               events: _calendarEvents,
               position: config.calendarPosition,
               size: config.calendarSize,
+              enhancedContrast: config.calendarUseEnhancedContrast,
             ),
 
           // 5. Touch Layer (Invisible, on top)
