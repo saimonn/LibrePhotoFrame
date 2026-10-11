@@ -563,17 +563,18 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
 
             const SizedBox(height: 16),
 
-            SwitchListTile(
-              title: Text(AppLocalizations.of(context)!.blurBorders),
-              subtitle: Text(AppLocalizations.of(context)!.blurBordersSubtitle),
-              secondary: const Icon(Icons.blur_linear),
-              value: _blurBorders,
-              onChanged: (value) {
-                setState(() => _blurBorders = value);
-              },
-            ),
-          
-            const SizedBox(height: 16),
+            if (_photoFit != 'cover' && _photoFit != 'fill') ...[
+              SwitchListTile(
+                title: Text(AppLocalizations.of(context)!.blurBorders),
+                subtitle: Text(AppLocalizations.of(context)!.blurBordersSubtitle),
+                secondary: const Icon(Icons.blur_linear),
+                value: _blurBorders,
+                onChanged: (value) {
+                  setState(() => _blurBorders = value);
+                },
+              ),
+              const SizedBox(height: 16),
+            ],
 
             // Photo Fit
             _buildPhotoFitSelector(
