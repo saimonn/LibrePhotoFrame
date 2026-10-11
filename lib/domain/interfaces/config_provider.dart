@@ -119,6 +119,9 @@ abstract class ConfigProvider extends ChangeNotifier {
   
   bool get useScriptFontForMetadata; // Use handwritten script font (Rouge Script) for metadata
   set useScriptFontForMetadata(bool value);
+  
+  bool get photoInfoUseEnhancedContrast; // Add stronger outline/shadow for better readability
+  set photoInfoUseEnhancedContrast(bool value);
 
   // Calendar events overlay settings
   bool get showCalendarEvents; // Show today's and tomorrow's calendar events
@@ -129,6 +132,9 @@ abstract class ConfigProvider extends ChangeNotifier {
 
   String get calendarSize; // 'small', 'medium', 'large'
   set calendarSize(String value);
+  
+  bool get calendarUseEnhancedContrast; // Add stronger outline/shadow for better readability
+  set calendarUseEnhancedContrast(bool value);
 
   // Geocoding settings
   bool get geocodingEnabled; // Enable reverse geocoding for GPS coordinates
@@ -146,6 +152,9 @@ abstract class ConfigProvider extends ChangeNotifier {
 
   // Hour cycle of the clock overlay
   // Values: 'auto', '12', '24'
-  String get clockFormat;
+  String get clockFormat; // 'auto', '12', '24'
   set clockFormat(String value);
+  
+  bool get clockUseEnhancedContrast; // Add stronger outline/shadow for better readability
+  set clockUseEnhancedContrast(bool value);
 }

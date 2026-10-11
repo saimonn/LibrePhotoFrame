@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../domain/models/photo_entry.dart';
 import 'overlay_position.dart';
+import 'outlined_text.dart';
 
 /// Overlay widget that displays photo metadata (date, location).
 class PhotoInfoOverlay extends StatelessWidget {
@@ -10,6 +11,7 @@ class PhotoInfoOverlay extends StatelessWidget {
   final String size; // 'small', 'medium', 'large'
   final String? locationName; // Resolved location name from geocoding
   final bool useScriptFont; // Use Rouge Script font for elegant handwritten style
+  final bool enhancedContrast;
 
   const PhotoInfoOverlay({
     super.key,
@@ -18,6 +20,7 @@ class PhotoInfoOverlay extends StatelessWidget {
     this.size = 'small',
     this.locationName,
     this.useScriptFont = false,
+    this.enhancedContrast = false,
   });
 
   String _formatDate(BuildContext context, DateTime date) {
@@ -83,27 +86,28 @@ class PhotoInfoOverlay extends StatelessWidget {
   }
 
   Widget _buildTextLine(String text) {
-    return Text(
-      text,
-      style: TextStyle(
-        fontFamily: useScriptFont ? 'RougeScript' : null,
-        fontSize: _fontSize,
-        fontWeight: FontWeight.w400,
-        color: Colors.white,
-        shadows: const [
-          // Shadow for readability on any background
-          Shadow(
-            offset: Offset(1, 1),
-            blurRadius: 4,
-            color: Colors.black54,
-          ),
-          Shadow(
-            offset: Offset(-1, -1),
-            blurRadius: 4,
-            color: Colors.black26,
-          ),
-        ],
-      ),
+    final style = TextStyle(
+      fontFamily: useScriptFont ? 'RougeScript' : null,
+      fontSize: _fontSize,
+      fontWeight: FontWeight.w400,
+      color: Colors.white,
     );
+
+    return enhancedContrast
+        ? OutlinedText(
+            text,
+            style: style,
+            outlineColor: Colors.black,
+            outlineWidth: 2.5,
+          )
+        : Text(
+            text,
+            style: style.copyWith(
+              shadows: const [
+                Shadow(offset: Offset(1, 1), blurRadius: 4, color: Colors.black54),
+                Shadow(offset: Offset(-1, -1), blurRadius: 4, color: Colors.black26),
+              ],
+            ),
+          );
   }
 }
