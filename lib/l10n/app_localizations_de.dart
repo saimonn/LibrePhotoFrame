@@ -106,13 +106,6 @@ class AppLocalizationsDe extends AppLocalizations {
       'Metadaten in eleganter Handschrift anzeigen';
 
   @override
-  String get enhancedTextContrast => 'Enhanced Text Contrast';
-
-  @override
-  String get enhancedTextContrastSubtitle =>
-      'Add stronger outline for better readability on light backgrounds';
-
-  @override
   String get resolveLocationNames => 'Ortsnamen auflösen';
 
   @override
