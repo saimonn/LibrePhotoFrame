@@ -1,10 +1,8 @@
 {
   "@@locale": "en",
-  
   "settings": "Settings",
   "language": "Language",
   "languageSystem": "System default",
-  
   "sectionSlideshow": "Slideshow",
   "slideDuration": "Slide Duration",
   "transitionDuration": "Transition Duration",
@@ -19,7 +17,6 @@
   "photoOrderModification": "By file modification time",
   "unitMinutes": "min",
   "unitSeconds": "sec",
-  
   "sectionClock": "Clock",
   "showClock": "Show Clock",
   "showClockSubtitle": "Display time on slideshow",
@@ -29,7 +26,6 @@
   "clockFormatAuto": "Automatic",
   "clockFormat12": "12-hour",
   "clockFormat24": "24-hour",
-  
   "sectionPhotoInfo": "Photo Information",
   "showPhotoInfo": "Show Photo Info",
   "showPhotoInfoSubtitle": "Display date and location on slideshow",
@@ -38,7 +34,6 @@
   "resolveLocationNames": "Resolve Location Names",
   "resolveLocationNamesSubtitle": "Use OpenStreetMap to show place names instead of coordinates",
   "nominatimHint": "Uses Nominatim (OpenStreetMap). No API key required.",
-  
   "sectionCalendar": "Calendar",
   "showCalendarEvents": "Show Calendar Events",
   "showCalendarEventsSubtitle": "Display today's and tomorrow's events from the device calendar",
@@ -46,7 +41,6 @@
   "calendarOpenSettings": "Open app settings",
   "calendarToday": "Today",
   "calendarTomorrow": "Tomorrow",
-  
   "sectionPhotoSource": "Photo Source",
   "watchPhotoFolder": "Watch Folder",
   "watchPhotoFolderSubtitle": "Detect new and deleted photos in the photo folder automatically",
@@ -88,7 +82,6 @@
     }
   },
   "selectPhotoFolder": "Select Photo Folder",
-  
   "nextcloudPublicShareUrl": "Nextcloud Public Share URL",
   "nextcloudUrlHint": "https://cloud.example.com/s/abc123",
   "webdavAuthPublicShare": "Public share",
@@ -127,7 +120,6 @@
       }
     }
   },
-  
   "autoSyncInterval": "Auto-Sync Interval",
   "disabled": "Disabled",
   "deleteOrphanedFiles": "Delete orphaned files",
@@ -194,7 +186,6 @@
       }
     }
   },
-  
   "sectionDisplaySchedule": "Display Schedule",
   "dayNightSchedule": "Day/Night Schedule",
   "dayNightScheduleSubtitle": "Turn off display at night",
@@ -209,18 +200,15 @@
   "grantDeviceAdmin": "Grant Device Admin",
   "deviceAdminEnabled": "Device Admin enabled - screen will turn off completely",
   "screenLockWarning": "Important: Screen lock (PIN/Pattern/Password) must be disabled for automatic wake-up to work. Go to Settings → Security → Screen lock → None.",
-  
   "deviceAdminActive": "Device Admin Active",
   "deviceAdminUninstallWarning": "To uninstall this app, you must first disable Device Admin permission in Android settings.",
   "openDeviceAdminSettings": "Open Device Admin Settings",
-  
   "sectionAndroid": "Android",
   "startOnBoot": "Start on Boot",
   "startOnBootSubtitle": "Automatically start app when device boots",
   "keepAppRunning": "Keep App Running",
   "keepAppRunningSubtitle": "Prevent app from being stopped on low memory",
   "notificationPermissionRequired": "Notification permission is required for Keep App Running",
-
   "autoUpdateTitle": "Automatic updates",
   "autoUpdateSubtitle": "Check GitHub for new versions and install them",
   "autoUpdateFdroidNote": "Only for installs from GitHub. If you installed via F-Droid, leave this off and update through F-Droid.",
@@ -241,7 +229,6 @@
   "updateDownloading": "Downloading…",
   "updateSkip": "Skip",
   "updateDownloadInstall": "Download & install",
-  
   "keepAliveDialogTitle": "Keep App Running",
   "keepAliveWhatDoes": "What does this do?",
   "keepAliveWhatDoesExplanation": "This feature keeps the photo frame app running continuously, even when the device is low on memory.",
@@ -252,7 +239,6 @@
   "keepAliveDisableAnytime": "You can disable this at any time from the settings.",
   "cancel": "Cancel",
   "enable": "Enable",
-  
   "about": "About",
   "aboutSubtitle": "LibrePhotoFrame v{version}",
   "@aboutSubtitle": {
@@ -262,14 +248,14 @@
       }
     }
   },
-  
   "noPhotosFound": "No photos found",
   "tapCenterToOpenSettings": "Tap center of screen to open settings",
-  
   "screenOrientation": "Screen Orientation",
   "screenOrientationAuto": "Automatic (Sensor)",
   "screenOrientationPortraitUp": "Portrait",
   "screenOrientationPortraitDown": "Portrait (upside down)",
   "screenOrientationLandscapeLeft": "Landscape (left)",
-  "screenOrientationLandscapeRight": "Landscape (right)"
+  "screenOrientationLandscapeRight": "Landscape (right)",
+  "enhancedTextContrast": "Enhanced Text Contrast",
+  "enhancedTextContrastSubtitle": "Add stronger outline for better readability on light backgrounds"
 }

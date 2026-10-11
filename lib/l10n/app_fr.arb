@@ -1,10 +1,8 @@
 {
   "@@locale": "fr",
-  
   "settings": "Paramètres",
   "language": "Langue",
   "languageSystem": "Réglage du système",
-  
   "sectionSlideshow": "Diaporama",
   "slideDuration": "Durée des diapositives",
   "transitionDuration": "Durée de transition",
@@ -19,7 +17,6 @@
   "photoOrderModification": "Par date de modification du fichier",
   "unitMinutes": "min",
   "unitSeconds": "s",
-  
   "sectionClock": "Horloge",
   "showClock": "Afficher l'horloge",
   "showClockSubtitle": "Afficher l'heure sur le diaporama",
@@ -29,7 +26,6 @@
   "clockFormatAuto": "Automatique",
   "clockFormat12": "12 heures",
   "clockFormat24": "24 heures",
-  
   "sectionPhotoInfo": "Informations photo",
   "showPhotoInfo": "Afficher les informations photo",
   "showPhotoInfoSubtitle": "Afficher la date et le lieu sur le diaporama",
@@ -38,7 +34,6 @@
   "resolveLocationNames": "Résoudre les noms de lieux",
   "resolveLocationNamesSubtitle": "Utiliser OpenStreetMap pour afficher les noms de lieux au lieu des coordonnées",
   "nominatimHint": "Utilise Nominatim (OpenStreetMap). Aucune clé d'API requise.",
-  
   "sectionCalendar": "Calendrier",
   "showCalendarEvents": "Afficher les événements du calendrier",
   "showCalendarEventsSubtitle": "Afficher les événements d'aujourd'hui et de demain depuis le calendrier de l'appareil",
@@ -46,7 +41,6 @@
   "calendarOpenSettings": "Ouvrir les paramètres de l'application",
   "calendarToday": "Aujourd'hui",
   "calendarTomorrow": "Demain",
-  
   "sectionPhotoSource": "Source des photos",
   "watchPhotoFolder": "Surveiller le dossier",
   "watchPhotoFolderSubtitle": "Détecter automatiquement les photos ajoutées et supprimées du dossier",
@@ -88,7 +82,6 @@
     }
   },
   "selectPhotoFolder": "Sélectionner le dossier photo",
-  
   "nextcloudPublicShareUrl": "Lien de partage public Nextcloud",
   "nextcloudUrlHint": "https://cloud.example.com/s/abc123",
   "webdavAuthPublicShare": "Partage public",
@@ -127,7 +120,6 @@
       }
     }
   },
-  
   "autoSyncInterval": "Intervalle de synchronisation",
   "disabled": "Désactivé",
   "deleteOrphanedFiles": "Supprimer les fichiers orphelins",
@@ -194,7 +186,6 @@
       }
     }
   },
-  
   "sectionDisplaySchedule": "Horaire d'affichage",
   "dayNightSchedule": "Horaire jour/nuit",
   "dayNightScheduleSubtitle": "Éteindre l'écran la nuit",
@@ -209,18 +200,15 @@
   "grantDeviceAdmin": "Accorder l'administrateur d'appareil",
   "deviceAdminEnabled": "Administrateur d'appareil activé - l'écran s'éteindra complètement",
   "screenLockWarning": "Important : le verrouillage de l'écran (code PIN / schéma / mot de passe) doit être désactivé pour que le réveil automatique fonctionne. Allez dans Paramètres → Sécurité → Verrouillage de l'écran → Aucun.",
-  
   "deviceAdminActive": "Administrateur d'appareil actif",
   "deviceAdminUninstallWarning": "Pour désinstaller cette application, vous devez d'abord désactiver l'autorisation d'administrateur d'appareil dans les paramètres Android.",
   "openDeviceAdminSettings": "Ouvrir les paramètres d'administrateur d'appareil",
-  
   "sectionAndroid": "Android",
   "startOnBoot": "Démarrer au démarrage",
   "startOnBootSubtitle": "Démarrer automatiquement l'application au démarrage de l'appareil",
   "keepAppRunning": "Garder l'application active",
   "keepAppRunningSubtitle": "Empêcher l'arrêt de l'application en cas de manque de mémoire",
   "notificationPermissionRequired": "L'autorisation de notification est requise pour Garder l'application active",
-
   "autoUpdateTitle": "Mises à jour automatiques",
   "autoUpdateSubtitle": "Vérifier GitHub pour de nouvelles versions et les installer",
   "autoUpdateFdroidNote": "Réservé aux installations depuis GitHub. Si vous avez installé via F-Droid, laissez cette option désactivée et mettez à jour via F-Droid.",
@@ -241,7 +229,6 @@
   "updateDownloading": "Téléchargement…",
   "updateSkip": "Ignorer",
   "updateDownloadInstall": "Télécharger et installer",
-  
   "keepAliveDialogTitle": "Garder l'application active",
   "keepAliveWhatDoes": "Que fait cette option ?",
   "keepAliveWhatDoesExplanation": "Cette option garde l'application de cadre photo active en continu, même lorsque l'appareil manque de mémoire.",
@@ -252,7 +239,6 @@
   "keepAliveDisableAnytime": "Vous pouvez la désactiver à tout moment depuis les paramètres.",
   "cancel": "Annuler",
   "enable": "Activer",
-  
   "about": "À propos",
   "aboutSubtitle": "LibrePhotoFrame v{version}",
   "@aboutSubtitle": {
@@ -262,14 +248,14 @@
       }
     }
   },
-  
   "noPhotosFound": "Aucune photo trouvée",
   "tapCenterToOpenSettings": "Touchez le centre de l'écran pour ouvrir les paramètres",
-  
   "screenOrientation": "Orientation de l'écran",
   "screenOrientationAuto": "Automatique (capteur)",
   "screenOrientationPortraitUp": "Portrait",
   "screenOrientationPortraitDown": "Portrait (à l'envers)",
   "screenOrientationLandscapeLeft": "Paysage (gauche)",
-  "screenOrientationLandscapeRight": "Paysage (droite)"
+  "screenOrientationLandscapeRight": "Paysage (droite)",
+  "enhancedTextContrast": "Enhanced Text Contrast",
+  "enhancedTextContrastSubtitle": "Add stronger outline for better readability on light backgrounds"
 }

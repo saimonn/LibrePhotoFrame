@@ -1,10 +1,8 @@
 {
   "@@locale": "es",
-  
   "settings": "Ajustes",
   "language": "Idioma",
   "languageSystem": "Predeterminado del sistema",
-  
   "sectionSlideshow": "Presentación",
   "slideDuration": "Duración de la diapositiva",
   "transitionDuration": "Duración de la transición",
@@ -19,7 +17,6 @@
   "photoOrderModification": "Por fecha de modificación del archivo",
   "unitMinutes": "min",
   "unitSeconds": "s",
-  
   "sectionClock": "Reloj",
   "showClock": "Mostrar el reloj",
   "showClockSubtitle": "Mostrar la hora en la presentación",
@@ -29,7 +26,6 @@
   "clockFormatAuto": "Automático",
   "clockFormat12": "12 horas",
   "clockFormat24": "24 horas",
-  
   "sectionPhotoInfo": "Información de la foto",
   "showPhotoInfo": "Mostrar información de la foto",
   "showPhotoInfoSubtitle": "Mostrar la fecha y el lugar en la presentación",
@@ -38,7 +34,6 @@
   "resolveLocationNames": "Resolver nombres de lugares",
   "resolveLocationNamesSubtitle": "Usar OpenStreetMap para mostrar nombres de lugar en lugar de coordenadas",
   "nominatimHint": "Usa Nominatim (OpenStreetMap). No se necesita clave de API.",
-  
   "sectionCalendar": "Calendario",
   "showCalendarEvents": "Mostrar eventos del calendario",
   "showCalendarEventsSubtitle": "Mostrar los eventos de hoy y de mañana del calendario del dispositivo",
@@ -46,7 +41,6 @@
   "calendarOpenSettings": "Abrir los ajustes de la aplicación",
   "calendarToday": "Hoy",
   "calendarTomorrow": "Mañana",
-  
   "sectionPhotoSource": "Origen de las fotos",
   "watchPhotoFolder": "Vigilando la carpeta",
   "watchPhotoFolderSubtitle": "Detectar automáticamente las fotos nuevas y borradas de la carpeta",
@@ -88,7 +82,6 @@
     }
   },
   "selectPhotoFolder": "Seleccionar la carpeta de fotos",
-  
   "nextcloudPublicShareUrl": "Enlace público de Nextcloud",
   "nextcloudUrlHint": "https://cloud.example.com/s/abc123",
   "webdavAuthPublicShare": "Enlace público",
@@ -127,7 +120,6 @@
       }
     }
   },
-  
   "autoSyncInterval": "Intervalo de sincronización automática",
   "disabled": "Desactivado",
   "deleteOrphanedFiles": "Eliminar archivos huérfanos",
@@ -194,7 +186,6 @@
       }
     }
   },
-  
   "sectionDisplaySchedule": "Horario de pantalla",
   "dayNightSchedule": "Horario día/noche",
   "dayNightScheduleSubtitle": "Apagar la pantalla por la noche",
@@ -209,18 +200,15 @@
   "grantDeviceAdmin": "Conceder administrador del dispositivo",
   "deviceAdminEnabled": "Administrador del dispositivo activado: la pantalla se apagará por completo",
   "screenLockWarning": "Importante: el bloqueo de pantalla (PIN/patrón/contraseña) debe estar desactivado para que el despertar automático funcione. Ve a Ajustes → Seguridad → Bloqueo de pantalla → Ninguno.",
-  
   "deviceAdminActive": "Administrador del dispositivo activo",
   "deviceAdminUninstallWarning": "Para desinstalar esta aplicación, desactiva primero el permiso de administrador del dispositivo en los ajustes de Android.",
   "openDeviceAdminSettings": "Abrir los ajustes de administrador del dispositivo",
-  
   "sectionAndroid": "Android",
   "startOnBoot": "Iniciar al arrancar",
   "startOnBootSubtitle": "Iniciar la aplicación automáticamente al encender el dispositivo",
   "keepAppRunning": "Mantener la aplicación activa",
   "keepAppRunningSubtitle": "Evitar que la aplicación se detenga cuando falte memoria",
   "notificationPermissionRequired": "Se necesita el permiso de notificaciones para Mantener la aplicación activa",
-
   "autoUpdateTitle": "Actualizaciones automáticas",
   "autoUpdateSubtitle": "Buscar nuevas versiones en GitHub e instalarlas",
   "autoUpdateFdroidNote": "Solo para instalaciones desde GitHub. Si la instalaste desde F-Droid, deja esto desactivado y actualiza desde F-Droid.",
@@ -241,7 +229,6 @@
   "updateDownloading": "Descargando…",
   "updateSkip": "Omitir",
   "updateDownloadInstall": "Descargar e instalar",
-  
   "keepAliveDialogTitle": "Mantener la aplicación activa",
   "keepAliveWhatDoes": "¿Qué hace esto?",
   "keepAliveWhatDoesExplanation": "Esta función mantiene la aplicación del marco de fotos activa de forma continua, incluso cuando al dispositivo le falta memoria.",
@@ -252,7 +239,6 @@
   "keepAliveDisableAnytime": "Puedes desactivarlo en cualquier momento desde los ajustes.",
   "cancel": "Cancelar",
   "enable": "Activar",
-  
   "about": "Acerca de",
   "aboutSubtitle": "LibrePhotoFrame v{version}",
   "@aboutSubtitle": {
@@ -262,14 +248,14 @@
       }
     }
   },
-  
   "noPhotosFound": "No se han encontrado fotos",
   "tapCenterToOpenSettings": "Toca el centro de la pantalla para abrir los ajustes",
-  
   "screenOrientation": "Orientación de la pantalla",
   "screenOrientationAuto": "Automática (sensor)",
   "screenOrientationPortraitUp": "Vertical",
   "screenOrientationPortraitDown": "Vertical (invertida)",
   "screenOrientationLandscapeLeft": "Horizontal (izquierda)",
-  "screenOrientationLandscapeRight": "Horizontal (derecha)"
+  "screenOrientationLandscapeRight": "Horizontal (derecha)",
+  "enhancedTextContrast": "Enhanced Text Contrast",
+  "enhancedTextContrastSubtitle": "Add stronger outline for better readability on light backgrounds"
 }

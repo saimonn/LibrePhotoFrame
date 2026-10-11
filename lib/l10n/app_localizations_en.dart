@@ -1,6 +1,5 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
-
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -37,8 +36,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pairPhotos => 'Split Screen';
 
   @override
-  String get pairPhotosSubtitle =>
-      'Show two photos at once when they match the screen shape';
+  String get pairPhotosSubtitle => 'Show two photos at once when they match the screen shape';
 
   @override
   String get photoOrder => 'Sort photos by…';
@@ -101,26 +99,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get useScriptFont => 'Use Script Font';
 
   @override
-  String get useScriptFontSubtitle =>
-      'Display metadata in elegant handwritten style';
-
-  @override
-  String get enhancedTextContrast => 'Enhanced Text Contrast';
-
-  @override
-  String get enhancedTextContrastSubtitle =>
-      'Add stronger outline for better readability on light backgrounds';
+  String get useScriptFontSubtitle => 'Display metadata in elegant handwritten style';
 
   @override
   String get resolveLocationNames => 'Resolve Location Names';
 
   @override
-  String get resolveLocationNamesSubtitle =>
-      'Use OpenStreetMap to show place names instead of coordinates';
+  String get resolveLocationNamesSubtitle => 'Use OpenStreetMap to show place names instead of coordinates';
 
   @override
-  String get nominatimHint =>
-      'Uses Nominatim (OpenStreetMap). No API key required.';
+  String get nominatimHint => 'Uses Nominatim (OpenStreetMap). No API key required.';
 
   @override
   String get sectionCalendar => 'Calendar';
@@ -129,12 +117,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get showCalendarEvents => 'Show Calendar Events';
 
   @override
-  String get showCalendarEventsSubtitle =>
-      'Display today\'s and tomorrow\'s events from the device calendar';
+  String get showCalendarEventsSubtitle => 'Display today\'s and tomorrow\'s events from the device calendar';
 
   @override
-  String get calendarPermissionDenied =>
-      'Calendar permission denied. Grant it to show events.';
+  String get calendarPermissionDenied => 'Calendar permission denied. Grant it to show events.';
 
   @override
   String get calendarOpenSettings => 'Open app settings';
@@ -152,15 +138,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get watchPhotoFolder => 'Watch Folder';
 
   @override
-  String get watchPhotoFolderSubtitle =>
-      'Detect new and deleted photos in the photo folder automatically';
+  String get watchPhotoFolderSubtitle => 'Detect new and deleted photos in the photo folder automatically';
 
   @override
   String get pollInterval => 'Poll Interval';
 
   @override
-  String get pollIntervalSubtitle =>
-      'How often the photo source is re-read to pick up changes that no event reported';
+  String get pollIntervalSubtitle => 'How often the photo source is re-read to pick up changes that no event reported';
 
   @override
   String get appFolder => 'App Folder';
@@ -169,8 +153,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appFolderSubtitle => 'Photos stored in app folder';
 
   @override
-  String get appFolderWarning =>
-      'Copy photos to this folder. They will be deleted when uninstalling the app.';
+  String get appFolderWarning => 'Copy photos to this folder. They will be deleted when uninstalling the app.';
 
   @override
   String get devicePhotos => 'Device Photos';
@@ -249,8 +232,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get webdavUrlLabel => 'WebDAV URL';
 
   @override
-  String get webdavUrlHint =>
-      'https://cloud.example.com/remote.php/dav/files/user/';
+  String get webdavUrlHint => 'https://cloud.example.com/remote.php/dav/files/user/';
 
   @override
   String get webdavUsername => 'Username';
@@ -262,8 +244,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get webdavAllowInvalidCertificate => 'Accept invalid certificate';
 
   @override
-  String get webdavAllowInvalidCertificateWarning =>
-      'Insecure: only for self-signed certificates on trusted networks.';
+  String get webdavAllowInvalidCertificateWarning => 'Insecure: only for self-signed certificates on trusted networks.';
 
   @override
   String get testConnection => 'Test Connection';
@@ -278,15 +259,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncAllNextcloudFolders => 'All folders';
 
   @override
-  String get syncAllNextcloudFoldersSubtitle =>
-      'Sync images from the share root and every subfolder';
+  String get syncAllNextcloudFoldersSubtitle => 'Sync images from the share root and every subfolder';
 
   @override
   String get syncSelectedNextcloudFolders => 'Selected folders';
 
   @override
-  String get syncSelectedNextcloudFoldersSubtitle =>
-      'Choose the folders whose direct images should be used';
+  String get syncSelectedNextcloudFoldersSubtitle => 'Choose the folders whose direct images should be used';
 
   @override
   String get loadNextcloudFolders => 'Load folders';
@@ -295,15 +274,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loadingNextcloudFolders => 'Loading folders...';
 
   @override
-  String get nextcloudFolderSelectionHint =>
-      'Select the share root and any subfolders you want to include.';
+  String get nextcloudFolderSelectionHint => 'Select the share root and any subfolders you want to include.';
 
   @override
   String get nextcloudShareRoot => 'Share root';
 
   @override
-  String get nextcloudShareRootSubtitle =>
-      'Images directly in the shared root folder';
+  String get nextcloudShareRootSubtitle => 'Images directly in the shared root folder';
 
   @override
   String nextcloudFolderPhotoCount(int count) {
@@ -331,8 +308,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteOrphanedFiles => 'Delete orphaned files';
 
   @override
-  String get deleteOrphanedFilesSubtitle =>
-      'Remove local files that are no longer on server';
+  String get deleteOrphanedFilesSubtitle => 'Remove local files that are no longer on server';
 
   @override
   String get syncNow => 'Sync Now';
@@ -352,31 +328,25 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get nextcloudErrorInvalidShareLink =>
-      'The Nextcloud share link is no longer valid.';
+  String get nextcloudErrorInvalidShareLink => 'The Nextcloud share link is no longer valid.';
 
   @override
-  String get nextcloudErrorShareInaccessible =>
-      'The Nextcloud share is no longer accessible.';
+  String get nextcloudErrorShareInaccessible => 'The Nextcloud share is no longer accessible.';
 
   @override
-  String get nextcloudErrorConnectionTimeout =>
-      'Connection to Nextcloud timed out.';
+  String get nextcloudErrorConnectionTimeout => 'Connection to Nextcloud timed out.';
 
   @override
-  String get nextcloudErrorConnectionFailed =>
-      'Could not connect to Nextcloud. Check internet connection and share link.';
+  String get nextcloudErrorConnectionFailed => 'Could not connect to Nextcloud. Check internet connection and share link.';
 
   @override
-  String get nextcloudErrorDownloadStalled =>
-      'Download timed out after 15 minutes without receiving data.';
+  String get nextcloudErrorDownloadStalled => 'Download timed out after 15 minutes without receiving data.';
 
   @override
   String get nextcloudErrorInvalidUrlEmpty => 'URL is empty.';
 
   @override
-  String get nextcloudErrorInvalidUrlScheme =>
-      'Invalid URL scheme. Use http or https.';
+  String get nextcloudErrorInvalidUrlScheme => 'Invalid URL scheme. Use http or https.';
 
   @override
   String get nextcloudErrorInvalidUrlNoHost => 'Invalid URL. Host is missing.';
@@ -428,45 +398,37 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nightStartsAt => 'Night starts at';
 
   @override
-  String get differentNightTimeOnFridaysAndSaturdays =>
-      'Different night time on Fridays and Saturdays';
+  String get differentNightTimeOnFridaysAndSaturdays => 'Different night time on Fridays and Saturdays';
 
   @override
-  String get differentNightTimeFridaysAndSaturdays =>
-      'Night starts on Fridays and Saturdays at';
+  String get differentNightTimeFridaysAndSaturdays => 'Night starts on Fridays and Saturdays at';
 
   @override
   String get nativeScreenOff => 'Native Screen Off';
 
   @override
-  String get nativeScreenOffEnabledSubtitle =>
-      'Use Device Admin to completely turn off screen';
+  String get nativeScreenOffEnabledSubtitle => 'Use Device Admin to completely turn off screen';
 
   @override
-  String get nativeScreenOffDisabledSubtitle =>
-      'Requires Device Admin permission';
+  String get nativeScreenOffDisabledSubtitle => 'Requires Device Admin permission';
 
   @override
-  String get deviceAdminExplanation =>
-      'Device Admin permission is required to fully turn off the screen. Without it, the display will only be dimmed.';
+  String get deviceAdminExplanation => 'Device Admin permission is required to fully turn off the screen. Without it, the display will only be dimmed.';
 
   @override
   String get grantDeviceAdmin => 'Grant Device Admin';
 
   @override
-  String get deviceAdminEnabled =>
-      'Device Admin enabled - screen will turn off completely';
+  String get deviceAdminEnabled => 'Device Admin enabled - screen will turn off completely';
 
   @override
-  String get screenLockWarning =>
-      'Important: Screen lock (PIN/Pattern/Password) must be disabled for automatic wake-up to work. Go to Settings → Security → Screen lock → None.';
+  String get screenLockWarning => 'Important: Screen lock (PIN/Pattern/Password) must be disabled for automatic wake-up to work. Go to Settings → Security → Screen lock → None.';
 
   @override
   String get deviceAdminActive => 'Device Admin Active';
 
   @override
-  String get deviceAdminUninstallWarning =>
-      'To uninstall this app, you must first disable Device Admin permission in Android settings.';
+  String get deviceAdminUninstallWarning => 'To uninstall this app, you must first disable Device Admin permission in Android settings.';
 
   @override
   String get openDeviceAdminSettings => 'Open Device Admin Settings';
@@ -484,34 +446,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get keepAppRunning => 'Keep App Running';
 
   @override
-  String get keepAppRunningSubtitle =>
-      'Prevent app from being stopped on low memory';
+  String get keepAppRunningSubtitle => 'Prevent app from being stopped on low memory';
 
   @override
-  String get notificationPermissionRequired =>
-      'Notification permission is required for Keep App Running';
+  String get notificationPermissionRequired => 'Notification permission is required for Keep App Running';
 
   @override
   String get autoUpdateTitle => 'Automatic updates';
 
   @override
-  String get autoUpdateSubtitle =>
-      'Check GitHub for new versions and install them';
+  String get autoUpdateSubtitle => 'Check GitHub for new versions and install them';
 
   @override
-  String get autoUpdateFdroidNote =>
-      'Only for installs from GitHub. If you installed via F-Droid, leave this off and update through F-Droid.';
+  String get autoUpdateFdroidNote => 'Only for installs from GitHub. If you installed via F-Droid, leave this off and update through F-Droid.';
 
   @override
   String get autoUpdateSilentTitle => 'Install without confirmation';
 
   @override
-  String get autoUpdateSilentSubtitle =>
-      'Device Owner detected: updates can be installed silently in the background.';
+  String get autoUpdateSilentSubtitle => 'Device Owner detected: updates can be installed silently in the background.';
 
   @override
-  String get autoUpdatePromptNote =>
-      'When an update is available, you\'ll be asked before it is installed.';
+  String get autoUpdatePromptNote => 'When an update is available, you\'ll be asked before it is installed.';
 
   @override
   String get autoUpdateCheckNow => 'Check now';
@@ -543,26 +499,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get keepAliveWhatDoes => 'What does this do?';
 
   @override
-  String get keepAliveWhatDoesExplanation =>
-      'This feature keeps the photo frame app running continuously, even when the device is low on memory.';
+  String get keepAliveWhatDoesExplanation => 'This feature keeps the photo frame app running continuously, even when the device is low on memory.';
 
   @override
   String get keepAliveWhyNeed => 'Why would I need this?';
 
   @override
-  String get keepAliveWhyNeedExplanation =>
-      'On older devices with limited RAM, Android may stop the app to free up memory. This prevents that by running the app as a foreground service.';
+  String get keepAliveWhyNeedExplanation => 'On older devices with limited RAM, Android may stop the app to free up memory. This prevents that by running the app as a foreground service.';
 
   @override
   String get keepAliveWhatHappens => 'What will happen?';
 
   @override
-  String get keepAliveWhatHappensExplanation =>
-      '• A small notification will appear in the status bar\n• The app will be less likely to be stopped by Android\n• On Android 13+, you\'ll need to grant notification permission';
+  String get keepAliveWhatHappensExplanation => '• A small notification will appear in the status bar\n• The app will be less likely to be stopped by Android\n• On Android 13+, you\'ll need to grant notification permission';
 
   @override
-  String get keepAliveDisableAnytime =>
-      'You can disable this at any time from the settings.';
+  String get keepAliveDisableAnytime => 'You can disable this at any time from the settings.';
 
   @override
   String get cancel => 'Cancel';
@@ -601,4 +553,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get screenOrientationLandscapeRight => 'Landscape (right)';
+
+  @override
+  String get enhancedTextContrast => 'Enhanced Text Contrast';
+
+  @override
+  String get enhancedTextContrastSubtitle => 'Add stronger outline for better readability on light backgrounds';
 }

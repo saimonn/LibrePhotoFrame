@@ -1,10 +1,8 @@
 {
   "@@locale": "de",
-  
   "settings": "Einstellungen",
   "language": "Sprache",
   "languageSystem": "Systemstandard",
-  
   "sectionSlideshow": "Diashow",
   "slideDuration": "Anzeigedauer",
   "transitionDuration": "Überblendzeit",
@@ -19,7 +17,6 @@
   "photoOrderModification": "Nach Änderungsdatum der Datei",
   "unitMinutes": "Min",
   "unitSeconds": "Sek",
-  
   "sectionClock": "Uhr",
   "showClock": "Uhr anzeigen",
   "showClockSubtitle": "Uhrzeit auf der Diashow anzeigen",
@@ -29,7 +26,6 @@
   "clockFormatAuto": "Automatisch",
   "clockFormat12": "12 Stunden",
   "clockFormat24": "24 Stunden",
-  
   "sectionPhotoInfo": "Foto-Informationen",
   "showPhotoInfo": "Foto-Info anzeigen",
   "showPhotoInfoSubtitle": "Datum und Ort auf der Diashow anzeigen",
@@ -38,7 +34,6 @@
   "resolveLocationNames": "Ortsnamen auflösen",
   "resolveLocationNamesSubtitle": "OpenStreetMap nutzen um Ortsnamen statt Koordinaten anzuzeigen",
   "nominatimHint": "Verwendet Nominatim (OpenStreetMap). Kein API-Schlüssel erforderlich.",
-  
   "sectionCalendar": "Kalender",
   "showCalendarEvents": "Kalendertermine anzeigen",
   "showCalendarEventsSubtitle": "Termine von heute und morgen aus dem Gerätekalender anzeigen",
@@ -46,7 +41,6 @@
   "calendarOpenSettings": "App-Einstellungen öffnen",
   "calendarToday": "Heute",
   "calendarTomorrow": "Morgen",
-  
   "sectionPhotoSource": "Fotoquelle",
   "watchPhotoFolder": "Ordner überwachen",
   "watchPhotoFolderSubtitle": "Neue und gelöschte Fotos im Fotoordner automatisch erkennen",
@@ -88,7 +82,6 @@
     }
   },
   "selectPhotoFolder": "Foto-Ordner auswählen",
-  
   "nextcloudPublicShareUrl": "Nextcloud öffentlicher Freigabe-Link",
   "nextcloudUrlHint": "https://cloud.example.com/s/abc123",
   "webdavAuthPublicShare": "Öffentliche Freigabe",
@@ -127,7 +120,6 @@
       }
     }
   },
-  
   "autoSyncInterval": "Auto-Sync-Intervall",
   "disabled": "Deaktiviert",
   "deleteOrphanedFiles": "Verwaiste Dateien löschen",
@@ -194,7 +186,6 @@
       }
     }
   },
-  
   "sectionDisplaySchedule": "Anzeige-Zeitplan",
   "dayNightSchedule": "Tag/Nacht-Zeitplan",
   "dayNightScheduleSubtitle": "Display nachts ausschalten",
@@ -209,18 +200,15 @@
   "grantDeviceAdmin": "Geräte-Admin gewähren",
   "deviceAdminEnabled": "Geräte-Admin aktiviert - Bildschirm wird komplett ausgeschaltet",
   "screenLockWarning": "Wichtig: Die Bildschirmsperre (PIN/Muster/Passwort) muss deaktiviert sein, damit das automatische Aufwachen funktioniert. Gehe zu Einstellungen → Sicherheit → Bildschirmsperre → Keine.",
-  
   "deviceAdminActive": "Geräte-Admin aktiv",
   "deviceAdminUninstallWarning": "Um diese App zu deinstallieren, muss zuerst die Geräte-Admin-Berechtigung in den Android-Einstellungen deaktiviert werden.",
   "openDeviceAdminSettings": "Geräte-Admin-Einstellungen öffnen",
-  
   "sectionAndroid": "Android",
   "startOnBoot": "Bei Start öffnen",
   "startOnBootSubtitle": "App automatisch beim Gerätestart öffnen",
   "keepAppRunning": "App am Laufen halten",
   "keepAppRunningSubtitle": "Verhindern, dass die App bei wenig Speicher beendet wird",
   "notificationPermissionRequired": "Benachrichtigungs-Berechtigung wird für 'App am Laufen halten' benötigt",
-
   "autoUpdateTitle": "Automatische Updates",
   "autoUpdateSubtitle": "Auf GitHub nach neuen Versionen suchen und installieren",
   "autoUpdateFdroidNote": "Nur für Installationen über GitHub. Wenn du die App über F-Droid installiert hast, lass dies aus und aktualisiere über F-Droid.",
@@ -241,7 +229,6 @@
   "updateDownloading": "Wird heruntergeladen…",
   "updateSkip": "Überspringen",
   "updateDownloadInstall": "Herunterladen & installieren",
-  
   "keepAliveDialogTitle": "App am Laufen halten",
   "keepAliveWhatDoes": "Was macht diese Funktion?",
   "keepAliveWhatDoesExplanation": "Diese Funktion hält die Bilderrahmen-App dauerhaft am Laufen, auch wenn das Gerät wenig Arbeitsspeicher hat.",
@@ -252,7 +239,6 @@
   "keepAliveDisableAnytime": "Du kannst dies jederzeit in den Einstellungen deaktivieren.",
   "cancel": "Abbrechen",
   "enable": "Aktivieren",
-  
   "about": "Über",
   "aboutSubtitle": "LibrePhotoFrame v{version}",
   "@aboutSubtitle": {
@@ -262,14 +248,14 @@
       }
     }
   },
-  
   "noPhotosFound": "Keine Fotos gefunden",
   "tapCenterToOpenSettings": "Tippe auf die Bildschirmmitte um Einstellungen zu öffnen",
-  
   "screenOrientation": "Bildschirmausrichtung",
   "screenOrientationAuto": "Automatisch (Sensor)",
   "screenOrientationPortraitUp": "Hochformat",
   "screenOrientationPortraitDown": "Hochformat (auf dem Kopf)",
   "screenOrientationLandscapeLeft": "Querformat (links)",
-  "screenOrientationLandscapeRight": "Querformat (rechts)"
+  "screenOrientationLandscapeRight": "Querformat (rechts)",
+  "enhancedTextContrast": "Enhanced Text Contrast",
+  "enhancedTextContrastSubtitle": "Add stronger outline for better readability on light backgrounds"
 }
