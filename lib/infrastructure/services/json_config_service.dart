@@ -621,6 +621,17 @@ class JsonConfigService extends ConfigProvider {
   }
 
   @override
+  String get photoFit {
+    final value = _config['photo_fit'] as String? ?? '';
+    return value == 'cover' || value == 'fill' || value == 'fitWidth' || value == 'fitHeight' ? value : 'contain';
+  }
+
+  @override
+  set photoFit(String value) {
+    _config['photo_fit'] = value;
+  }
+
+  @override
   bool get photoInfoUseEnhancedContrast => _config['photo_info_use_enhanced_contrast'] ?? false;
 
   @override

@@ -157,4 +157,9 @@ abstract class ConfigProvider extends ChangeNotifier {
   
   bool get clockUseEnhancedContrast; // Add stronger outline/shadow for better readability
   set clockUseEnhancedContrast(bool value);
+
+  // Photo display fit
+  // Values: 'contain', 'cover', 'fill', 'fitWidth', 'fitHeight'
+  String get photoFit;
+  set photoFit(String value);
 }

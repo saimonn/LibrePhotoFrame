@@ -273,6 +273,12 @@ class MockConfigProvider extends ChangeNotifier implements ConfigProvider {
   set clockUseEnhancedContrast(bool value) {}
 
   @override
+  String get photoFit => 'contain';
+
+  @override
+  set photoFit(String value) {}
+
+  @override
   bool get photoInfoUseEnhancedContrast => false;
 
   @override

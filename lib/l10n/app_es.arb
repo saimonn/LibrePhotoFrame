@@ -257,5 +257,12 @@
   "screenOrientationLandscapeLeft": "Horizontal (izquierda)",
   "screenOrientationLandscapeRight": "Horizontal (derecha)",
   "enhancedTextContrast": "Enhanced Text Contrast",
-  "enhancedTextContrastSubtitle": "Add stronger outline for better readability on light backgrounds"
+  "enhancedTextContrastSubtitle": "Add stronger outline for better readability on light backgrounds",
+  "photoFit": "Photo Fit",
+  "photoFitSubtitle": "How images are scaled on screen",
+  "photoFitContain": "Contain (show full image)",
+  "photoFitCover": "Cover (fill screen, crop)",
+  "photoFitFill": "Fill (stretch)",
+  "photoFitFitWidth": "Fit Width",
+  "photoFitFitHeight": "Fit Height"
 }

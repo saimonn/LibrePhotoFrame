@@ -112,6 +112,8 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
   late String _clockFormat;
   late bool _clockUseEnhancedContrast;
   
+  late String _photoFit;
+  
   // Photo info settings
   late bool _showPhotoInfo;
   late String _photoInfoPosition;
@@ -227,6 +229,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     _calendarPosition = config.calendarPosition;
     _calendarSize = config.calendarSize;
     _calendarUseEnhancedContrast = config.calendarUseEnhancedContrast;
+    _photoFit = config.photoFit;
     if (_showCalendarEvents) {
       _checkCalendarPermission();
     }
@@ -442,6 +445,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     config.calendarPosition = _calendarPosition;
     config.calendarSize = _calendarSize;
     config.calendarUseEnhancedContrast = _calendarUseEnhancedContrast;
+    config.photoFit = _photoFit;
     
     // Display schedule settings
     config.scheduleEnabled = _scheduleEnabled;
@@ -570,7 +574,15 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
             ),
           
             const SizedBox(height: 16),
-          
+
+            // Photo Fit
+            _buildPhotoFitSelector(
+              _photoFit,
+              (value) => setState(() => _photoFit = value),
+            ),
+
+            const SizedBox(height: 16),
+
             // Pair Photos
             SwitchListTile(
               title: Text(AppLocalizations.of(context)!.pairPhotos),
@@ -2376,6 +2388,40 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     );
   }
   
+  Widget _buildPhotoFitSelector(String fit, ValueChanged<String> onChanged) {
+    final l10n = AppLocalizations.of(context)!;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          const Icon(Icons.image, size: 20),
+          const SizedBox(width: 12),
+          Text(l10n.photoFit),
+          const Spacer(),
+          Flexible(
+            child: DropdownButton<String>(
+              isExpanded: true,
+              value: fit,
+              isDense: true,
+              underline: const SizedBox(),
+            items: [
+              DropdownMenuItem(value: 'contain', child: Text(l10n.photoFitContain, overflow: TextOverflow.ellipsis)),
+              DropdownMenuItem(value: 'cover', child: Text(l10n.photoFitCover, overflow: TextOverflow.ellipsis)),
+              DropdownMenuItem(value: 'fill', child: Text(l10n.photoFitFill, overflow: TextOverflow.ellipsis)),
+              DropdownMenuItem(value: 'fitWidth', child: Text(l10n.photoFitFitWidth, overflow: TextOverflow.ellipsis)),
+              DropdownMenuItem(value: 'fitHeight', child: Text(l10n.photoFitFitHeight, overflow: TextOverflow.ellipsis)),
+            ],
+            onChanged: (value) {
+              if (value != null) {
+                onChanged(value);
+              }
+            },
+          )),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSizeSelector(String size, ValueChanged<String> onChanged) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),

@@ -15,6 +15,8 @@ class PhotoSlide extends StatelessWidget {
   final PhotoEntry? partner;
   final PhotoPairing pairing;
 
+  final String photoFit;
+
   const PhotoSlide({
     super.key,
     required this.photo,
@@ -22,10 +24,27 @@ class PhotoSlide extends StatelessWidget {
     required this.blurBorders,
     this.partner,
     this.pairing = PhotoPairing.single,
+    this.photoFit = 'contain',
   });
 
   /// Gap between the two photos of a paired layout, in logical pixels.
   static const double pairGap = 2.0;
+
+  BoxFit _getFit() {
+    switch (photoFit) {
+      case 'cover':
+        return BoxFit.cover;
+      case 'fill':
+        return BoxFit.fill;
+      case 'fitWidth':
+        return BoxFit.fitWidth;
+      case 'fitHeight':
+        return BoxFit.fitHeight;
+      case 'contain':
+      default:
+        return BoxFit.contain;
+    }
+  }
 
   /// Size of the box a single photo occupies on a frame of [screenSize].
   ///
@@ -170,7 +189,7 @@ class PhotoSlide extends StatelessWidget {
           Positioned.fill(
             child: Image(
               image: imageProvider,
-              fit: BoxFit.contain,
+              fit: _getFit(),
               filterQuality: FilterQuality.medium,
               gaplessPlayback: true,
             ),

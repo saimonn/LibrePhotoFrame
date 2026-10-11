@@ -964,6 +964,7 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
                     ),
               screenSize: _screenSize!,
               blurBorders: config.blurBorders,
+              photoFit: config.photoFit,
             );
             
             // Use slide animation for manual navigation, fade for auto-advance

@@ -1,5 +1,6 @@
 // ignore: unused_import
 import 'package:intl/intl.dart' as intl;
+
 import 'app_localizations.dart';
 
 // ignore_for_file: type=lint
@@ -36,7 +37,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get pairPhotos => 'Écran divisé';
 
   @override
-  String get pairPhotosSubtitle => 'Afficher deux photos à la fois quand elles correspondent au format de l\'écran';
+  String get pairPhotosSubtitle =>
+      'Afficher deux photos à la fois quand elles correspondent au format de l\'écran';
 
   @override
   String get photoOrder => 'Trier les photos par…';
@@ -93,22 +95,26 @@ class AppLocalizationsFr extends AppLocalizations {
   String get showPhotoInfo => 'Afficher les informations photo';
 
   @override
-  String get showPhotoInfoSubtitle => 'Afficher la date et le lieu sur le diaporama';
+  String get showPhotoInfoSubtitle =>
+      'Afficher la date et le lieu sur le diaporama';
 
   @override
   String get useScriptFont => 'Police manuscrite';
 
   @override
-  String get useScriptFontSubtitle => 'Afficher les métadonnées dans un style manuscrit élégant';
+  String get useScriptFontSubtitle =>
+      'Afficher les métadonnées dans un style manuscrit élégant';
 
   @override
   String get resolveLocationNames => 'Résoudre les noms de lieux';
 
   @override
-  String get resolveLocationNamesSubtitle => 'Utiliser OpenStreetMap pour afficher les noms de lieux au lieu des coordonnées';
+  String get resolveLocationNamesSubtitle =>
+      'Utiliser OpenStreetMap pour afficher les noms de lieux au lieu des coordonnées';
 
   @override
-  String get nominatimHint => 'Utilise Nominatim (OpenStreetMap). Aucune clé d\'API requise.';
+  String get nominatimHint =>
+      'Utilise Nominatim (OpenStreetMap). Aucune clé d\'API requise.';
 
   @override
   String get sectionCalendar => 'Calendrier';
@@ -117,10 +123,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get showCalendarEvents => 'Afficher les événements du calendrier';
 
   @override
-  String get showCalendarEventsSubtitle => 'Afficher les événements d\'aujourd\'hui et de demain depuis le calendrier de l\'appareil';
+  String get showCalendarEventsSubtitle =>
+      'Afficher les événements d\'aujourd\'hui et de demain depuis le calendrier de l\'appareil';
 
   @override
-  String get calendarPermissionDenied => 'Autorisation calendrier refusée. Accordez-la pour afficher les événements.';
+  String get calendarPermissionDenied =>
+      'Autorisation calendrier refusée. Accordez-la pour afficher les événements.';
 
   @override
   String get calendarOpenSettings => 'Ouvrir les paramètres de l\'application';
@@ -138,22 +146,26 @@ class AppLocalizationsFr extends AppLocalizations {
   String get watchPhotoFolder => 'Surveiller le dossier';
 
   @override
-  String get watchPhotoFolderSubtitle => 'Détecter automatiquement les photos ajoutées et supprimées du dossier';
+  String get watchPhotoFolderSubtitle =>
+      'Détecter automatiquement les photos ajoutées et supprimées du dossier';
 
   @override
   String get pollInterval => 'Intervalle d\'analyse';
 
   @override
-  String get pollIntervalSubtitle => 'Fréquence de relecture de la source de photos pour détecter les changements';
+  String get pollIntervalSubtitle =>
+      'Fréquence de relecture de la source de photos pour détecter les changements';
 
   @override
   String get appFolder => 'Dossier de l\'application';
 
   @override
-  String get appFolderSubtitle => 'Photos stockées dans le dossier de l\'application';
+  String get appFolderSubtitle =>
+      'Photos stockées dans le dossier de l\'application';
 
   @override
-  String get appFolderWarning => 'Copiez les photos dans ce dossier. Elles seront supprimées lors de la désinstallation de l\'application.';
+  String get appFolderWarning =>
+      'Copiez les photos dans ce dossier. Elles seront supprimées lors de la désinstallation de l\'application.';
 
   @override
   String get devicePhotos => 'Photos de l\'appareil';
@@ -171,7 +183,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get nextcloud => 'Nextcloud';
 
   @override
-  String get nextcloudSubtitle => 'Synchroniser depuis un lien de partage public Nextcloud';
+  String get nextcloudSubtitle =>
+      'Synchroniser depuis un lien de partage public Nextcloud';
 
   @override
   String get loading => 'Chargement...';
@@ -180,7 +193,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get loadingAlbums => 'Chargement des albums...';
 
   @override
-  String get tapToLoadAlbums => 'Touchez pour charger les albums photo de l\'appareil';
+  String get tapToLoadAlbums =>
+      'Touchez pour charger les albums photo de l\'appareil';
 
   @override
   String get load => 'Charger';
@@ -232,7 +246,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get webdavUrlLabel => 'URL WebDAV';
 
   @override
-  String get webdavUrlHint => 'https://cloud.example.com/remote.php/dav/files/user/';
+  String get webdavUrlHint =>
+      'https://cloud.example.com/remote.php/dav/files/user/';
 
   @override
   String get webdavUsername => 'Nom d\'utilisateur';
@@ -244,7 +259,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get webdavAllowInvalidCertificate => 'Accepter un certificat invalide';
 
   @override
-  String get webdavAllowInvalidCertificateWarning => 'Non sécurisé : uniquement pour les certificats auto-signés sur des réseaux de confiance.';
+  String get webdavAllowInvalidCertificateWarning =>
+      'Non sécurisé : uniquement pour les certificats auto-signés sur des réseaux de confiance.';
 
   @override
   String get testConnection => 'Tester la connexion';
@@ -259,13 +275,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String get syncAllNextcloudFolders => 'Tous les dossiers';
 
   @override
-  String get syncAllNextcloudFoldersSubtitle => 'Synchroniser les images de la racine du partage et de chaque sous-dossier';
+  String get syncAllNextcloudFoldersSubtitle =>
+      'Synchroniser les images de la racine du partage et de chaque sous-dossier';
 
   @override
   String get syncSelectedNextcloudFolders => 'Dossiers sélectionnés';
 
   @override
-  String get syncSelectedNextcloudFoldersSubtitle => 'Choisir les dossiers dont les images directes doivent être utilisées';
+  String get syncSelectedNextcloudFoldersSubtitle =>
+      'Choisir les dossiers dont les images directes doivent être utilisées';
 
   @override
   String get loadNextcloudFolders => 'Charger les dossiers';
@@ -274,13 +292,15 @@ class AppLocalizationsFr extends AppLocalizations {
   String get loadingNextcloudFolders => 'Chargement des dossiers...';
 
   @override
-  String get nextcloudFolderSelectionHint => 'Sélectionnez la racine du partage et les sous-dossiers à inclure.';
+  String get nextcloudFolderSelectionHint =>
+      'Sélectionnez la racine du partage et les sous-dossiers à inclure.';
 
   @override
   String get nextcloudShareRoot => 'Racine du partage';
 
   @override
-  String get nextcloudShareRootSubtitle => 'Images directement dans le dossier racine partagé';
+  String get nextcloudShareRootSubtitle =>
+      'Images directement dans le dossier racine partagé';
 
   @override
   String nextcloudFolderPhotoCount(int count) {
@@ -308,7 +328,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get deleteOrphanedFiles => 'Supprimer les fichiers orphelins';
 
   @override
-  String get deleteOrphanedFilesSubtitle => 'Supprimer les fichiers locaux qui ne sont plus sur le serveur';
+  String get deleteOrphanedFilesSubtitle =>
+      'Supprimer les fichiers locaux qui ne sont plus sur le serveur';
 
   @override
   String get syncNow => 'Synchroniser maintenant';
@@ -328,28 +349,35 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get nextcloudErrorInvalidShareLink => 'Le lien de partage Nextcloud n\'est plus valide.';
+  String get nextcloudErrorInvalidShareLink =>
+      'Le lien de partage Nextcloud n\'est plus valide.';
 
   @override
-  String get nextcloudErrorShareInaccessible => 'Le partage Nextcloud n\'est plus accessible.';
+  String get nextcloudErrorShareInaccessible =>
+      'Le partage Nextcloud n\'est plus accessible.';
 
   @override
-  String get nextcloudErrorConnectionTimeout => 'La connexion à Nextcloud a expiré.';
+  String get nextcloudErrorConnectionTimeout =>
+      'La connexion à Nextcloud a expiré.';
 
   @override
-  String get nextcloudErrorConnectionFailed => 'Impossible de se connecter à Nextcloud. Vérifiez la connexion Internet et le lien de partage.';
+  String get nextcloudErrorConnectionFailed =>
+      'Impossible de se connecter à Nextcloud. Vérifiez la connexion Internet et le lien de partage.';
 
   @override
-  String get nextcloudErrorDownloadStalled => 'Le téléchargement a expiré après 15 minutes sans recevoir de données.';
+  String get nextcloudErrorDownloadStalled =>
+      'Le téléchargement a expiré après 15 minutes sans recevoir de données.';
 
   @override
   String get nextcloudErrorInvalidUrlEmpty => 'L\'URL est vide.';
 
   @override
-  String get nextcloudErrorInvalidUrlScheme => 'Schéma d\'URL invalide. Utilisez http ou https.';
+  String get nextcloudErrorInvalidUrlScheme =>
+      'Schéma d\'URL invalide. Utilisez http ou https.';
 
   @override
-  String get nextcloudErrorInvalidUrlNoHost => 'URL invalide. L\'hôte est manquant.';
+  String get nextcloudErrorInvalidUrlNoHost =>
+      'URL invalide. L\'hôte est manquant.';
 
   @override
   String nextcloudErrorInvalidUrlFormat(String error) {
@@ -398,40 +426,49 @@ class AppLocalizationsFr extends AppLocalizations {
   String get nightStartsAt => 'La nuit commence à';
 
   @override
-  String get differentNightTimeOnFridaysAndSaturdays => 'Heure de nuit différente le vendredi et le samedi';
+  String get differentNightTimeOnFridaysAndSaturdays =>
+      'Heure de nuit différente le vendredi et le samedi';
 
   @override
-  String get differentNightTimeFridaysAndSaturdays => 'La nuit commence le vendredi et le samedi à';
+  String get differentNightTimeFridaysAndSaturdays =>
+      'La nuit commence le vendredi et le samedi à';
 
   @override
   String get nativeScreenOff => 'Extinction native de l\'écran';
 
   @override
-  String get nativeScreenOffEnabledSubtitle => 'Utiliser le profil d\'administrateur de l\'appareil pour éteindre complètement l\'écran';
+  String get nativeScreenOffEnabledSubtitle =>
+      'Utiliser le profil d\'administrateur de l\'appareil pour éteindre complètement l\'écran';
 
   @override
-  String get nativeScreenOffDisabledSubtitle => 'Nécessite l\'autorisation d\'administrateur d\'appareil';
+  String get nativeScreenOffDisabledSubtitle =>
+      'Nécessite l\'autorisation d\'administrateur d\'appareil';
 
   @override
-  String get deviceAdminExplanation => 'L\'autorisation d\'administrateur d\'appareil est nécessaire pour éteindre complètement l\'écran. Sans elle, l\'écran sera seulement atténué.';
+  String get deviceAdminExplanation =>
+      'L\'autorisation d\'administrateur d\'appareil est nécessaire pour éteindre complètement l\'écran. Sans elle, l\'écran sera seulement atténué.';
 
   @override
   String get grantDeviceAdmin => 'Accorder l\'administrateur d\'appareil';
 
   @override
-  String get deviceAdminEnabled => 'Administrateur d\'appareil activé - l\'écran s\'éteindra complètement';
+  String get deviceAdminEnabled =>
+      'Administrateur d\'appareil activé - l\'écran s\'éteindra complètement';
 
   @override
-  String get screenLockWarning => 'Important : le verrouillage de l\'écran (code PIN / schéma / mot de passe) doit être désactivé pour que le réveil automatique fonctionne. Allez dans Paramètres → Sécurité → Verrouillage de l\'écran → Aucun.';
+  String get screenLockWarning =>
+      'Important : le verrouillage de l\'écran (code PIN / schéma / mot de passe) doit être désactivé pour que le réveil automatique fonctionne. Allez dans Paramètres → Sécurité → Verrouillage de l\'écran → Aucun.';
 
   @override
   String get deviceAdminActive => 'Administrateur d\'appareil actif';
 
   @override
-  String get deviceAdminUninstallWarning => 'Pour désinstaller cette application, vous devez d\'abord désactiver l\'autorisation d\'administrateur d\'appareil dans les paramètres Android.';
+  String get deviceAdminUninstallWarning =>
+      'Pour désinstaller cette application, vous devez d\'abord désactiver l\'autorisation d\'administrateur d\'appareil dans les paramètres Android.';
 
   @override
-  String get openDeviceAdminSettings => 'Ouvrir les paramètres d\'administrateur d\'appareil';
+  String get openDeviceAdminSettings =>
+      'Ouvrir les paramètres d\'administrateur d\'appareil';
 
   @override
   String get sectionAndroid => 'Android';
@@ -440,34 +477,41 @@ class AppLocalizationsFr extends AppLocalizations {
   String get startOnBoot => 'Démarrer au démarrage';
 
   @override
-  String get startOnBootSubtitle => 'Démarrer automatiquement l\'application au démarrage de l\'appareil';
+  String get startOnBootSubtitle =>
+      'Démarrer automatiquement l\'application au démarrage de l\'appareil';
 
   @override
   String get keepAppRunning => 'Garder l\'application active';
 
   @override
-  String get keepAppRunningSubtitle => 'Empêcher l\'arrêt de l\'application en cas de manque de mémoire';
+  String get keepAppRunningSubtitle =>
+      'Empêcher l\'arrêt de l\'application en cas de manque de mémoire';
 
   @override
-  String get notificationPermissionRequired => 'L\'autorisation de notification est requise pour Garder l\'application active';
+  String get notificationPermissionRequired =>
+      'L\'autorisation de notification est requise pour Garder l\'application active';
 
   @override
   String get autoUpdateTitle => 'Mises à jour automatiques';
 
   @override
-  String get autoUpdateSubtitle => 'Vérifier GitHub pour de nouvelles versions et les installer';
+  String get autoUpdateSubtitle =>
+      'Vérifier GitHub pour de nouvelles versions et les installer';
 
   @override
-  String get autoUpdateFdroidNote => 'Réservé aux installations depuis GitHub. Si vous avez installé via F-Droid, laissez cette option désactivée et mettez à jour via F-Droid.';
+  String get autoUpdateFdroidNote =>
+      'Réservé aux installations depuis GitHub. Si vous avez installé via F-Droid, laissez cette option désactivée et mettez à jour via F-Droid.';
 
   @override
   String get autoUpdateSilentTitle => 'Installer sans confirmation';
 
   @override
-  String get autoUpdateSilentSubtitle => 'Propriétaire de l\'appareil détecté : les mises à jour peuvent être installées silencieusement en arrière-plan.';
+  String get autoUpdateSilentSubtitle =>
+      'Propriétaire de l\'appareil détecté : les mises à jour peuvent être installées silencieusement en arrière-plan.';
 
   @override
-  String get autoUpdatePromptNote => 'Lorsqu\'une mise à jour est disponible, elle vous sera proposée avant l\'installation.';
+  String get autoUpdatePromptNote =>
+      'Lorsqu\'une mise à jour est disponible, elle vous sera proposée avant l\'installation.';
 
   @override
   String get autoUpdateCheckNow => 'Vérifier maintenant';
@@ -499,22 +543,26 @@ class AppLocalizationsFr extends AppLocalizations {
   String get keepAliveWhatDoes => 'Que fait cette option ?';
 
   @override
-  String get keepAliveWhatDoesExplanation => 'Cette option garde l\'application de cadre photo active en continu, même lorsque l\'appareil manque de mémoire.';
+  String get keepAliveWhatDoesExplanation =>
+      'Cette option garde l\'application de cadre photo active en continu, même lorsque l\'appareil manque de mémoire.';
 
   @override
   String get keepAliveWhyNeed => 'Pourquoi en aurais-je besoin ?';
 
   @override
-  String get keepAliveWhyNeedExplanation => 'Sur les appareils anciens à mémoire limitée, Android peut arrêter l\'application pour libérer de la mémoire. Cette option l\'empêche en la faisant tourner comme service de premier plan.';
+  String get keepAliveWhyNeedExplanation =>
+      'Sur les appareils anciens à mémoire limitée, Android peut arrêter l\'application pour libérer de la mémoire. Cette option l\'empêche en la faisant tourner comme service de premier plan.';
 
   @override
   String get keepAliveWhatHappens => 'Que va-t-il se passer ?';
 
   @override
-  String get keepAliveWhatHappensExplanation => '• Une petite notification apparaîtra dans la barre d\'état\n• L\'application aura moins de chances d\'être arrêtée par Android\n• Sur Android 13+, vous devrez accorder l\'autorisation de notification';
+  String get keepAliveWhatHappensExplanation =>
+      '• Une petite notification apparaîtra dans la barre d\'état\n• L\'application aura moins de chances d\'être arrêtée par Android\n• Sur Android 13+, vous devrez accorder l\'autorisation de notification';
 
   @override
-  String get keepAliveDisableAnytime => 'Vous pouvez la désactiver à tout moment depuis les paramètres.';
+  String get keepAliveDisableAnytime =>
+      'Vous pouvez la désactiver à tout moment depuis les paramètres.';
 
   @override
   String get cancel => 'Annuler';
@@ -534,7 +582,8 @@ class AppLocalizationsFr extends AppLocalizations {
   String get noPhotosFound => 'Aucune photo trouvée';
 
   @override
-  String get tapCenterToOpenSettings => 'Touchez le centre de l\'écran pour ouvrir les paramètres';
+  String get tapCenterToOpenSettings =>
+      'Touchez le centre de l\'écran pour ouvrir les paramètres';
 
   @override
   String get screenOrientation => 'Orientation de l\'écran';
@@ -558,5 +607,27 @@ class AppLocalizationsFr extends AppLocalizations {
   String get enhancedTextContrast => 'Enhanced Text Contrast';
 
   @override
-  String get enhancedTextContrastSubtitle => 'Add stronger outline for better readability on light backgrounds';
+  String get enhancedTextContrastSubtitle =>
+      'Add stronger outline for better readability on light backgrounds';
+
+  @override
+  String get photoFit => 'Photo Fit';
+
+  @override
+  String get photoFitSubtitle => 'How images are scaled on screen';
+
+  @override
+  String get photoFitContain => 'Contain (show full image)';
+
+  @override
+  String get photoFitCover => 'Cover (fill screen, crop)';
+
+  @override
+  String get photoFitFill => 'Fill (stretch)';
+
+  @override
+  String get photoFitFitWidth => 'Fit Width';
+
+  @override
+  String get photoFitFitHeight => 'Fit Height';
 }
