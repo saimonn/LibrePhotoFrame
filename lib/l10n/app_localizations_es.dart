@@ -107,6 +107,13 @@ class AppLocalizationsEs extends AppLocalizations {
       'Mostrar los metadatos con un estilo manuscrito elegante';
 
   @override
+  String get enhancedTextContrast => 'Enhanced Text Contrast';
+
+  @override
+  String get enhancedTextContrastSubtitle =>
+      'Add stronger outline for better readability on light backgrounds';
+
+  @override
   String get resolveLocationNames => 'Resolver nombres de lugares';
 
   @override
