@@ -1,0 +1,118 @@
+# F-Droid build recipe for LibrePhotoFrame.
+#
+# `fdroid build` reads this file from the repository root. To submit the app to
+# the main repository, copy it to fdroiddata as
+# metadata/io.github.saimonn.librephotoframe.yml (remove this comment block).
+#
+# The app is a Flutter project. Flutter is pinned to the same release the CI
+# uses (.github/workflows/build-apk.yml) so the recipe and CI build alike.
+#
+# android/app/build.gradle.kts splits the APK per ABI and gives each split the
+# version code base * 10 + abi, where the abi is 1 for armeabi-v7a, 2 for
+# arm64-v8a and 3 for x86_64. The three Builds entries below mirror that scheme
+# and VercodeOperation repeats it for fdroid checkupdates.
+
+Categories:
+  - Multimedia
+  - Theming
+License: GPL-3.0-only
+AuthorName: Michael Wyraz and the LibrePhotoFrame contributors
+AuthorWebSite: https://github.com/saimonn/LibrePhotoFrame
+SourceCode: https://github.com/saimonn/LibrePhotoFrame
+IssueTracker: https://github.com/saimonn/LibrePhotoFrame/issues
+
+RepoType: git
+Repo: https://github.com/saimonn/LibrePhotoFrame.git
+
+Builds:
+  - versionName: 1.13.2
+    versionCode: 201
+    commit: eb9cd06e597485e2ea2d1e5a2c9578c67a565798
+    output: build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+    srclibs:
+      - flutter@3.47.7
+    rm:
+      - ios
+      - linux
+      - macos
+      - web
+      - windows
+    prebuild:
+      - export PUB_CACHE=$(pwd)/.pub-cache
+      - $$flutter$$/bin/flutter config --no-analytics
+      - $$flutter$$/bin/flutter pub get --enforce-lockfile
+    scanignore:
+      - .flutter/bin/cache
+    scandelete:
+      - .flutter
+      - .pub-cache
+    build:
+      - export PUB_CACHE=$(pwd)/.pub-cache
+      - $$flutter$$/bin/flutter build apk --release --split-per-abi --target-platform android-arm
+
+  - versionName: 1.13.2
+    versionCode: 202
+    commit: eb9cd06e597485e2ea2d1e5a2c9578c67a565798
+    output: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+    srclibs:
+      - flutter@3.47.7
+    rm:
+      - ios
+      - linux
+      - macos
+      - web
+      - windows
+    prebuild:
+      - export PUB_CACHE=$(pwd)/.pub-cache
+      - $$flutter$$/bin/flutter config --no-analytics
+      - $$flutter$$/bin/flutter pub get --enforce-lockfile
+    scanignore:
+      - .flutter/bin/cache
+    scandelete:
+      - .flutter
+      - .pub-cache
+    build:
+      - export PUB_CACHE=$(pwd)/.pub-cache
+      - $$flutter$$/bin/flutter build apk --release --split-per-abi --target-platform android-arm64
+
+  - versionName: 1.13.2
+    versionCode: 203
+    commit: eb9cd06e597485e2ea2d1e5a2c9578c67a565798
+    output: build/app/outputs/flutter-apk/app-x86_64-release.apk
+    srclibs:
+      - flutter@3.47.7
+    rm:
+      - ios
+      - linux
+      - macos
+      - web
+      - windows
+    prebuild:
+      - export PUB_CACHE=$(pwd)/.pub-cache
+      - $$flutter$$/bin/flutter config --no-analytics
+      - $$flutter$$/bin/flutter pub get --enforce-lockfile
+    scanignore:
+      - .flutter/bin/cache
+    scandelete:
+      - .flutter
+      - .pub-cache
+    build:
+      - export PUB_CACHE=$(pwd)/.pub-cache
+      - $$flutter$$/bin/flutter build apk --release --split-per-abi --target-platform android-x64
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags
+VercodeOperation:
+  - '%c * 10 + 1'
+  - '%c * 10 + 2'
+  - '%c * 10 + 3'
+UpdateCheckData: pubspec.yaml|version:\s.+\+(\d+)|.|version:\s(.+)\+
+CurrentVersion: 1.13.2
+CurrentVersionCode: 203
+
+MaintainerNotes: |
+  Flutter is pinned to 3.47.7, the release the CI builds with, and the Dart
+  dependencies are locked through pubspec.lock (pub get --enforce-lockfile).
+  The APK is split per ABI because android/app/build.gradle.kts sets the
+  version code to base * 10 + abi (1 armeabi-v7a, 2 arm64-v8a, 3 x86_64),
+  matching the three Builds entries and VercodeOperation.

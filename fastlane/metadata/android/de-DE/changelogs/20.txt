@@ -1,0 +1,2 @@
+Verbesserungen:
+• Die visuellen Gerätetests laufen jetzt bei jedem Pull-Request für eine bessere Regressionsabdeckung
