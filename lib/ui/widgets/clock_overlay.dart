@@ -10,6 +10,7 @@ class ClockOverlay extends StatefulWidget {
   final String position; // 'bottomRight', 'bottomLeft', 'topRight', 'topLeft'
   final String format; // 'auto', '12' or '24'
   final bool enhancedContrast; // Use stronger outline for readability
+  final Color textColor;
 
   const ClockOverlay({
     super.key,
@@ -17,6 +18,7 @@ class ClockOverlay extends StatefulWidget {
     required this.position,
     this.format = 'auto',
     this.enhancedContrast = false,
+    this.textColor = Colors.white,
   });
 
   @override
@@ -94,7 +96,7 @@ class _ClockOverlayState extends State<ClockOverlay> {
                 style: TextStyle(
                   fontSize: _fontSize,
                   fontWeight: FontWeight.w300,
-                  color: Colors.white,
+                  color: widget.textColor,
                 ),
                 outlineColor: Colors.black,
                 outlineWidth: 3.0,
@@ -104,7 +106,7 @@ class _ClockOverlayState extends State<ClockOverlay> {
                 style: TextStyle(
                   fontSize: _fontSize,
                   fontWeight: FontWeight.w300,
-                  color: Colors.white,
+                  color: widget.textColor,
                   shadows: const [
                     Shadow(offset: Offset(2, 2), blurRadius: 8, color: Colors.black54),
                     Shadow(offset: Offset(-1, -1), blurRadius: 4, color: Colors.black26),

@@ -621,6 +621,17 @@ class JsonConfigService extends ConfigProvider {
   }
 
   @override
+  String get clockColor {
+    final value = _config['clock_color'] as String? ?? '';
+    return value.isNotEmpty ? value : 'white';
+  }
+
+  @override
+  set clockColor(String value) {
+    _config['clock_color'] = value;
+  }
+
+  @override
   String get photoFit {
     final value = _config['photo_fit'] as String? ?? '';
     return value == 'cover' || value == 'fill' || value == 'fitWidth' || value == 'fitHeight' ? value : 'contain';
@@ -629,6 +640,28 @@ class JsonConfigService extends ConfigProvider {
   @override
   set photoFit(String value) {
     _config['photo_fit'] = value;
+  }
+
+  @override
+  String get photoInfoColor {
+    final value = _config['photo_info_color'] as String? ?? '';
+    return value.isNotEmpty ? value : 'white';
+  }
+
+  @override
+  set photoInfoColor(String value) {
+    _config['photo_info_color'] = value;
+  }
+
+  @override
+  String get calendarColor {
+    final value = _config['calendar_color'] as String? ?? '';
+    return value.isNotEmpty ? value : 'white';
+  }
+
+  @override
+  set calendarColor(String value) {
+    _config['calendar_color'] = value;
   }
 
   @override

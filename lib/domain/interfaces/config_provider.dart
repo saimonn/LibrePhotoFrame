@@ -158,8 +158,17 @@ abstract class ConfigProvider extends ChangeNotifier {
   bool get clockUseEnhancedContrast; // Add stronger outline/shadow for better readability
   set clockUseEnhancedContrast(bool value);
 
+  String get clockColor; // Clock text color (hex or name)
+  set clockColor(String value);
+
   // Photo display fit
   // Values: 'contain', 'cover', 'fill', 'fitWidth', 'fitHeight'
   String get photoFit;
   set photoFit(String value);
+
+  String get photoInfoColor; // Photo info text color
+  set photoInfoColor(String value);
+
+  String get calendarColor; // Calendar text color
+  set calendarColor(String value);
 }

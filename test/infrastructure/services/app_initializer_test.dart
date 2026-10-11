@@ -267,6 +267,24 @@ class FakeConfigProvider extends ChangeNotifier implements ConfigProvider {
   set photoFit(String value) {}
 
   @override
+  String get clockColor => 'white';
+
+  @override
+  set clockColor(String value) {}
+
+  @override
+  String get photoInfoColor => 'white';
+
+  @override
+  set photoInfoColor(String value) {}
+
+  @override
+  String get calendarColor => 'white';
+
+  @override
+  set calendarColor(String value) {}
+
+  @override
   bool get photoInfoUseEnhancedContrast => false;
 
   @override

@@ -769,6 +769,7 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
             config.geocodingEnabled ? _locationNames[entry.file.path] : null,
         useScriptFont: config.useScriptFontForMetadata,
         enhancedContrast: config.photoInfoUseEnhancedContrast,
+        textColor: _parseColor(config.photoInfoColor),
       ),
     );
   }
@@ -1003,6 +1004,7 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
               position: config.clockPosition,
               format: config.clockFormat,
               enhancedContrast: config.clockUseEnhancedContrast,
+              textColor: _parseColor(config.clockColor),
             ),
 
           // 3. Photo Info Overlay: one per photo on screen, each aligned in the
@@ -1018,6 +1020,7 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
               position: config.calendarPosition,
               size: config.calendarSize,
               enhancedContrast: config.calendarUseEnhancedContrast,
+              textColor: _parseColor(config.calendarColor),
             ),
 
           // 5. Touch Layer (Invisible, on top)
@@ -1136,6 +1139,30 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
     // Enabling the calendar overlay (or changing which calendar is readable)
     // must load the events right away.
     unawaited(_refreshCalendarEvents());
+  }
+
+  Color _parseColor(String colorStr) {
+    try {
+      var str = colorStr.toLowerCase().trim();
+      if (str.startsWith('#')) {
+        str = str.substring(1);
+        if (str.length == 6) str = 'ff$str';
+        else if (str.length == 3) str = 'ff${str[0]}${str[0]}${str[1]}${str[1]}${str[2]}${str[2]}';
+        return Color(int.parse(str, radix: 16));
+      }
+      switch (str) {
+        case 'black': return Colors.black;
+        case 'red': return Colors.red;
+        case 'green': return Colors.green;
+        case 'blue': return Colors.blue;
+        case 'yellow': return Colors.yellow;
+        case 'white': return Colors.white;
+        case 'transparent': return Colors.transparent;
+        default: return Colors.white;
+      }
+    } catch (_) {
+      return Colors.white;
+    }
   }
 }
 

@@ -7,6 +7,7 @@ import 'outlined_text.dart';
 /// Shows the events of today and tomorrow in one corner of the frame.
 class CalendarOverlay extends StatelessWidget {
   final bool enhancedContrast;
+  final Color textColor;
 
   const CalendarOverlay({
     super.key,
@@ -14,8 +15,9 @@ class CalendarOverlay extends StatelessWidget {
     required this.position,
     this.size = 'medium',
     this.maxEvents = 6,
-    this.enhancedContrast = false,
-  });
+        this.enhancedContrast = false,
+    this.textColor = Colors.white,
+});
 
   final List<CalendarEvent> events;
 
@@ -109,7 +111,7 @@ class CalendarOverlay extends StatelessWidget {
     final style = TextStyle(
       fontSize: _fontSize,
       fontWeight: bold ? FontWeight.bold : FontWeight.w400,
-      color: Colors.white,
+      color: textColor,
     );
 
     return enhancedContrast

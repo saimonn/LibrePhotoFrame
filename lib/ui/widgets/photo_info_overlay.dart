@@ -12,6 +12,7 @@ class PhotoInfoOverlay extends StatelessWidget {
   final String? locationName; // Resolved location name from geocoding
   final bool useScriptFont; // Use Rouge Script font for elegant handwritten style
   final bool enhancedContrast;
+  final Color textColor;
 
   const PhotoInfoOverlay({
     super.key,
@@ -21,6 +22,7 @@ class PhotoInfoOverlay extends StatelessWidget {
     this.locationName,
     this.useScriptFont = false,
     this.enhancedContrast = false,
+    this.textColor = Colors.white,
   });
 
   String _formatDate(BuildContext context, DateTime date) {
@@ -90,7 +92,7 @@ class PhotoInfoOverlay extends StatelessWidget {
       fontFamily: useScriptFont ? 'RougeScript' : null,
       fontSize: _fontSize,
       fontWeight: FontWeight.w400,
-      color: Colors.white,
+      color: textColor,
     );
 
     return enhancedContrast
