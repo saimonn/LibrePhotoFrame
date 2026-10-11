@@ -546,8 +546,6 @@ class JsonConfigService extends ConfigProvider {
   set useScriptFontForMetadata(bool value) {
     _config['use_script_font_for_metadata'] = value;
   }
-
-  // Calendar events overlay settings
   @override
   bool get showCalendarEvents => _config['show_calendar_events'] ?? false;
 
@@ -571,8 +569,6 @@ class JsonConfigService extends ConfigProvider {
   set calendarSize(String value) {
     _config['calendar_size'] = value;
   }
-  
-  // Geocoding settings
   @override
   bool get geocodingEnabled => _config['geocoding_enabled'] ?? false;
   
@@ -615,4 +611,29 @@ class JsonConfigService extends ConfigProvider {
   set clockFormat(String value) {
     _config['clock_format'] = value;
   }
+
+  @override
+  bool get clockUseEnhancedContrast => _config['clock_use_enhanced_contrast'] ?? false;
+
+  @override
+  set clockUseEnhancedContrast(bool value) {
+    _config['clock_use_enhanced_contrast'] = value;
+  }
+
+  @override
+  bool get photoInfoUseEnhancedContrast => _config['photo_info_use_enhanced_contrast'] ?? false;
+
+  @override
+  set photoInfoUseEnhancedContrast(bool value) {
+    _config['photo_info_use_enhanced_contrast'] = value;
+  }
+
+  @override
+  bool get calendarUseEnhancedContrast => _config['calendar_use_enhanced_contrast'] ?? false;
+
+  @override
+  set calendarUseEnhancedContrast(bool value) {
+    _config['calendar_use_enhanced_contrast'] = value;
+  }
 }
+

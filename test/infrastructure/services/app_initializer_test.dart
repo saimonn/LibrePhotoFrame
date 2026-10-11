@@ -253,6 +253,24 @@ class FakeConfigProvider extends ChangeNotifier implements ConfigProvider {
 
   @override
   set clockFormat(String value) {}
+
+  @override
+  bool get clockUseEnhancedContrast => false;
+
+  @override
+  set clockUseEnhancedContrast(bool value) {}
+
+  @override
+  bool get photoInfoUseEnhancedContrast => false;
+
+  @override
+  set photoInfoUseEnhancedContrast(bool value) {}
+
+  @override
+  bool get calendarUseEnhancedContrast => false;
+
+  @override
+  set calendarUseEnhancedContrast(bool value) {}
 }
 
 class RecordingAndroidRuntimeSettingsWriter

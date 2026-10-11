@@ -2,18 +2,21 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'overlay_position.dart';
+import 'outlined_text.dart';
 
 /// A beautiful clock overlay widget with customizable size and position.
 class ClockOverlay extends StatefulWidget {
   final String size; // 'small', 'medium', 'large'
   final String position; // 'bottomRight', 'bottomLeft', 'topRight', 'topLeft'
   final String format; // 'auto', '12' or '24'
+  final bool enhancedContrast; // Use stronger outline for readability
 
   const ClockOverlay({
     super.key,
     required this.size,
     required this.position,
     this.format = 'auto',
+    this.enhancedContrast = false,
   });
 
   @override
@@ -85,27 +88,29 @@ class _ClockOverlayState extends State<ClockOverlay> {
       alignment: placement.alignment,
       child: Padding(
         padding: placement.padding,
-        child: Text(
-          timeString,
-          style: TextStyle(
-            fontSize: _fontSize,
-            fontWeight: FontWeight.w300, // Light weight for elegant look
-            color: Colors.white,
-            shadows: const [
-              // Shadow for readability on any background
-              Shadow(
-                offset: Offset(2, 2),
-                blurRadius: 8,
-                color: Colors.black54,
+        child: widget.enhancedContrast
+            ? OutlinedText(
+                timeString,
+                style: TextStyle(
+                  fontSize: _fontSize,
+                  fontWeight: FontWeight.w300,
+                  color: Colors.white,
+                ),
+                outlineColor: Colors.black,
+                outlineWidth: 3.0,
+              )
+            : Text(
+                timeString,
+                style: TextStyle(
+                  fontSize: _fontSize,
+                  fontWeight: FontWeight.w300,
+                  color: Colors.white,
+                  shadows: const [
+                    Shadow(offset: Offset(2, 2), blurRadius: 8, color: Colors.black54),
+                    Shadow(offset: Offset(-1, -1), blurRadius: 4, color: Colors.black26),
+                  ],
+                ),
               ),
-              Shadow(
-                offset: Offset(-1, -1),
-                blurRadius: 4,
-                color: Colors.black26,
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

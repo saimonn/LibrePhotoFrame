@@ -2,15 +2,19 @@ import 'package:flutter/material.dart';
 import '../../domain/models/calendar_event.dart';
 import '../../l10n/app_localizations.dart';
 import 'overlay_position.dart';
+import 'outlined_text.dart';
 
 /// Shows the events of today and tomorrow in one corner of the frame.
 class CalendarOverlay extends StatelessWidget {
+  final bool enhancedContrast;
+
   const CalendarOverlay({
     super.key,
     required this.events,
     required this.position,
     this.size = 'medium',
     this.maxEvents = 6,
+    this.enhancedContrast = false,
   });
 
   final List<CalendarEvent> events;
@@ -102,20 +106,31 @@ class CalendarOverlay extends StatelessWidget {
   }
 
   Widget _buildText(String text, {bool bold = false}) {
-    return Text(
-      text,
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
-      style: TextStyle(
-        fontSize: _fontSize,
-        fontWeight: bold ? FontWeight.bold : FontWeight.w400,
-        color: Colors.white,
-        shadows: const [
-          // Shadow for readability on any background
-          Shadow(offset: Offset(1, 1), blurRadius: 4, color: Colors.black54),
-          Shadow(offset: Offset(-1, -1), blurRadius: 4, color: Colors.black26),
-        ],
-      ),
+    final style = TextStyle(
+      fontSize: _fontSize,
+      fontWeight: bold ? FontWeight.bold : FontWeight.w400,
+      color: Colors.white,
     );
+
+    return enhancedContrast
+        ? OutlinedText(
+            text,
+            style: style,
+            outlineColor: Colors.black,
+            outlineWidth: 2.0,
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+          )
+        : Text(
+            text,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: style.copyWith(
+              shadows: const [
+                Shadow(offset: Offset(1, 1), blurRadius: 4, color: Colors.black54),
+                Shadow(offset: Offset(-1, -1), blurRadius: 4, color: Colors.black26),
+              ],
+            ),
+          );
   }
 }
