@@ -110,6 +110,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
   late String _clockSize;
   late String _clockPosition;
   late String _clockFormat;
+  late bool _clockUseEnhancedContrast;
   
   // Photo info settings
   late bool _showPhotoInfo;
@@ -117,11 +118,13 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
   late String _photoInfoSize;
   late bool _geocodingEnabled;
   late bool _useScriptFontForMetadata;
+  late bool _photoInfoUseEnhancedContrast;
 
   // Calendar events settings
   late bool _showCalendarEvents;
   late String _calendarPosition;
   late String _calendarSize;
+  late bool _calendarUseEnhancedContrast;
   bool _calendarPermissionGranted = false;
   
   // Display schedule settings
@@ -209,6 +212,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     _clockSize = config.clockSize;
     _clockPosition = config.clockPosition;
     _clockFormat = config.clockFormat;
+    _clockUseEnhancedContrast = config.clockUseEnhancedContrast;
     
     // Photo info settings
     _showPhotoInfo = config.showPhotoInfo;
@@ -216,11 +220,13 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     _photoInfoSize = config.photoInfoSize;
     _geocodingEnabled = config.geocodingEnabled;
     _useScriptFontForMetadata = config.useScriptFontForMetadata;
+    _photoInfoUseEnhancedContrast = config.photoInfoUseEnhancedContrast;
 
     // Calendar events settings
     _showCalendarEvents = config.showCalendarEvents;
     _calendarPosition = config.calendarPosition;
     _calendarSize = config.calendarSize;
+    _calendarUseEnhancedContrast = config.calendarUseEnhancedContrast;
     if (_showCalendarEvents) {
       _checkCalendarPermission();
     }
@@ -421,6 +427,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     config.clockSize = _clockSize;
     config.clockPosition = _clockPosition;
     config.clockFormat = _clockFormat;
+    config.clockUseEnhancedContrast = _clockUseEnhancedContrast;
     
     // Photo info settings
     config.showPhotoInfo = _showPhotoInfo;
@@ -428,11 +435,13 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     config.photoInfoSize = _photoInfoSize;
     config.geocodingEnabled = _geocodingEnabled;
     config.useScriptFontForMetadata = _useScriptFontForMetadata;
+    config.photoInfoUseEnhancedContrast = _photoInfoUseEnhancedContrast;
 
     // Calendar events settings
     config.showCalendarEvents = _showCalendarEvents;
     config.calendarPosition = _calendarPosition;
     config.calendarSize = _calendarSize;
+    config.calendarUseEnhancedContrast = _calendarUseEnhancedContrast;
     
     // Display schedule settings
     config.scheduleEnabled = _scheduleEnabled;
@@ -614,6 +623,16 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
               ),
               const SizedBox(height: 8),
               _buildClockFormatSelector(),
+              const SizedBox(height: 8),
+              SwitchListTile(
+                title: Text(AppLocalizations.of(context)!.enhancedTextContrast),
+                subtitle: Text(AppLocalizations.of(context)!.enhancedTextContrastSubtitle),
+                secondary: const Icon(Icons.format_color_text),
+                value: _clockUseEnhancedContrast,
+                onChanged: (value) {
+                  setState(() => _clockUseEnhancedContrast = value);
+                },
+              ),
             ],
           
             const SizedBox(height: 24),
@@ -653,6 +672,16 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
                 value: _useScriptFontForMetadata,
                 onChanged: (value) {
                   setState(() => _useScriptFontForMetadata = value);
+                },
+              ),
+              const SizedBox(height: 16),
+              SwitchListTile(
+                title: Text(AppLocalizations.of(context)!.enhancedTextContrast),
+                subtitle: Text(AppLocalizations.of(context)!.enhancedTextContrastSubtitle),
+                secondary: const Icon(Icons.format_color_text),
+                value: _photoInfoUseEnhancedContrast,
+                onChanged: (value) {
+                  setState(() => _photoInfoUseEnhancedContrast = value);
                 },
               ),
               const SizedBox(height: 16),
@@ -743,6 +772,16 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
               _buildSizeSelector(
                 _calendarSize,
                 (value) => setState(() => _calendarSize = value),
+              ),
+              const SizedBox(height: 8),
+              SwitchListTile(
+                title: Text(AppLocalizations.of(context)!.enhancedTextContrast),
+                subtitle: Text(AppLocalizations.of(context)!.enhancedTextContrastSubtitle),
+                secondary: const Icon(Icons.format_color_text),
+                value: _calendarUseEnhancedContrast,
+                onChanged: (value) {
+                  setState(() => _calendarUseEnhancedContrast = value);
+                },
               ),
             ],
           

@@ -288,6 +288,18 @@ abstract class AppLocalizations {
   /// **'Display metadata in elegant handwritten style'**
   String get useScriptFontSubtitle;
 
+  /// No description provided for @enhancedTextContrast.
+  ///
+  /// In en, this message translates to:
+  /// **'Enhanced Text Contrast'**
+  String get enhancedTextContrast;
+
+  /// No description provided for @enhancedTextContrastSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add stronger outline for better readability on light backgrounds'**
+  String get enhancedTextContrastSubtitle;
+
   /// No description provided for @resolveLocationNames.
   ///
   /// In en, this message translates to:
