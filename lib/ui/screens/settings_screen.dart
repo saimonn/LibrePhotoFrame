@@ -2418,41 +2418,78 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
   
   Widget _buildColorSelector(String color, ValueChanged<String> onChanged, String label) {
     final colors = [
-      ('white', 'White'),
-      ('black', 'Black'),
-      ('red', 'Red'),
-      ('green', 'Green'),
-      ('blue', 'Blue'),
-      ('yellow', 'Yellow'),
+      ('#FFFFFF', 'White'),
+      ('#000000', 'Black'),
+      ('#FFFFE600', 'Yellow neon'),
+      ('#FF00FF66', 'Green neon'),
+      ('#FF00E5FF', 'Cyan'),
+      ('#FFFF007F', 'Magenta'),
+      ('#FFFF2A2A', 'Red'),
+      ('#FFFF7A00', 'Orange'),
+      ('#FF1E88E5', 'Blue'),
+      ('#FF2E7D32', 'Green'),
+      ('#FF9C27B0', 'Violet'),
+      ('#FFCCCCCC', 'Light gray'),
+      ('#FF8D6E63', 'Brown'),
     ];
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.color_lens, size: 20),
-          const SizedBox(width: 12),
-          Text(label),
-          const Spacer(),
-          Flexible(
-            child: DropdownButton<String>(
-              isExpanded: true,
-              isDense: true,
-              underline: const SizedBox(),
-              value: color,
-              items: colors
-                  .map((c) => DropdownMenuItem(
-                        value: c.$1,
-                        child: Text(c.$2, overflow: TextOverflow.ellipsis),
-                      ))
-                  .toList(),
-              onChanged: (value) {
-                if (value != null) onChanged(value);
-              },
-            ),
+          Row(
+            children: [
+              const Icon(Icons.color_lens, size: 20),
+              const SizedBox(width: 12),
+              Text(label),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: colors.map((c) {
+              final isSelected = color.toLowerCase() == c.$1.toLowerCase();
+              return GestureDetector(
+                onTap: () => onChanged(c.$1),
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: _hexToColor(c.$1),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isSelected ? Colors.white : Colors.grey,
+                      width: isSelected ? 3 : 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 2,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
           ),
         ],
       ),
     );
+  }
+
+  Color _hexToColor(String hex) {
+    try {
+      var h = hex.toUpperCase().replaceAll('#', '');
+      if (h.length == 8) {
+        return Color(int.parse(h, radix: 16));
+      }
+      if (h.length == 6) {
+        return Color(int.parse('FF$h', radix: 16));
+      }
+    } catch (_) {}
+    return Colors.white;
   }
 
   Widget _buildPhotoFitSelector(String fit, ValueChanged<String> onChanged) {
