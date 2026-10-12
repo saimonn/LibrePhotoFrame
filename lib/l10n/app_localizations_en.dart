@@ -622,4 +622,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get photoFitFitHeight => 'Fit Height';
+
+  @override
+  String get textColor => 'Text Color';
+
+  @override
+  String get textColorClock => 'Clock Text Color';
+
+  @override
+  String get textColorPhotoInfo => 'Photo Info Text Color';
+
+  @override
+  String get textColorCalendar => 'Calendar Text Color';
 }

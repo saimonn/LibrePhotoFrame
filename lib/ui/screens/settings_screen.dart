@@ -111,6 +111,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
   late String _clockPosition;
   late String _clockFormat;
   late bool _clockUseEnhancedContrast;
+  late String _clockColor;
   
   late String _photoFit;
   
@@ -121,12 +122,14 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
   late bool _geocodingEnabled;
   late bool _useScriptFontForMetadata;
   late bool _photoInfoUseEnhancedContrast;
+  late String _photoInfoColor;
 
   // Calendar events settings
   late bool _showCalendarEvents;
   late String _calendarPosition;
   late String _calendarSize;
   late bool _calendarUseEnhancedContrast;
+  late String _calendarColor;
   bool _calendarPermissionGranted = false;
   
   // Display schedule settings
@@ -215,6 +218,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     _clockPosition = config.clockPosition;
     _clockFormat = config.clockFormat;
     _clockUseEnhancedContrast = config.clockUseEnhancedContrast;
+    _clockColor = config.clockColor;
     
     // Photo info settings
     _showPhotoInfo = config.showPhotoInfo;
@@ -223,12 +227,14 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     _geocodingEnabled = config.geocodingEnabled;
     _useScriptFontForMetadata = config.useScriptFontForMetadata;
     _photoInfoUseEnhancedContrast = config.photoInfoUseEnhancedContrast;
+    _photoInfoColor = config.photoInfoColor;
 
     // Calendar events settings
     _showCalendarEvents = config.showCalendarEvents;
     _calendarPosition = config.calendarPosition;
     _calendarSize = config.calendarSize;
     _calendarUseEnhancedContrast = config.calendarUseEnhancedContrast;
+    _calendarColor = config.calendarColor;
     _photoFit = config.photoFit;
     if (_showCalendarEvents) {
       _checkCalendarPermission();
@@ -431,6 +437,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     config.clockPosition = _clockPosition;
     config.clockFormat = _clockFormat;
     config.clockUseEnhancedContrast = _clockUseEnhancedContrast;
+    config.clockColor = _clockColor;
     
     // Photo info settings
     config.showPhotoInfo = _showPhotoInfo;
@@ -439,12 +446,14 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     config.geocodingEnabled = _geocodingEnabled;
     config.useScriptFontForMetadata = _useScriptFontForMetadata;
     config.photoInfoUseEnhancedContrast = _photoInfoUseEnhancedContrast;
+    config.photoInfoColor = _photoInfoColor;
 
     // Calendar events settings
     config.showCalendarEvents = _showCalendarEvents;
     config.calendarPosition = _calendarPosition;
     config.calendarSize = _calendarSize;
     config.calendarUseEnhancedContrast = _calendarUseEnhancedContrast;
+    config.calendarColor = _calendarColor;
     config.photoFit = _photoFit;
     
     // Display schedule settings
@@ -646,6 +655,12 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
                   setState(() => _clockUseEnhancedContrast = value);
                 },
               ),
+              const SizedBox(height: 8),
+              _buildColorSelector(
+                _clockColor,
+                (value) => setState(() => _clockColor = value),
+                AppLocalizations.of(context)!.textColorClock,
+              ),
             ],
           
             const SizedBox(height: 24),
@@ -696,6 +711,12 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
                 onChanged: (value) {
                   setState(() => _photoInfoUseEnhancedContrast = value);
                 },
+              ),
+              const SizedBox(height: 8),
+              _buildColorSelector(
+                _photoInfoColor,
+                (value) => setState(() => _photoInfoColor = value),
+                AppLocalizations.of(context)!.textColorPhotoInfo,
               ),
               const SizedBox(height: 16),
               SwitchListTile(
@@ -795,6 +816,12 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
                 onChanged: (value) {
                   setState(() => _calendarUseEnhancedContrast = value);
                 },
+              ),
+              const SizedBox(height: 8),
+              _buildColorSelector(
+                _calendarColor,
+                (value) => setState(() => _calendarColor = value),
+                AppLocalizations.of(context)!.textColorCalendar,
               ),
             ],
           
@@ -2389,6 +2416,45 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     );
   }
   
+  Widget _buildColorSelector(String color, ValueChanged<String> onChanged, String label) {
+    final colors = [
+      ('white', 'White'),
+      ('black', 'Black'),
+      ('red', 'Red'),
+      ('green', 'Green'),
+      ('blue', 'Blue'),
+      ('yellow', 'Yellow'),
+    ];
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          const Icon(Icons.color_lens, size: 20),
+          const SizedBox(width: 12),
+          Text(label),
+          const Spacer(),
+          Flexible(
+            child: DropdownButton<String>(
+              isExpanded: true,
+              isDense: true,
+              underline: const SizedBox(),
+              value: color,
+              items: colors
+                  .map((c) => DropdownMenuItem(
+                        value: c.$1,
+                        child: Text(c.$2, overflow: TextOverflow.ellipsis),
+                      ))
+                  .toList(),
+              onChanged: (value) {
+                if (value != null) onChanged(value);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPhotoFitSelector(String fit, ValueChanged<String> onChanged) {
     final l10n = AppLocalizations.of(context)!;
     return Padding(

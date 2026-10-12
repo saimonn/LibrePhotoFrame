@@ -1187,6 +1187,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Fit Height'**
   String get photoFitFitHeight;
+
+  /// No description provided for @textColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Text Color'**
+  String get textColor;
+
+  /// No description provided for @textColorClock.
+  ///
+  /// In en, this message translates to:
+  /// **'Clock Text Color'**
+  String get textColorClock;
+
+  /// No description provided for @textColorPhotoInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo Info Text Color'**
+  String get textColorPhotoInfo;
+
+  /// No description provided for @textColorCalendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar Text Color'**
+  String get textColorCalendar;
 }
 
 class _AppLocalizationsDelegate

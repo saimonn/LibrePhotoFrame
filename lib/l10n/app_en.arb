@@ -264,5 +264,9 @@
   "photoFitCover": "Cover (fill screen, crop)",
   "photoFitFill": "Fill (stretch)",
   "photoFitFitWidth": "Fit Width",
-  "photoFitFitHeight": "Fit Height"
+  "photoFitFitHeight": "Fit Height",
+  "textColor": "Text Color",
+  "textColorClock": "Clock Text Color",
+  "textColorPhotoInfo": "Photo Info Text Color",
+  "textColorCalendar": "Calendar Text Color"
 }
