@@ -78,7 +78,7 @@ void main() {
     expect(find.byType(Text), findsNothing);
   });
 
-  testWidgets('caps the number of events and marks the overflow',
+  testWidgets('shows all events without truncation',
       (tester) async {
     final events = List.generate(
       8,
@@ -88,7 +88,7 @@ void main() {
     await pump(tester, events);
 
     expect(find.text('Today'), findsOneWidget);
-    expect(find.byType(Text), findsNWidgets(8)); // header + 6 events + ellipsis
-    expect(find.text('…'), findsOneWidget);
+    expect(find.byType(Text), findsNWidgets(9)); // header + 8 events, no ellipsis
+    expect(find.text('…'), findsNothing);
   });
 }

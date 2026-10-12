@@ -14,7 +14,7 @@ class CalendarOverlay extends StatelessWidget {
     required this.events,
     required this.position,
     this.size = 'medium',
-    this.maxEvents = 6,
+    this.maxEvents = 100,
         this.enhancedContrast = false,
     this.textColor = Colors.white,
 });
@@ -28,7 +28,7 @@ class CalendarOverlay extends StatelessWidget {
   final String size;
 
   /// Upper bound on the event lines, so a busy day cannot cover the photo.
-  final int maxEvents;
+  final int maxEvents; // high limit to avoid cutting on small screens
 
   double get _fontSize {
     switch (size) {
