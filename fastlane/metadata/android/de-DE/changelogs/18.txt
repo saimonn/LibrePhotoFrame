@@ -1,0 +1,6 @@
+Neu:
+• Foto-Metadaten (EXIF, GPS, Abmessungen) werden in einer lokalen Datenbank zwischengespeichert, große Ordner werden so schneller neu eingelesen
+• Ortsnamen werden beim Geocoding zwischengespeichert
+• Weniger Arbeit pro Bild: Die Uhr aktualisiert einmal pro Minute, die Unschärfe ist schneller
+• Ungenutzte Abhängigkeiten entfernt
+• README und Info-Dialog aktualisiert

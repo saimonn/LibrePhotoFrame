@@ -1,0 +1,2 @@
+Improvements:
+• The visual device tests now run on every pull request for better regression coverage

@@ -1,0 +1,2 @@
+Neu:
+• Option für erhöhten Kontrast für die Overlays von Uhr, Foto-Infos und Kalender, mit konturiertem Text für bessere Lesbarkeit auf hellem Hintergrund

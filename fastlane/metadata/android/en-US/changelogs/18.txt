@@ -1,0 +1,6 @@
+New:
+• Photo metadata (EXIF, GPS, dimensions) is cached in a local database, so large folders rescan faster
+• Place names are cached while geocoding
+• Less work per frame: the clock updates once a minute and blur rendering got faster
+• Dropped unused dependencies
+• Updated README and About dialog

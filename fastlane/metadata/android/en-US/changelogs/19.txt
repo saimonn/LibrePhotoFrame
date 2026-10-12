@@ -1,0 +1,2 @@
+New:
+• An enhanced contrast option for the clock, photo info and calendar overlays, with outlined text for readability on light backgrounds
