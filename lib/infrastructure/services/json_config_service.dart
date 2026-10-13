@@ -247,7 +247,7 @@ class JsonConfigService extends ConfigProvider {
   
   // Slideshow settings with defaults
   @override
-  int get slideDurationSeconds => _config['slide_duration_seconds'] ?? 600;
+  int get slideDurationSeconds => _config['slide_duration_seconds'] ?? 30;
   
   @override
   set slideDurationSeconds(int value) {
@@ -255,7 +255,7 @@ class JsonConfigService extends ConfigProvider {
   }
   
   @override
-  int get transitionDurationMs => _config['transition_duration_ms'] ?? 2000;
+  int get transitionDurationMs => _config['transition_duration_ms'] ?? 1000;
   
   @override
   set transitionDurationMs(int value) {
@@ -263,7 +263,7 @@ class JsonConfigService extends ConfigProvider {
   }
 
   @override
-  bool get blurBorders => _config['blur_borders'] ?? true;
+  bool get blurBorders => _config['blur_borders'] ?? false;
 
   @override
   set blurBorders(bool value) {

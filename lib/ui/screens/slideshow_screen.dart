@@ -130,7 +130,8 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
     // Initialize Service
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initService();
-      _initKeepAliveService();
+      _configureImageCache();
+    _initKeepAliveService();
       _initCalendarEvents();
       _requestMediaLocationIfNeeded();
       _showStartupConfigNoticeIfNeeded();
@@ -1119,7 +1120,16 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
   }
 
   /// Initialize Keep Alive service based on config
-  Future<void> _initKeepAliveService() async {
+  void _configureImageCache() {
+    try {
+      final cache = PaintingBinding.instance.imageCache;
+      // Conservative defaults for old tablets; allow growth if more RAM
+      cache.maximumSize = 50;
+      cache.maximumSizeBytes = 256 * 1024 * 1024; // 256 MB
+    } catch (_) {}
+  }
+
+    Future<void> _initKeepAliveService() async {
     final config = context.read<ConfigProvider>();
     if (config.keepAliveEnabled) {
       await KeepAliveService.startService();
