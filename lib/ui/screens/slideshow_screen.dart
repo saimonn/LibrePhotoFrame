@@ -455,6 +455,7 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
       if (firstPhoto != null) {
         _transitionTo(firstPhoto);
         _startTimer();
+        unawaited(_prefetchNextPhoto());
       } else {
         setState(() {
           _isLoading = false;
@@ -674,6 +675,10 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
             _slides.removeAt(0);
           }
         });
+      }
+      // Prefetch next photo(s) for smoother transitions on lower-end devices
+      if (mounted) {
+        unawaited(_prefetchNextPhoto());
       }
     });
   }
@@ -1139,6 +1144,21 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
     // Enabling the calendar overlay (or changing which calendar is readable)
     // must load the events right away.
     unawaited(_refreshCalendarEvents());
+  }
+  Future<void> _prefetchNextPhoto() async {
+    try {
+      final photoService = context.read<PhotoService>();
+      final next = photoService.nextPhoto();
+      if (next == null) return;
+      final pairing = _screenSize == null
+          ? PhotoPairing.single
+          : PhotoPairLayout.forScreen(_screenSize!.width, _screenSize!.height);
+      if (PhotoPairLayout.accepts(pairing, next)) {
+        // skip partner prefetch to keep it simple
+      }
+      final cell = PhotoSlide.cellSize(_screenSize!, pairing);
+      await precacheImage(PhotoSlide.createOptimizedProvider(next.file, cell), context);
+    } catch (_) {}
   }
 
   Color _parseColor(String colorStr) {
