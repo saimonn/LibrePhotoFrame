@@ -51,3 +51,7 @@ flutter run -d linux  # or connected Android device
 ## License
 
 GPLv3
+
+## Syncing photos locally (Syncthing)
+
+To keep a curated set of photos on the frame without cloud services, use [Syncthing](https://syncthing.net/) (or Syncthing-Fork) on the frame and/or your source device to sync files into the local folder used by "Local folder" sync mode. Point the app to that synchronized directory and enable folder watching or polling as desired.
