@@ -570,7 +570,7 @@ class JsonConfigService extends ConfigProvider {
     _config['calendar_size'] = value;
   }
   @override
-  bool get geocodingEnabled => _config['geocoding_enabled'] ?? false;
+  bool get geocodingEnabled => _config['geocoding_enabled'] ?? true;
   
   @override
   set geocodingEnabled(bool value) {
