@@ -12,6 +12,14 @@ abstract class PlaylistStrategy {
   /// recently sees both at the same rank. Strategies that do not care ignore it.
   void recordShown(List<PhotoEntry> photos) {}
 
+  /// Photos that would be shown next, up to [count], without changing the
+  /// state of the strategy.
+  ///
+  /// Returns an empty list when the order cannot be previewed. Used to warm the
+  /// image cache ahead of the next slide.
+  List<PhotoEntry> peekNextPhotos(List<PhotoEntry> availablePhotos, int count) =>
+      const [];
+
   /// Returns a unique identifier for this strategy (e.g. "random")
   String get id;
 

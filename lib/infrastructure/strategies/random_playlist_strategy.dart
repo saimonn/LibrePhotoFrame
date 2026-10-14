@@ -63,6 +63,22 @@ class RandomPlaylistStrategy implements PlaylistStrategy {
     return availablePhotos.last;
   }
 
+  @override
+  List<PhotoEntry> peekNextPhotos(List<PhotoEntry> availablePhotos, int count) {
+    // nextPhoto() only reads the history, so calling it here does not move the
+    // play position. Picked photos are removed from the pool to return distinct
+    // photos.
+    final picked = <PhotoEntry>[];
+    final pool = availablePhotos.toList();
+    while (picked.length < count && pool.isNotEmpty) {
+      final photo = nextPhoto(pool);
+      if (photo == null) break;
+      picked.add(photo);
+      pool.remove(photo);
+    }
+    return picked;
+  }
+
   /// Weight of a photo: its rank in the history divided by
   /// [rememberedPhotos], or 1 when the frame never showed it.
   double _weightFor(String path) {

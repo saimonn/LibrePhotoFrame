@@ -329,6 +329,29 @@ class PhotoService extends ChangeNotifier {
     return photo;
   }
 
+  /// The photos that would be shown next, up to [count], without moving the
+  /// play position.
+  ///
+  /// When the walk already has forward history (the user went back), those are
+  /// the next entries. Otherwise the playlist strategy is asked for a preview
+  /// that does not change its state. Used to warm the image cache ahead of the
+  /// next slide instead of peeking by consuming photos.
+  List<PhotoEntry> peekUpcoming(int count) {
+    if (count <= 0) return const [];
+    _pruneHistory();
+
+    if (_historyIndex < _history.length - 1) {
+      final result = <PhotoEntry>[];
+      for (var i = _historyIndex + 1; i < _history.length; i++) {
+        result.add(_history[i]);
+        if (result.length == count) break;
+      }
+      return result;
+    }
+
+    return _playlistStrategy.peekNextPhotos(_repository.photos, count);
+  }
+
   PhotoEntry? previousPhoto() {
     _pruneHistory();
 

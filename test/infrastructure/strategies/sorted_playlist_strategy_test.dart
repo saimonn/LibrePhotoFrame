@@ -175,5 +175,29 @@ void main() {
         ['/fake/a.jpg', '/fake/b.jpg', '/fake/c.jpg'],
       );
     });
+
+    test('peekNextPhotos previews the walk without moving it', () {
+      final photos = [
+        photo('a', modified: day),
+        photo('b', modified: day.add(const Duration(days: 1))),
+        photo('c', modified: day.add(const Duration(days: 2))),
+      ];
+      final strategy = SortedPlaylistStrategy(PhotoOrderField.modification);
+
+      // Establish the position on the first photo.
+      expect(strategy.nextPhoto(photos)!.file.path, '/fake/a.jpg');
+
+      expect(
+        strategy.peekNextPhotos(photos, 2).map((p) => p.file.path).toList(),
+        ['/fake/b.jpg', '/fake/c.jpg'],
+      );
+      // Peeking twice changes nothing.
+      expect(
+        strategy.peekNextPhotos(photos, 2).map((p) => p.file.path).toList(),
+        ['/fake/b.jpg', '/fake/c.jpg'],
+      );
+      // The next real draw is still the previewed photo.
+      expect(strategy.nextPhoto(photos)!.file.path, '/fake/b.jpg');
+    });
   });
 }

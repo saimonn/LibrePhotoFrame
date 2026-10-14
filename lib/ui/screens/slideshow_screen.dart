@@ -27,6 +27,10 @@ import '../widgets/photo_info_overlay.dart';
 import '../widgets/photo_info_layers.dart';
 import '../../infrastructure/services/json_config_service.dart';
 import '../../infrastructure/services/photo_metadata_database.dart';
+import '../../infrastructure/services/image_prefetcher.dart';
+import '../controllers/photo_enrichment_controller.dart';
+import '../controllers/slide_timer_controller.dart';
+import '../utils/color_utils.dart';
 import 'settings_screen.dart';
 
 final _log = Logger('SlideshowScreen');
@@ -73,7 +77,7 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
   /// Second photo currently shown next to [_currentPhoto], if any. Kept so the
   /// next slide can pick a different partner instead of reusing this one.
   PhotoEntry? _currentPartner;
-  Timer? _timer;
+  late final SlideTimerController _slideTimer;
   bool _isLoading = true;
   StreamSubscription? _photosSubscription;
   
@@ -89,9 +93,6 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
   // Resolves photo pixel dimensions for pairing
   late final PhotoDimensionsService _photoDimensions;
 
-  // Reverse geocodes the coordinates of the photos on screen
-  late final GeocodingService _geocodingService;
-  
   // Screen size for optimized image loading
   Size? _screenSize;
 
@@ -103,10 +104,8 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
   // Display off state for black overlay
   bool _isDisplayOff = false;
   
-  // Location names (from geocoding) of the photos on screen, by file path.
-  // Cleared whenever a photo takes the frame, so a name never outlives the
-  // photo it belongs to.
-  final Map<String, String> _locationNames = {};
+  late final PhotoEnrichmentController _enrichmentController;
+  late final ImagePrefetcher _imagePrefetcher;
 
   // Events of today and tomorrow from the device calendar.
   List<CalendarEvent> _calendarEvents = const [];
@@ -116,12 +115,26 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
   void initState() {
     super.initState();
     _photoDimensions = PhotoDimensionsService(database: widget.database);
-    _geocodingService = GeocodingService(database: widget.database);
+    final geocodingService = GeocodingService(database: widget.database);
+    final metadataProvider = context.read<MetadataProvider>();
+    _imagePrefetcher = ImagePrefetcher(
+      photoService: context.read<PhotoService>(),
+      context: context,
+      screenSizeGetter: () => _screenSize,
+    );
+    _enrichmentController = PhotoEnrichmentController(
+      geocodingService: geocodingService,
+      metadataProvider: metadataProvider,
+    );
     // Register lifecycle observer
     WidgetsBinding.instance.addObserver(this);
-    
+
     // Apply configured screen orientation
     final config = context.read<ConfigProvider>();
+    _slideTimer = SlideTimerController(
+      initialDuration: Duration(seconds: config.slideDurationSeconds),
+      onTick: _nextSlide,
+    );
     SystemChrome.setPreferredOrientations(_getDeviceOrientations(config.screenOrientation));
     
     // Keep screen on (Safe implementation for Linux/Dev)
@@ -225,7 +238,7 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
     _isPaused = true;
     
     debugPrint('⏸️ App paused - stopping timers and wakelock');
-    _timer?.cancel();
+    _slideTimer.pause();
     _scheduleTimer?.cancel();
     WakelockPlus.disable();
   }
@@ -240,9 +253,9 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
     
     // Restart slideshow timer if we have photos
     if (_currentPhoto != null) {
-      _startTimer();
+      _slideTimer.resume();
     }
-    
+     
     // IMPORTANT: Always re-apply schedule state when resuming
     // This ensures correct state after wake-ups (even if timer hasn't fired yet)
     final config = context.read<ConfigProvider>();
@@ -456,7 +469,7 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
       if (firstPhoto != null) {
         _transitionTo(firstPhoto);
         _startTimer();
-        unawaited(_prefetchNextPhoto());
+        unawaited(_imagePrefetcher.prefetchNext());
       } else {
         setState(() {
           _isLoading = false;
@@ -466,12 +479,9 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
   }
 
   void _startTimer() {
-    _timer?.cancel();
     final config = context.read<ConfigProvider>();
-    final slideDuration = Duration(seconds: config.slideDurationSeconds);
-    _timer = Timer.periodic(slideDuration, (timer) {
-      _nextSlide();
-    });
+    _slideTimer.reschedule(Duration(seconds: config.slideDurationSeconds));
+    _slideTimer.start();
   }
 
   void _nextSlide() {
@@ -484,22 +494,22 @@ class _SlideshowScreenState extends State<SlideshowScreen> with TickerProviderSt
   }
 
   void _manualNavigation(bool forward) {
-    _timer?.cancel(); // Stop auto-advance
-    
+    _slideTimer.stop(); // Stop auto-advance
+     
     final service = context.read<PhotoService>();
     final photo = forward ? service.nextPhoto() : service.previousPhoto();
-    
+     
     if (photo != null) {
       // Slide direction: next = slide from right, previous = slide from left
       _transitionTo(photo, slideDirection: forward ? SlideDirection.right : SlideDirection.left);
     }
-    
+     
     // Restart timer after interaction
     _startTimer();
   }
-
+ 
   void _openSettings() {
-    _timer?.cancel(); // Stop auto-advance while in settings
+    _slideTimer.stop(); // Stop auto-advance while in settings
     
     Navigator.of(context).push(
       MaterialPageRoute(builder: (context) => const SettingsScreen()),
@@ -558,8 +568,14 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
     if (candidates.length < 2) return null;
 
     // Resolve dimensions of the photos we might pair with. Bounded so a huge
-    // collection cannot stall the transition.
-    final pool = candidates.take(_maxPairCandidates).toList();
+    // collection cannot stall the transition, and starting after the photo on
+    // screen so the partner follows it instead of always being the first
+    // matching photo of the collection.
+    final pool = PhotoPairLayout.windowAfter(
+      photo,
+      candidates,
+      _maxPairCandidates,
+    );
     await Future.wait(
       pool.map((candidate) => _photoDimensions.shapeOf(candidate)),
     );
@@ -679,7 +695,7 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
       }
       // Prefetch next photo(s) for smoother transitions on lower-end devices
       if (mounted) {
-        unawaited(_prefetchNextPhoto());
+        unawaited(_imagePrefetcher.prefetchNext());
       }
     });
   }
@@ -771,79 +787,38 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
         photo: entry,
         position: config.photoInfoPosition,
         size: config.photoInfoSize,
-        locationName:
-            config.geocodingEnabled ? _locationNames[entry.file.path] : null,
+        locationName: config.geocodingEnabled
+            ? _enrichmentController.locationNames[entry.file.path]
+            : null,
         useScriptFont: config.useScriptFontForMetadata,
         enhancedContrast: config.photoInfoUseEnhancedContrast,
-        textColor: _parseColor(config.photoInfoColor),
+        textColor: parseHexColor(config.photoInfoColor),
       ),
     );
   }
 
   /// Loads the metadata the info overlay shows (EXIF and place name) for the
   /// photos that take the frame, forgetting the ones that leave it.
-  void _logDisplayedPhotos(PhotoEntry photo, PhotoEntry? partner) {
-    _locationNames.clear();
-    _logPhotoMetadata(photo);
-    if (partner != null) {
-      _logPhotoMetadata(partner);
-    }
+  Future<void> _logDisplayedPhotos(PhotoEntry photo, PhotoEntry? partner) async {
+    final config = context.read<ConfigProvider>();
+    await _enrichmentController.enrichDisplayedPhotos(
+      photo,
+      partner,
+      config,
+      mounted: mounted,
+      onPhotoUpdated: () {
+        if (mounted) {
+          setState(() {});
+        }
+      },
+      isOnScreenOverride: _isOnScreen,
+    );
   }
 
   /// Whether [photo] is one of the photos the frame currently shows.
   bool _isOnScreen(PhotoEntry photo) =>
       _currentPhoto?.file.path == photo.file.path ||
       _currentPartner?.file.path == photo.file.path;
-
-  /// Loads EXIF metadata lazily and logs it
-  Future<void> _logPhotoMetadata(PhotoEntry photo) async {
-    final config = context.read<ConfigProvider>();
-    
-    // Load EXIF data lazily if not already loaded
-    if (!photo.exifLoaded) {
-      try {
-        final metadataProvider = context.read<MetadataProvider>();
-        final exif = await metadataProvider.getExifMetadata(photo.file);
-        photo.setExifMetadata(
-          // Keep the media store date when the file carries no EXIF date.
-          captureDate: exif.captureDate ?? photo.captureDate,
-          latitude: exif.location?.latitude,
-          longitude: exif.location?.longitude,
-        );
-        // Trigger rebuild to show updated EXIF data in overlay
-        if (mounted) setState(() {});
-      } catch (e) {
-        _log.warning('Failed to load EXIF for ${photo.file.path}: $e');
-        photo.setExifMetadata(); // Mark as loaded (with no data)
-      }
-    }
-    
-    final fileName = photo.file.path.split('/').last;
-    final buffer = StringBuffer('Displaying: $fileName');
-    
-    buffer.write(' | File date: ${photo.date}');
-    
-    if (photo.hasCaptureDate) {
-      buffer.write(' | Capture date: ${photo.captureDate}');
-    }
-    
-    if (photo.hasLocation) {
-      buffer.write(' | GPS: (${photo.latitude!.toStringAsFixed(4)}, ${photo.longitude!.toStringAsFixed(4)})');
-      
-      // Reverse geocode only if enabled in settings
-      if (config.geocodingEnabled) {
-        _geocodingService.getLocationName(photo.latitude!, photo.longitude!).then((location) {
-          if (location == null || location.isEmpty) return;
-          _log.info('Location: $location');
-          // A photo that left the frame meanwhile keeps no name on screen.
-          if (!mounted || !_isOnScreen(photo)) return;
-          setState(() => _locationNames[photo.file.path] = location);
-        });
-      }
-    }
-    
-    _log.info(buffer.toString());
-  }
 
   /// Preloads an image and waits for it to be fully decoded
   Future<void> _preloadImage(ImageProvider provider) {
@@ -879,12 +854,13 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
     // Stop Keep Alive service if it was running
     KeepAliveService.stopService();
     
-    _timer?.cancel();
     _photosSubscription?.cancel();
     _scheduleSubscription?.cancel();
     _scheduleTimer?.cancel();
     _calendarTimer?.cancel();
     _photoDimensions.dispose();
+    _enrichmentController.dispose();
+    _slideTimer.dispose();
     for (var slide in _slides) {
       slide.controller.dispose();
     }
@@ -1010,7 +986,7 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
               position: config.clockPosition,
               format: config.clockFormat,
               enhancedContrast: config.clockUseEnhancedContrast,
-              textColor: _parseColor(config.clockColor),
+              textColor: parseHexColor(config.clockColor),
             ),
 
           // 3. Photo Info Overlay: one per photo on screen, each aligned in the
@@ -1026,7 +1002,7 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
               position: config.calendarPosition,
               size: config.calendarSize,
               enhancedContrast: config.calendarUseEnhancedContrast,
-              textColor: _parseColor(config.calendarColor),
+              textColor: parseHexColor(config.calendarColor),
             ),
 
           // 5. Touch Layer (Invisible, on top)
@@ -1155,46 +1131,10 @@ Future<PhotoEntry?> _findPartner(PhotoEntry photo, int myTransitionId) async {
     // must load the events right away.
     unawaited(_refreshCalendarEvents());
   }
-  Future<void> _prefetchNextPhoto() async {
-    try {
-      final photoService = context.read<PhotoService>();
-      final next = photoService.nextPhoto();
-      if (next == null) return;
-      final pairing = _screenSize == null
-          ? PhotoPairing.single
-          : PhotoPairLayout.forScreen(_screenSize!.width, _screenSize!.height);
-      if (PhotoPairLayout.accepts(pairing, next)) {
-        // skip partner prefetch to keep it simple
-      }
-      final cell = PhotoSlide.cellSize(_screenSize!, pairing);
-      await precacheImage(PhotoSlide.createOptimizedProvider(next.file, cell), context);
-    } catch (_) {}
-  }
+  // Prefetching is now handled by ImagePrefetcher
 
-  Color _parseColor(String colorStr) {
-    try {
-      var str = colorStr.toLowerCase().trim();
-      if (str.startsWith('#')) {
-        str = str.substring(1);
-        if (str.length == 6) str = 'ff$str';
-        else if (str.length == 3) str = 'ff${str[0]}${str[0]}${str[1]}${str[1]}${str[2]}${str[2]}';
-        return Color(int.parse(str, radix: 16));
-      }
-      switch (str) {
-        case 'black': return Colors.black;
-        case 'red': return Colors.red;
-        case 'green': return Colors.green;
-        case 'blue': return Colors.blue;
-        case 'yellow': return Colors.yellow;
-        case 'white': return Colors.white;
-        case 'transparent': return Colors.transparent;
-        default: return Colors.white;
-      }
-    } catch (_) {
-      return Colors.white;
-    }
-  }
 }
+
 
 class _SlideItem {
   final PhotoEntry photo;

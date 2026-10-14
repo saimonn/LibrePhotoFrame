@@ -264,4 +264,103 @@ void main() {
       );
     });
   });
+
+  group('PhotoPairLayout.windowAfter', () {
+    test('starts with the photo after the primary', () {
+      final photos = [portrait('a'), portrait('b'), portrait('c')];
+      final window = PhotoPairLayout.windowAfter(photos[0], photos, 2);
+
+      expect(window.map((p) => p.file.path).toList(), [
+        '/photos/b.jpg',
+        '/photos/c.jpg',
+      ]);
+    });
+
+    test('wraps around the end of the list', () {
+      final photos = [portrait('a'), portrait('b'), portrait('c')];
+      final window = PhotoPairLayout.windowAfter(photos[2], photos, 3);
+
+      expect(window.map((p) => p.file.path).toList(), [
+        '/photos/a.jpg',
+        '/photos/b.jpg',
+        '/photos/c.jpg',
+      ]);
+    });
+
+    test('caps the window at the requested limit', () {
+      final photos = List.generate(10, (i) => portrait('p$i'));
+      final window = PhotoPairLayout.windowAfter(photos[0], photos, 4);
+
+      expect(window, hasLength(4));
+      expect(window.first.file.path, endsWith('/p1.jpg'));
+    });
+
+    test('starts at the head when the primary is not in the list', () {
+      final photos = [portrait('a'), portrait('b')];
+      final window = PhotoPairLayout.windowAfter(portrait('ghost'), photos, 2);
+
+      expect(window.map((p) => p.file.path).toList(), [
+        '/photos/a.jpg',
+        '/photos/b.jpg',
+      ]);
+    });
+
+    test('returns an empty list for an empty collection or a null limit', () {
+      expect(PhotoPairLayout.windowAfter(portrait('a'), const [], 4), isEmpty);
+      expect(
+        PhotoPairLayout.windowAfter(portrait('a'), [portrait('a')], 0),
+        isEmpty,
+      );
+    });
+  });
+
+  group('issue 19 - the partner follows the photo on screen', () {
+    // A landscape frame pairs portrait photos. The primary is picked at random
+    // across the whole collection, so partners must not all come from the same
+    // fixed head of the list.
+    List<PhotoEntry> collection(int portraits, int landscapes) {
+      return [
+        for (var i = 0; i < portraits; i++) portrait('p$i'),
+        for (var i = 0; i < landscapes; i++) landscape('l$i'),
+      ];
+    }
+
+    test('two different primaries get two different partners', () {
+      final photos = collection(6, 0);
+      final first = PhotoPairLayout.windowAfter(photos[0], photos, 3);
+      final second = PhotoPairLayout.windowAfter(photos[3], photos, 3);
+
+      final partnerOfFirst = PhotoPairLayout.partnerFor(
+        primary: photos[0],
+        candidates: first,
+        pairing: PhotoPairing.portraitSideBySide,
+      );
+      final partnerOfSecond = PhotoPairLayout.partnerFor(
+        primary: photos[3],
+        candidates: second,
+        pairing: PhotoPairing.portraitSideBySide,
+      );
+
+      expect(partnerOfFirst, isNotNull);
+      expect(partnerOfSecond, isNotNull);
+      expect(partnerOfFirst!.file.path, isNot(partnerOfSecond!.file.path));
+    });
+
+    test('the head of the list no longer freezes the partner', () {
+      // With the old fixed head window, the primary at the end of a long
+      // collection could only ever pair with the first portrait of the list.
+      final photos = collection(40, 0);
+      final primary = photos[35];
+      final window = PhotoPairLayout.windowAfter(primary, photos, 3);
+
+      final partner = PhotoPairLayout.partnerFor(
+        primary: primary,
+        candidates: window,
+        pairing: PhotoPairing.portraitSideBySide,
+      );
+
+      expect(partner, isNotNull);
+      expect(partner!.file.path, isNot(endsWith('/p0.jpg')));
+    });
+  });
 }

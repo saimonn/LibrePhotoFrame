@@ -323,6 +323,11 @@ class MockPlaylistStrategy implements PlaylistStrategy {
   }
 
   @override
+  List<PhotoEntry> peekNextPhotos(List<PhotoEntry> photos, int count) {
+    return photos.take(count).toList();
+  }
+
+  @override
   void recordShown(List<PhotoEntry> photos) {}
 }
 
@@ -340,6 +345,15 @@ class CyclingPlaylistStrategy implements PlaylistStrategy {
   PhotoEntry? nextPhoto(List<PhotoEntry> photos) {
     if (photos.isEmpty) return null;
     return photos[_calls++ % photos.length];
+  }
+
+  @override
+  List<PhotoEntry> peekNextPhotos(List<PhotoEntry> photos, int count) {
+    final result = <PhotoEntry>[];
+    for (var i = 0; i < count && i < photos.length; i++) {
+      result.add(photos[(_calls + i) % photos.length]);
+    }
+    return result;
   }
 
   @override
@@ -608,6 +622,29 @@ void main() {
       expect(ownRepository.photos, isEmpty);
       expect(ownService.nextPhoto(), isNull);
       expect(ownService.previousPhoto(), isNull);
+    });
+
+    test('peekUpcoming previews the next photos without moving', () async {
+      await ownService.initialize();
+
+      final first = ownService.nextPhoto();
+      expect(first!.file.path.contains('photo1.jpg'), isTrue);
+
+      // At the end of the history the playlist strategy is previewed.
+      expect(
+        ownService.peekUpcoming(2).map((p) => p.file.path.split('/').last),
+        ['photo2.jpg', 'photo1.jpg'],
+      );
+
+      // The preview did not move the play position.
+      expect(ownService.nextPhoto()!.file.path.contains('photo2.jpg'), isTrue);
+
+      // Going back makes the forward history the upcoming photos.
+      ownService.previousPhoto();
+      expect(
+        ownService.peekUpcoming(2).first.file.path.contains('photo2.jpg'),
+        isTrue,
+      );
     });
   });
 

@@ -60,12 +60,7 @@ class SortedPlaylistStrategy implements PlaylistStrategy {
   PhotoEntry? nextPhoto(List<PhotoEntry> availablePhotos) {
     if (availablePhotos.isEmpty) return null;
 
-    final sorted = availablePhotos.toList()
-      ..sort((a, b) {
-        final byDate = field.dateOf(a).compareTo(field.dateOf(b));
-        // Photos sharing a date, e.g. a whole burst, keep a stable order.
-        return byDate != 0 ? byDate : a.file.path.compareTo(b.file.path);
-      });
+    final sorted = _sortedOrder(availablePhotos);
 
     _index = sorted.indexWhere(
       (photo) => photo.file.path == _currentPath,
@@ -75,5 +70,33 @@ class SortedPlaylistStrategy implements PlaylistStrategy {
     final photo = sorted[_index];
     _currentPath = photo.file.path;
     return photo;
+  }
+
+  @override
+  List<PhotoEntry> peekNextPhotos(List<PhotoEntry> availablePhotos, int count) {
+    if (availablePhotos.isEmpty || count <= 0) return const [];
+
+    final sorted = _sortedOrder(availablePhotos);
+    var index = sorted.indexWhere(
+      (photo) => photo.file.path == _currentPath,
+    );
+
+    final result = <PhotoEntry>[];
+    while (result.length < count && result.length < sorted.length) {
+      index = (index + 1) % sorted.length;
+      result.add(sorted[index]);
+    }
+    return result;
+  }
+
+  /// The collection in walking order. Rebuilt on every call because EXIF dates
+  /// arrive while the frame runs.
+  List<PhotoEntry> _sortedOrder(List<PhotoEntry> availablePhotos) {
+    return availablePhotos.toList()
+      ..sort((a, b) {
+        final byDate = field.dateOf(a).compareTo(field.dateOf(b));
+        // Photos sharing a date, e.g. a whole burst, keep a stable order.
+        return byDate != 0 ? byDate : a.file.path.compareTo(b.file.path);
+      });
   }
 }

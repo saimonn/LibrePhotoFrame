@@ -81,4 +81,30 @@ class PhotoPairLayout {
     }
     return null;
   }
+
+  /// Candidates to look at for a partner of [primary]: the photos that follow
+  /// it in [candidates], wrapping around, capped at [limit].
+  ///
+  /// Searching after the photo on screen instead of always from the head of the
+  /// list is what makes the second photo of a pair follow the first one. The
+  /// cap keeps the cost of a slide constant whatever the size of the
+  /// collection.
+  static List<PhotoEntry> windowAfter(
+    PhotoEntry primary,
+    List<PhotoEntry> candidates,
+    int limit,
+  ) {
+    if (candidates.isEmpty || limit <= 0) return const [];
+
+    final start = candidates.indexWhere(
+      (candidate) => candidate.file.path == primary.file.path,
+    );
+    final window = <PhotoEntry>[];
+    for (var offset = 1;
+        offset <= candidates.length && window.length < limit;
+        offset++) {
+      window.add(candidates[(start + offset) % candidates.length]);
+    }
+    return window;
+  }
 }

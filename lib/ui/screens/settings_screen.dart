@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -24,6 +23,14 @@ import '../../infrastructure/services/android_runtime_settings_sync.dart';
 import '../../infrastructure/services/native_screen_control_service.dart';
 import '../../infrastructure/services/keep_alive_service.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'settings/slideshow_section.dart';
+import 'settings/settings_widgets.dart';
+import 'settings/overlay_section.dart';
+import 'settings/sync_section.dart';
+import 'settings/schedule_section.dart';
+import 'settings/android_section.dart';
+import 'settings/about_section.dart';
+import 'settings/language_section.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -512,503 +519,188 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
             if (Platform.isAndroid && _deviceAdminEnabled) ..._buildDeviceAdminWarning(),
 
             // Language, first because it labels everything below
-            _buildLanguageSelector(),
+            LanguageSection(
+              language: _language,
+              onLanguageChanged: (value) {
+                if (value != null) {
+                  setState(() => _language = value);
+                }
+              },
+              supportedLocales: const [
+                {'code': '', 'name': 'System'},
+                {'code': 'en', 'name': 'English'},
+                {'code': 'de', 'name': 'Deutsch'},
+                {'code': 'fr', 'name': 'Français'},
+                {'code': 'es', 'name': 'Español'},
+              ],
+            ),
 
             const SizedBox(height: 24),
             const Divider(),
             const SizedBox(height: 16),
 
             // === SLIDESHOW SETTINGS ===
-            _buildSectionHeader(AppLocalizations.of(context)!.sectionSlideshow),
-            const SizedBox(height: 8),
-          
-            // Slide Duration
-            // One slider: first half is 5-60 seconds in steps of 5, second half
-            // 1-15 minutes.
-            Builder(
-              builder: (context) {
-                final l10n = AppLocalizations.of(context)!;
-                final inSeconds = _slideDurationStep <= _minutesStartStep;
-                return _buildSliderSetting(
-                  icon: Icons.timer,
-                  title: l10n.slideDuration,
-                  value: _slideDurationStep.toDouble(),
-                  min: 0,
-                  max: _slideDurationDivisions.toDouble(),
-                  divisions: _slideDurationDivisions,
-                  unit: inSeconds ? l10n.unitSeconds : l10n.unitMinutes,
-                  formatValue: (v) {
-                    // Show the value in its own unit: seconds below the
-                    // halfway point, whole minutes above it.
-                    final step = v.round();
-                    if (step <= _minutesStartStep) {
-                      return '${_minSlideSeconds + _slideSecondsStep * step}';
-                    }
-                    return '${_minSlideMinutes + (step - _minutesStartStep - 1)}';
-                  },
-                  onChanged: (value) {
-                    setState(() => _slideDurationStep = value.round());
-                  },
-                );
-              },
-            ),
-          
-            const SizedBox(height: 16),
-          
-            // Transition Duration (0.5 - 5 seconds, 0.5s steps)
-            _buildSliderSetting(
-              icon: Icons.blur_on,
-              title: AppLocalizations.of(context)!.transitionDuration,
-              value: _transitionDurationSeconds,
-              min: 0.5,
-              max: 5.0,
-              divisions: 9,  // 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0
-              unit: AppLocalizations.of(context)!.unitSeconds,
-              formatValue: (v) => v.toStringAsFixed(1),
-              onChanged: (value) {
-                setState(() => _transitionDurationSeconds = value);
-              },
-            ),
-
-            const SizedBox(height: 16),
-
-            if (_photoFit != 'cover' && _photoFit != 'fill') ...[
-              SwitchListTile(
-                title: Text(AppLocalizations.of(context)!.blurBorders),
-                subtitle: Text(AppLocalizations.of(context)!.blurBordersSubtitle),
-                secondary: const Icon(Icons.blur_linear),
-                value: _blurBorders,
-                onChanged: (value) {
-                  setState(() => _blurBorders = value);
-                },
+            SlideshowSection(
+              slideDurationStep: _slideDurationStep,
+              transitionDurationSeconds: _transitionDurationSeconds,
+              blurBorders: _blurBorders,
+              photoFit: _photoFit,
+              pairPhotos: _pairPhotos,
+              photoOrder: _photoOrder,
+              screenOrientation: _screenOrientation,
+              minutesStartStep: _minutesStartStep,
+              minSlideSeconds: _minSlideSeconds,
+              slideSecondsStep: _slideSecondsStep,
+              minSlideMinutes: _minSlideMinutes,
+              slideDurationDivisions: _slideDurationDivisions,
+              onSlideDurationChanged: (value) => setState(() => _slideDurationStep = value),
+              onTransitionDurationChanged: (value) => setState(() => _transitionDurationSeconds = value),
+              onBlurBordersChanged: (value) => setState(() => _blurBorders = value),
+              onPhotoFitChanged: (value) => setState(() => _photoFit = value),
+              onPairPhotosChanged: (value) => setState(() => _pairPhotos = value),
+              onPhotoOrderChanged: (value) => setState(() => _photoOrder = value),
+              onScreenOrientationChanged: (value) => setState(() => _screenOrientation = value),
+              buildPhotoFitSelector: () => _buildPhotoFitSelector(
+                _photoFit,
+                (value) => setState(() => _photoFit = value),
               ),
-              const SizedBox(height: 16),
-            ],
-
-            // Photo Fit
-            _buildPhotoFitSelector(
-              _photoFit,
-              (value) => setState(() => _photoFit = value),
+              buildPhotoOrderSelector: _buildPhotoOrderSelector,
+              buildScreenOrientationSelector: _buildScreenOrientationSelector,
             ),
 
-            const SizedBox(height: 16),
-
-            // Pair Photos
-            SwitchListTile(
-              title: Text(AppLocalizations.of(context)!.pairPhotos),
-              subtitle: Text(AppLocalizations.of(context)!.pairPhotosSubtitle),
-              secondary: const Icon(Icons.view_column),
-              value: _pairPhotos,
-              onChanged: (value) {
-                setState(() => _pairPhotos = value);
-              },
-            ),
-          
-            const SizedBox(height: 16),
-          
-            // Photo Order
-            _buildPhotoOrderSelector(),
-          
-            const SizedBox(height: 16),
-          
-            // Screen Orientation
-            _buildScreenOrientationSelector(),
-          
             const SizedBox(height: 24),
             const Divider(),
             const SizedBox(height: 16),
-          
-            // === CLOCK SETTINGS ===
-            _buildSectionHeader(AppLocalizations.of(context)!.sectionClock),
-            const SizedBox(height: 8),
-          
-            SwitchListTile(
-              title: Text(AppLocalizations.of(context)!.showClock),
-              subtitle: Text(AppLocalizations.of(context)!.showClockSubtitle),
-              secondary: const Icon(Icons.access_time),
-              value: _showClock,
-              onChanged: (value) {
-                setState(() => _showClock = value);
-              },
-            ),
-          
-            if (_showClock) ...[
-              const SizedBox(height: 8),
-              _buildSizeSelector(
-                _clockSize,
-                (value) => setState(() => _clockSize = value),
-              ),
-              const SizedBox(height: 8),
-              _buildPositionSelector(
-                _clockPosition,
-                (value) => setState(() => _clockPosition = value),
-              ),
-              const SizedBox(height: 8),
-              _buildClockFormatSelector(),
-              const SizedBox(height: 8),
-              SwitchListTile(
-                title: Text(AppLocalizations.of(context)!.enhancedTextContrast),
-                subtitle: Text(AppLocalizations.of(context)!.enhancedTextContrastSubtitle),
-                secondary: const Icon(Icons.format_color_text),
-                value: _clockUseEnhancedContrast,
-                onChanged: (value) {
-                  setState(() => _clockUseEnhancedContrast = value);
-                },
-              ),
-              const SizedBox(height: 8),
-              _buildColorSelector(
-                _clockColor,
-                (value) => setState(() => _clockColor = value),
-                AppLocalizations.of(context)!.textColorClock,
-              ),
-            ],
-          
-            const SizedBox(height: 24),
-            const Divider(),
-            const SizedBox(height: 16),
-          
-            // === PHOTO INFO SETTINGS ===
-            _buildSectionHeader(AppLocalizations.of(context)!.sectionPhotoInfo),
-            const SizedBox(height: 8),
-          
-            SwitchListTile(
-              title: Text(AppLocalizations.of(context)!.showPhotoInfo),
-              subtitle: Text(AppLocalizations.of(context)!.showPhotoInfoSubtitle),
-              secondary: const Icon(Icons.info_outline),
-              value: _showPhotoInfo,
-              onChanged: (value) {
-                setState(() => _showPhotoInfo = value);
-              },
-            ),
-          
-            if (_showPhotoInfo) ...[
-              const SizedBox(height: 8),
-              _buildPositionSelector(
-                _photoInfoPosition,
-                (value) => setState(() => _photoInfoPosition = value),
-              ),
-              const SizedBox(height: 8),
-              _buildSizeSelector(
-                _photoInfoSize,
-                (value) => setState(() => _photoInfoSize = value),
-              ),
-              const SizedBox(height: 16),
-              SwitchListTile(
-                title: Text(AppLocalizations.of(context)!.useScriptFont),
-                subtitle: Text(AppLocalizations.of(context)!.useScriptFontSubtitle),
-                secondary: const Icon(Icons.font_download),
-                value: _useScriptFontForMetadata,
-                onChanged: (value) {
-                  setState(() => _useScriptFontForMetadata = value);
-                },
-              ),
-              const SizedBox(height: 16),
-              SwitchListTile(
-                title: Text(AppLocalizations.of(context)!.enhancedTextContrast),
-                subtitle: Text(AppLocalizations.of(context)!.enhancedTextContrastSubtitle),
-                secondary: const Icon(Icons.format_color_text),
-                value: _photoInfoUseEnhancedContrast,
-                onChanged: (value) {
-                  setState(() => _photoInfoUseEnhancedContrast = value);
-                },
-              ),
-              const SizedBox(height: 8),
-              _buildColorSelector(
-                _photoInfoColor,
-                (value) => setState(() => _photoInfoColor = value),
-                AppLocalizations.of(context)!.textColorPhotoInfo,
-              ),
-              const SizedBox(height: 16),
-              SwitchListTile(
-                title: Text(AppLocalizations.of(context)!.resolveLocationNames),
-                subtitle: Text(AppLocalizations.of(context)!.resolveLocationNamesSubtitle),
-                secondary: const Icon(Icons.location_on),
-                value: _geocodingEnabled,
-                onChanged: (value) {
-                  setState(() => _geocodingEnabled = value);
-                },
-              ),
-              if (_geocodingEnabled)
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    AppLocalizations.of(context)!.nominatimHint,
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                ),
-            ],
-          
-            const SizedBox(height: 24),
-            const Divider(),
-            const SizedBox(height: 16),
-          
-            // === CALENDAR SETTINGS ===
-            _buildSectionHeader(AppLocalizations.of(context)!.sectionCalendar),
-            const SizedBox(height: 8),
-          
-            SwitchListTile(
-              title: Text(AppLocalizations.of(context)!.showCalendarEvents),
-              subtitle: Text(AppLocalizations.of(context)!.showCalendarEventsSubtitle),
-              secondary: const Icon(Icons.calendar_month),
-              value: _showCalendarEvents,
-              onChanged: (value) async {
-                if (!value) {
-                  setState(() => _showCalendarEvents = false);
-                  return;
-                }
-                // The system dialog may only appear from a user action, so the
-                // permission is requested when the setting is switched on.
-                final granted = await _requestCalendarPermission();
-                if (!granted) {
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(AppLocalizations.of(context)!.calendarPermissionDenied),
-                        duration: const Duration(seconds: 4),
-                      ),
-                    );
-                  }
-                  return;
-                }
+
+            // === OVERLAY SETTINGS (Clock/Photo Info/Calendar) ===
+            OverlaySection(
+              showClock: _showClock,
+              clockSize: _clockSize,
+              clockPosition: _clockPosition,
+              clockFormat: _clockFormat,
+              clockUseEnhancedContrast: _clockUseEnhancedContrast,
+              clockColor: _clockColor,
+              onShowClockChanged: (value) => setState(() => _showClock = value),
+              onClockSizeChanged: (value) => setState(() => _clockSize = value),
+              onClockPositionChanged: (value) => setState(() => _clockPosition = value),
+              onClockFormatChanged: (value) => setState(() => _clockFormat = value),
+              onClockUseEnhancedContrastChanged: (value) => setState(() => _clockUseEnhancedContrast = value),
+              onClockColorChanged: (value) => setState(() => _clockColor = value),
+              showPhotoInfo: _showPhotoInfo,
+              photoInfoPosition: _photoInfoPosition,
+              photoInfoSize: _photoInfoSize,
+              geocodingEnabled: _geocodingEnabled,
+              useScriptFontForMetadata: _useScriptFontForMetadata,
+              photoInfoUseEnhancedContrast: _photoInfoUseEnhancedContrast,
+              photoInfoColor: _photoInfoColor,
+              onShowPhotoInfoChanged: (value) => setState(() => _showPhotoInfo = value),
+              onPhotoInfoPositionChanged: (value) => setState(() => _photoInfoPosition = value),
+              onPhotoInfoSizeChanged: (value) => setState(() => _photoInfoSize = value),
+              onGeocodingEnabledChanged: (value) => setState(() => _geocodingEnabled = value),
+              onUseScriptFontForMetadataChanged: (value) => setState(() => _useScriptFontForMetadata = value),
+              onPhotoInfoUseEnhancedContrastChanged: (value) => setState(() => _photoInfoUseEnhancedContrast = value),
+              onPhotoInfoColorChanged: (value) => setState(() => _photoInfoColor = value),
+              showCalendarEvents: _showCalendarEvents,
+              calendarPosition: _calendarPosition,
+              calendarSize: _calendarSize,
+              calendarUseEnhancedContrast: _calendarUseEnhancedContrast,
+              calendarColor: _calendarColor,
+              calendarPermissionGranted: _calendarPermissionGranted,
+              onRequestCalendarPermission: _requestCalendarPermission,
+              onCalendarSettingsOpen: () => context.read<CalendarEventSource>().openAppSettings(),
+              onShowCalendarEventsChanged: (value) {
                 setState(() {
-                  _showCalendarEvents = true;
-                  _calendarPermissionGranted = true;
+                  _showCalendarEvents = value;
+                  if (value) _calendarPermissionGranted = true;
                 });
               },
+              onCalendarPositionChanged: (value) => setState(() => _calendarPosition = value),
+              onCalendarSizeChanged: (value) => setState(() => _calendarSize = value),
+              onCalendarUseEnhancedContrastChanged: (value) => setState(() => _calendarUseEnhancedContrast = value),
+              onCalendarColorChanged: (value) => setState(() => _calendarColor = value),
+              buildSizeSelector: (size, onChanged) => _buildSizeSelector(size, onChanged),
+              buildPositionSelector: (pos, onChanged) => _buildPositionSelector(pos, onChanged),
+              buildColorSelector: (color, onChanged, label) => _buildColorSelector(color, onChanged, label),
             ),
-          
-            if (_showCalendarEvents) ...[
-              if (!_calendarPermissionGranted)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          AppLocalizations.of(context)!.calendarPermissionDenied,
-                          style: const TextStyle(fontSize: 12, color: Colors.orange),
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () =>
-                            context.read<CalendarEventSource>().openAppSettings(),
-                        child: Text(AppLocalizations.of(context)!.calendarOpenSettings),
-                      ),
-                    ],
-                  ),
-                ),
-              const SizedBox(height: 8),
-              _buildPositionSelector(
-                _calendarPosition,
-                (value) => setState(() => _calendarPosition = value),
-              ),
-              const SizedBox(height: 8),
-              _buildSizeSelector(
-                _calendarSize,
-                (value) => setState(() => _calendarSize = value),
-              ),
-              const SizedBox(height: 8),
-              SwitchListTile(
-                title: Text(AppLocalizations.of(context)!.enhancedTextContrast),
-                subtitle: Text(AppLocalizations.of(context)!.enhancedTextContrastSubtitle),
-                secondary: const Icon(Icons.format_color_text),
-                value: _calendarUseEnhancedContrast,
-                onChanged: (value) {
-                  setState(() => _calendarUseEnhancedContrast = value);
-                },
-              ),
-              const SizedBox(height: 8),
-              _buildColorSelector(
-                _calendarColor,
-                (value) => setState(() => _calendarColor = value),
-                AppLocalizations.of(context)!.textColorCalendar,
-              ),
-            ],
-          
+
             const SizedBox(height: 24),
             const Divider(),
             const SizedBox(height: 16),
-          
+
             // === SYNC SETTINGS ===
-            _buildSectionHeader(AppLocalizations.of(context)!.sectionPhotoSource),
-            const SizedBox(height: 8),
-          
-            // Sync Type Selection (includes inline folder selector for local_folder)
-            _buildSyncTypeSelector(),
-          
-            // Change detection for the selected source: the folder watcher for
-            // the folder sources, the MediaStore change callback for the device
-            // photos.
-            const SizedBox(height: 16),
-          
-            SwitchListTile(
-              title: Text(AppLocalizations.of(context)!.watchPhotoFolder),
-              subtitle: Text(AppLocalizations.of(context)!.watchPhotoFolderSubtitle),
-              secondary: const Icon(Icons.sync),
-              value: _watchPhotoFolder,
-              onChanged: (value) {
-                setState(() => _watchPhotoFolder = value);
-              },
+            SyncSection(
+              syncType: _syncType,
+              watchPhotoFolder: _watchPhotoFolder,
+              pollIntervalSeconds: _pollIntervalSeconds,
+              pollIntervalChoices: pollIntervalChoices,
+              onSyncTypeChanged: (value) => setState(() => _syncType = value),
+              onWatchPhotoFolderChanged: (value) => setState(() => _watchPhotoFolder = value),
+              onPollIntervalChanged: (value) => setState(() => _pollIntervalSeconds = value),
+              buildSyncTypeSelector: _buildSyncTypeSelector,
+              pollIntervalLabel: (s) => _pollIntervalLabel(context, s),
+              isNextcloud: _syncType == 'nextcloud_link',
+              buildNextcloudSettings: _buildNextcloudSettings,
+              buildSyncIntervalSlider: _buildSyncIntervalSlider,
+              buildSyncNowButton: _buildSyncNowButton,
+              buildLastSyncInfo: _buildLastSyncInfo,
+              deleteOrphanedFiles: _deleteOrphanedFiles,
+              onDeleteOrphanedFilesChanged: (value) => setState(() => _deleteOrphanedFiles = value),
             ),
 
-            // Re-read interval: the safety net that picks up the changes no
-            // event reported, for the folder sources and the device photos.
-            ListTile(
-              leading: const Icon(Icons.timer),
-              title: Text(AppLocalizations.of(context)!.pollInterval),
-              subtitle: Text(AppLocalizations.of(context)!.pollIntervalSubtitle),
-              trailing: _boundedDropdown(
-                DropdownButton<int>(
-                  isExpanded: true,
-                  value: _pollIntervalSeconds,
-                  underline: const SizedBox(),
-                  items: [
-                    for (final seconds in pollIntervalChoices)
-                      DropdownMenuItem(
-                        value: seconds,
-                        child: Text(_pollIntervalLabel(context, seconds)),
-                      ),
-                  ],
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() => _pollIntervalSeconds = value);
-                    }
-                  },
-                ),
-              ),
-            ),
-          
-            // Nextcloud URL (only visible if nextcloud selected)
-            if (_syncType == 'nextcloud_link') ...[
-              const SizedBox(height: 16),
-              _buildNextcloudSettings(),
-            ],
-          
-            // Sync options (only visible if sync enabled - i.e. Nextcloud)
-            if (_syncType == 'nextcloud_link') ...[
-              const SizedBox(height: 16),
-            
-              // Sync Interval Slider
-              _buildSyncIntervalSlider(),
-            
-              const SizedBox(height: 8),
-            
-              // Delete orphaned files checkbox
-                  SwitchListTile(
-                title: Text(AppLocalizations.of(context)!.deleteOrphanedFiles),
-                subtitle: Text(AppLocalizations.of(context)!.deleteOrphanedFilesSubtitle),
-                    secondary: const Icon(Icons.delete_sweep),
-                value: _deleteOrphanedFiles,
-                onChanged: (value) {
-                      setState(() => _deleteOrphanedFiles = value);
-                },
-              ),
-            
-              const SizedBox(height: 16),
-              _buildSyncNowButton(),
-            
-              const SizedBox(height: 8),
-              _buildLastSyncInfo(),
-            ],
-          
             const SizedBox(height: 24),
             const Divider(),
             const SizedBox(height: 16),
-          
+
             // === DISPLAY SCHEDULE SETTINGS ===
-            _buildSectionHeader(AppLocalizations.of(context)!.sectionDisplaySchedule),
-            const SizedBox(height: 8),
-          
-            SwitchListTile(
-              title: Text(AppLocalizations.of(context)!.dayNightSchedule),
-              subtitle: Text(AppLocalizations.of(context)!.dayNightScheduleSubtitle),
-              secondary: const Icon(Icons.nightlight_round),
-              value: _scheduleEnabled,
-              onChanged: (value) {
-                setState(() => _scheduleEnabled = value);
-              },
+            ScheduleSection(
+              scheduleEnabled: _scheduleEnabled,
+              onScheduleEnabledChanged: (value) => setState(() => _scheduleEnabled = value),
+              scheduleSettings: _buildScheduleSettings(),
             ),
-          
-            if (_scheduleEnabled) ..._buildScheduleSettings(),
-          
+
             const SizedBox(height: 24),
             const Divider(),
             const SizedBox(height: 16),
-          
+
             // === ANDROID SETTINGS (only on Android) ===
-            if (Platform.isAndroid) ...[
-              _buildSectionHeader(AppLocalizations.of(context)!.sectionAndroid),
-              const SizedBox(height: 8),
-            
-              SwitchListTile(
-                title: Text(AppLocalizations.of(context)!.startOnBoot),
-                subtitle: Text(AppLocalizations.of(context)!.startOnBootSubtitle),
-                secondary: const Icon(Icons.power_settings_new),
-                value: _autostartOnBoot,
-                onChanged: (value) {
-                  setState(() => _autostartOnBoot = value);
-                },
-              ),
-            
-              const SizedBox(height: 8),
-            
-              SwitchListTile(
-                title: Text(AppLocalizations.of(context)!.keepAppRunning),
-                subtitle: Text(AppLocalizations.of(context)!.keepAppRunningSubtitle),
-                secondary: const Icon(Icons.memory),
-                value: _keepAliveEnabled,
-                onChanged: (value) async {
-                  if (value) {
-                    // Show explanation dialog before enabling
-                    final confirmed = await _showKeepAliveExplanation();
-                    if (!confirmed) return;
-                  
-                    // Check if notification permission is needed
-                    if (await KeepAliveService.shouldRequestNotificationPermission()) {
-                      final permissionGranted = await _requestNotificationPermission();
-                      if (!permissionGranted) {
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(AppLocalizations.of(context)!.notificationPermissionRequired),
-                              duration: Duration(seconds: 4),
-                            ),
-                          );
-                        }
-                        return;
-                      }
+            AndroidSection(
+              autostartOnBoot: _autostartOnBoot,
+              keepAliveEnabled: _keepAliveEnabled,
+              autoUpdateEnabled: _autoUpdateEnabled,
+              autoUpdateSilent: _autoUpdateSilent,
+              isDeviceOwner: _isDeviceOwner,
+              onAutostartOnBootChanged: (value) => setState(() => _autostartOnBoot = value),
+              onShowKeepAliveExplanation: _showKeepAliveExplanation,
+              onRequestNotificationPermission: () async {
+                if (await KeepAliveService.shouldRequestNotificationPermission()) {
+                  final permissionGranted = await _requestNotificationPermission();
+                  if (!permissionGranted) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(AppLocalizations.of(context)!.notificationPermissionRequired),
+                          duration: const Duration(seconds: 4),
+                        ),
+                      );
                     }
+                    return false;
                   }
-                  setState(() => _keepAliveEnabled = value);
-                },
-              ),
+                }
+                return true;
+              },
+              onKeepAliveChanged: (value) => setState(() => _keepAliveEnabled = value),
+              buildAutoUpdateSection: _buildAutoUpdateSection,
+            ),
 
-              const SizedBox(height: 8),
-              _buildAutoUpdateSection(),
-
+            if (Platform.isAndroid) ...[
               const SizedBox(height: 24),
               const Divider(),
               const SizedBox(height: 16),
             ],
-          
+
             // === ABOUT ===
-            ListTile(
-              leading: const Icon(Icons.info_outline),
-              title: Text(AppLocalizations.of(context)!.about),
-              subtitle: Text(
-                AppLocalizations.of(context)!.aboutSubtitle(
-                  _appVersion.isEmpty ? '...' : _appVersion,
-                ),
-              ),
-              onTap: () {
-                showAboutDialog(
-                  context: context,
-                  applicationName: 'LibrePhotoFrame',
-                  applicationVersion: _appVersion.isEmpty ? '...' : _appVersion,
-                  applicationLegalese:
-                      '© 2026 Michael Wyraz and the LibrePhotoFrame contributors',
-                );
-              },
+            AboutSection(
+              appVersion: _appVersion.isEmpty ? '...' : _appVersion,
             ),
           ],
         ),
@@ -1088,56 +780,6 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     // If an update is found, the service shows the prompt via onUpdateAvailable.
   }
 
-  Widget _buildSectionHeader(String title) {
-    return Text(
-      title,
-      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-        color: Theme.of(context).colorScheme.primary,
-        fontWeight: FontWeight.bold,
-      ),
-    );
-  }
-  
-  Widget _buildSliderSetting({
-    required IconData icon,
-    required String title,
-    required double value,
-    required double min,
-    required double max,
-    required int divisions,
-    required String unit,
-    required ValueChanged<double> onChanged,
-    String Function(double)? formatValue,
-  }) {
-    final displayValue = formatValue != null ? formatValue(value) : '${value.round()}';
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(icon, size: 20),
-            const SizedBox(width: 12),
-            Expanded(child: Text(title)),
-            Text(
-              '$displayValue $unit',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-        Slider(
-          value: value,
-          min: min,
-          max: max,
-          divisions: divisions,
-          onChanged: onChanged,
-        ),
-      ],
-    );
-  }
-  
   Widget _buildSyncTypeSelector() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -2176,7 +1818,8 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
       leading: const Icon(Icons.shuffle),
       title: Text(l10n.photoOrder, overflow: TextOverflow.ellipsis),
       subtitle: Text(getPhotoOrderLabel(_photoOrder), overflow: TextOverflow.ellipsis),
-      trailing: _boundedDropdown(
+      trailing: boundedDropdown(
+        context,
         DropdownButton<String>(
           isExpanded: true,
           value: _photoOrder,
@@ -2210,102 +1853,6 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
   ///
   /// The dropdown itself has to be expanded (see [DropdownButton.isExpanded]),
   /// or it lays its label out at its natural width and overflows this box.
-  Widget _boundedDropdown(Widget dropdown) {
-    // A narrow row must not hand most of its width to the dropdown either.
-    final maxWidth =
-        math.min(170.0, MediaQuery.sizeOf(context).width * 0.4);
-
-    return ConstrainedBox(
-      constraints: BoxConstraints(maxWidth: maxWidth),
-      child: dropdown,
-    );
-  }
-  
-  Widget _buildLanguageSelector() {
-    final l10n = AppLocalizations.of(context)!;
-    // Each language is named in itself, as the list is read in any language.
-    final names = {
-      '': l10n.languageSystem,
-      'en': 'English',
-      'de': 'Deutsch',
-      'fr': 'Français',
-      'es': 'Español',
-    };
-
-    return ListTile(
-      leading: const Icon(Icons.translate),
-      title: Text(l10n.language),
-      subtitle: Text(names[_language] ?? l10n.languageSystem),
-      trailing: _boundedDropdown(
-        DropdownButton<String>(
-          isExpanded: true,
-          value: _language,
-          underline: const SizedBox(),
-          items: [
-            for (final language in names.keys)
-              DropdownMenuItem(
-                value: language,
-                child: Text(
-                  names[language]!,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-          ],
-          onChanged: (value) {
-            if (value != null) {
-              setState(() => _language = value);
-            }
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildClockFormatSelector() {
-    final l10n = AppLocalizations.of(context)!;
-
-    String getClockFormatLabel(String value) {
-      switch (value) {
-        case '12':
-          return l10n.clockFormat12;
-        case '24':
-          return l10n.clockFormat24;
-        default:
-          return l10n.clockFormatAuto;
-      }
-    }
-
-    return ListTile(
-      leading: const Icon(Icons.schedule),
-      title: Text(l10n.clockFormat),
-      subtitle: Text(getClockFormatLabel(_clockFormat)),
-      trailing: _boundedDropdown(
-        DropdownButton<String>(
-          isExpanded: true,
-          value: _clockFormat,
-          underline: const SizedBox(),
-          items: [
-            for (final format in ['auto', '12', '24'])
-              DropdownMenuItem(
-                value: format,
-                child: Text(
-                  getClockFormatLabel(format),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-          ],
-          onChanged: (value) {
-            if (value != null) {
-              setState(() => _clockFormat = value);
-            }
-          },
-        ),
-      ),
-    );
-  }
-
   Widget _buildScreenOrientationSelector() {
     String getOrientationLabel(String value) {
       switch (value) {
@@ -2328,7 +1875,8 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
       leading: const Icon(Icons.screen_rotation),
       title: Text(AppLocalizations.of(context)!.screenOrientation, overflow: TextOverflow.ellipsis),
       subtitle: Text(getOrientationLabel(_screenOrientation), overflow: TextOverflow.ellipsis),
-      trailing: _boundedDropdown(
+      trailing: boundedDropdown(
+        context,
         DropdownButton<String>(
           isExpanded: true,
           value: _screenOrientation,

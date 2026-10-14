@@ -188,5 +188,17 @@ void main() {
       // The photo shown last keeps the weight of rank 1.
       expect(dropped, greaterThan(lastShown * 20));
     });
+
+    test('peekNextPhotos returns distinct photos without moving the play', () {
+      final photos = createPhotos(5);
+      final strategy = RandomPlaylistStrategy(random: Random(7));
+
+      final peeked = strategy.peekNextPhotos(photos, 2);
+
+      expect(peeked, hasLength(2));
+      expect(peeked[0].file.path, isNot(peeked[1].file.path));
+      // Peeking twice changes nothing.
+      expect(strategy.peekNextPhotos(photos, 2), hasLength(2));
+    });
   });
 }
