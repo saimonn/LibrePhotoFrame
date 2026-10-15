@@ -191,8 +191,9 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           # Development builds pretend to be the next patch release so they
-          # rank above the current stable and below the upcoming one.
-          VERSION=$(grep 'version:' pubspec.yaml | sed 's/version: //' | sed 's/+.*//')
+          # rank above the current stable and below the upcoming one. The
+          # pubspec prerelease suffix (if any) is dropped before bumping.
+          VERSION=$(grep 'version:' pubspec.yaml | sed 's/version: //' | sed 's/+.*//' | sed 's/-.*//')
           IFS='.' read -r -a parts <<< "$VERSION"
           NEXT="${parts[0]}.${parts[1]}.$((parts[2]+1))"
           COUNT=$(printf '%04d' "$(git rev-list --count HEAD)")
