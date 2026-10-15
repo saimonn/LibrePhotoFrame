@@ -376,6 +376,14 @@ class JsonConfigService extends ConfigProvider {
   }
 
   @override
+  String get updateChannel => _config['auto_update_channel'] ?? 'stable';
+
+  @override
+  set updateChannel(String value) {
+    _config['auto_update_channel'] = value;
+  }
+
+  @override
   String? get autoUpdateSkippedVersion => _config['auto_update_skipped_version'];
 
   @override

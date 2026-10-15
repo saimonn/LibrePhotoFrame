@@ -218,6 +218,10 @@
   "autoUpdatePromptNote": "Cuando haya una actualización disponible, se te preguntará antes de instalarla.",
   "autoUpdateCheckNow": "Comprobar ahora",
   "autoUpdateUpToDate": "Estás al día.",
+  "updateChannel": "Canal de actualización",
+  "updateChannelStable": "Estable",
+  "updateChannelBeta": "Beta",
+  "updateChannelHint": "Estable sigue las versiones oficiales. Beta también instala preversiones, para probar en tus propios dispositivos.",
   "updateAvailableTitle": "Actualización disponible",
   "updateAvailableMessage": "La versión {version} está disponible. ¿Descargar e instalarla ahora?",
   "@updateAvailableMessage": {

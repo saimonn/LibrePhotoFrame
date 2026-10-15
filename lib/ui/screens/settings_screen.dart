@@ -65,6 +65,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
   late bool _keepAliveEnabled;
   late bool _autoUpdateEnabled;
   late bool _autoUpdateSilent;
+  late String _updateChannel;
   bool _isDeviceOwner = false;
   /// Set while the settings are being written and the screen is closing.
   bool _closing = false;
@@ -169,6 +170,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     _keepAliveEnabled = config.keepAliveEnabled;
     _autoUpdateEnabled = config.autoUpdateEnabled;
     _autoUpdateSilent = config.autoUpdateSilent;
+    _updateChannel = config.updateChannel;
     if (Platform.isAndroid) {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         final isOwner = await NativeUpdaterService.isDeviceOwner();
@@ -396,6 +398,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     config.keepAliveEnabled = _keepAliveEnabled;
     config.autoUpdateEnabled = _autoUpdateEnabled;
     config.autoUpdateSilent = _autoUpdateSilent;
+    config.updateChannel = _updateChannel;
     config.showClock = _showClock;
     config.clockSize = _clockSize;
     config.clockPosition = _clockPosition;
@@ -687,6 +690,36 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
           ),
         ),
         if (_autoUpdateEnabled) ...[
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(l10n.updateChannel),
+                const SizedBox(height: 8),
+                SegmentedButton<String>(
+                  segments: [
+                    ButtonSegment(
+                      value: 'stable',
+                      label: Text(l10n.updateChannelStable),
+                    ),
+                    ButtonSegment(
+                      value: 'beta',
+                      label: Text(l10n.updateChannelBeta),
+                    ),
+                  ],
+                  selected: {_updateChannel},
+                  onSelectionChanged: (selection) =>
+                      setState(() => _updateChannel = selection.first),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  l10n.updateChannelHint,
+                  style: TextStyle(fontSize: 12, color: hintColor),
+                ),
+              ],
+            ),
+          ),
           if (_isDeviceOwner)
             CheckboxListTile(
               title: Text(l10n.autoUpdateSilentTitle),

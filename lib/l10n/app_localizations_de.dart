@@ -520,6 +520,19 @@ class AppLocalizationsDe extends AppLocalizations {
   String get autoUpdateUpToDate => 'Du bist auf dem neuesten Stand.';
 
   @override
+  String get updateChannel => 'Update-Kanal';
+
+  @override
+  String get updateChannelStable => 'Stabil';
+
+  @override
+  String get updateChannelBeta => 'Beta';
+
+  @override
+  String get updateChannelHint =>
+      'Stabil folgt den offiziellen Versionen. Beta installiert auch Vorabversionen, zum Testen auf eigenen Geräten.';
+
+  @override
   String get updateAvailableTitle => 'Update verfügbar';
 
   @override

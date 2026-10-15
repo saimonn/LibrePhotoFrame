@@ -8,6 +8,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../domain/interfaces/config_provider.dart';
+import '../../domain/services/version_comparison.dart';
 import 'native_updater_service.dart';
 
 /// A release available on GitHub.
@@ -119,7 +120,7 @@ class UpdateService extends ChangeNotifier with WidgetsBindingObserver {
       if (info == null) return null;
 
       final pkg = await PackageInfo.fromPlatform();
-      if (_compareVersions(info.version, pkg.version) <= 0) {
+      if (compareVersions(info.version, pkg.version) <= 0) {
         _log.info(
           'No newer release (current ${pkg.version}, latest ${info.version})',
         );
@@ -146,15 +147,9 @@ class UpdateService extends ChangeNotifier with WidgetsBindingObserver {
   }
 
   Future<UpdateInfo?> _fetchLatest() async {
-    final res = await _dio.get(
-      'https://api.github.com/repos/$_owner/$_repo/releases/latest',
-      options: Options(
-        responseType: ResponseType.json,
-        headers: {'Accept': 'application/vnd.github+json'},
-      ),
-    );
+    final data = await _fetchRelease();
+    if (data == null) return null;
 
-    final data = res.data as Map<String, dynamic>;
     final tag = '${data['tag_name'] ?? ''}';
     if (tag.isEmpty) return null;
     final version = tag.startsWith('v') ? tag.substring(1) : tag;
@@ -176,6 +171,31 @@ class UpdateService extends ChangeNotifier with WidgetsBindingObserver {
       assetName: '${asset['name']}',
       releaseNotes: data['body'] as String?,
     );
+  }
+
+  /// Returns the release to install from. The stable channel asks GitHub for
+  /// the latest release, which already excludes prereleases; the opt-in beta
+  /// channel lists the releases and takes the newest version-tagged one
+  /// (prereleases included, moving tags such as `dev-latest` skipped).
+  Future<Map<String, dynamic>?> _fetchRelease() async {
+    final options = Options(
+      responseType: ResponseType.json,
+      headers: {'Accept': 'application/vnd.github+json'},
+    );
+
+    if (_config.updateChannel == 'beta') {
+      final res = await _dio.get(
+        'https://api.github.com/repos/$_owner/$_repo/releases?per_page=30',
+        options: options,
+      );
+      return newestVersionedRelease(res.data as List<dynamic>);
+    }
+
+    final res = await _dio.get(
+      'https://api.github.com/repos/$_owner/$_repo/releases/latest',
+      options: options,
+    );
+    return res.data as Map<String, dynamic>;
   }
 
   /// Picks the APK asset matching the device ABI, falling back to a universal
@@ -201,26 +221,6 @@ class UpdateService extends ChangeNotifier with WidgetsBindingObserver {
       if (!name.contains('arm') && !name.contains('x86')) return apk;
     }
     return apks.first;
-  }
-
-  /// Compares two dotted versions. Returns >0 if [a] is newer than [b].
-  int _compareVersions(String a, String b) {
-    List<int> parse(String v) => v
-        .split(RegExp(r'[+\- ]'))
-        .first
-        .split('.')
-        .map((part) => int.tryParse(part.trim()) ?? 0)
-        .toList();
-
-    final pa = parse(a);
-    final pb = parse(b);
-    final len = pa.length > pb.length ? pa.length : pb.length;
-    for (var i = 0; i < len; i++) {
-      final x = i < pa.length ? pa[i] : 0;
-      final y = i < pb.length ? pb[i] : 0;
-      if (x != y) return x.compareTo(y);
-    }
-    return 0;
   }
 
   /// Remembers [info] as skipped so it is not prompted again.
@@ -260,4 +260,15 @@ class UpdateService extends ChangeNotifier with WidgetsBindingObserver {
       notifyListeners();
     }
   }
+}
+
+/// Picks the release the beta channel must install: the first non-draft,
+/// version-tagged release in the list GitHub returns (newest first). Moving
+/// tags such as `dev-latest` and drafts are skipped, prereleases are kept.
+Map<String, dynamic>? newestVersionedRelease(List<dynamic> releases) {
+  for (final release in releases.whereType<Map<String, dynamic>>()) {
+    if (release['draft'] == true) continue;
+    if (isVersionTag('${release['tag_name'] ?? ''}')) return release;
+  }
+  return null;
 }

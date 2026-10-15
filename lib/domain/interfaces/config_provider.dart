@@ -62,6 +62,10 @@ abstract class ConfigProvider extends ChangeNotifier {
   bool get autoUpdateSilent; // Install silently without prompt (requires Device Owner)
   set autoUpdateSilent(bool value);
 
+  // Update channel: 'stable' (default) or opt-in 'beta' (prereleases)
+  String get updateChannel;
+  set updateChannel(String value);
+
   String? get autoUpdateSkippedVersion; // Version the user chose to skip
   set autoUpdateSkippedVersion(String? value);
 

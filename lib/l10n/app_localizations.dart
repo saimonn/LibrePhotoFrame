@@ -990,6 +990,30 @@ abstract class AppLocalizations {
   /// **'You\'re up to date.'**
   String get autoUpdateUpToDate;
 
+  /// No description provided for @updateChannel.
+  ///
+  /// In en, this message translates to:
+  /// **'Update channel'**
+  String get updateChannel;
+
+  /// No description provided for @updateChannelStable.
+  ///
+  /// In en, this message translates to:
+  /// **'Stable'**
+  String get updateChannelStable;
+
+  /// No description provided for @updateChannelBeta.
+  ///
+  /// In en, this message translates to:
+  /// **'Beta'**
+  String get updateChannelBeta;
+
+  /// No description provided for @updateChannelHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Stable follows official releases. Beta also installs pre-releases, for testing on your own devices.'**
+  String get updateChannelHint;
+
   /// No description provided for @updateAvailableTitle.
   ///
   /// In en, this message translates to:

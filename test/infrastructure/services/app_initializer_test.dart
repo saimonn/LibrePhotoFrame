@@ -108,6 +108,10 @@ class FakeConfigProvider extends ChangeNotifier implements ConfigProvider {
   @override
   set autoUpdateSilent(bool value) {}
   @override
+  String get updateChannel => 'stable';
+  @override
+  set updateChannel(String value) {}
+  @override
   String? get autoUpdateSkippedVersion => null;
   @override
   set autoUpdateSkippedVersion(String? value) {}

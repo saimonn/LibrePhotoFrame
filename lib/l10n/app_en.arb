@@ -218,6 +218,10 @@
   "autoUpdatePromptNote": "When an update is available, you'll be asked before it is installed.",
   "autoUpdateCheckNow": "Check now",
   "autoUpdateUpToDate": "You're up to date.",
+  "updateChannel": "Update channel",
+  "updateChannelStable": "Stable",
+  "updateChannelBeta": "Beta",
+  "updateChannelHint": "Stable follows official releases. Beta also installs pre-releases, for testing on your own devices.",
   "updateAvailableTitle": "Update available",
   "updateAvailableMessage": "Version {version} is available. Download and install it now?",
   "@updateAvailableMessage": {
