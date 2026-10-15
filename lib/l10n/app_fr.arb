@@ -17,6 +17,7 @@
   "photoOrderModification": "Par date de modification du fichier",
   "unitMinutes": "min",
   "unitSeconds": "s",
+  "unitHours": "h",
   "sectionClock": "Horloge",
   "showClock": "Afficher l'horloge",
   "showClockSubtitle": "Afficher l'heure sur le diaporama",

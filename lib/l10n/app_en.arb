@@ -17,6 +17,7 @@
   "photoOrderModification": "By file modification time",
   "unitMinutes": "min",
   "unitSeconds": "sec",
+  "unitHours": "h",
   "sectionClock": "Clock",
   "showClock": "Show Clock",
   "showClockSubtitle": "Display time on slideshow",

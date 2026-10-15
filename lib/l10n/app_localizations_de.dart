@@ -63,6 +63,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get unitSeconds => 'Sek';
 
   @override
+  String get unitHours => 'Std';
+
+  @override
   String get sectionClock => 'Uhr';
 
   @override

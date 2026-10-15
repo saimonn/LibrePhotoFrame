@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../l10n/app_localizations.dart';
+import 'slide_duration_scale.dart';
 
 class SlideshowSection extends StatelessWidget {
   final int slideDurationStep;
@@ -9,11 +10,6 @@ class SlideshowSection extends StatelessWidget {
   final bool pairPhotos;
   final String photoOrder;
   final String screenOrientation;
-  final int minutesStartStep;
-  final int minSlideSeconds;
-  final int slideSecondsStep;
-  final int minSlideMinutes;
-  final int slideDurationDivisions;
   final ValueChanged<int> onSlideDurationChanged;
   final ValueChanged<double> onTransitionDurationChanged;
   final ValueChanged<bool> onBlurBordersChanged;
@@ -34,11 +30,6 @@ class SlideshowSection extends StatelessWidget {
     required this.pairPhotos,
     required this.photoOrder,
     required this.screenOrientation,
-    required this.minutesStartStep,
-    required this.minSlideSeconds,
-    required this.slideSecondsStep,
-    required this.minSlideMinutes,
-    required this.slideDurationDivisions,
     required this.onSlideDurationChanged,
     required this.onTransitionDurationChanged,
     required this.onBlurBordersChanged,
@@ -63,23 +54,17 @@ class SlideshowSection extends StatelessWidget {
 
         Builder(
           builder: (context) {
-            final inSeconds = slideDurationStep <= minutesStartStep;
             return _buildSliderSetting(
               context: context,
               icon: Icons.timer,
               title: l10n.slideDuration,
               value: slideDurationStep.toDouble(),
               min: 0,
-              max: slideDurationDivisions.toDouble(),
-              divisions: slideDurationDivisions,
-              unit: inSeconds ? l10n.unitSeconds : l10n.unitMinutes,
-              formatValue: (v) {
-                final step = v.round();
-                if (step <= minutesStartStep) {
-                  return '${minSlideSeconds + slideSecondsStep * step}';
-                }
-                return '${minSlideMinutes + (step - minutesStartStep - 1)}';
-              },
+              max: SlideDurationScale.lastStep.toDouble(),
+              divisions: SlideDurationScale.lastStep,
+              unit: _formatSlideDuration(l10n, slideDurationStep).unit,
+              formatValue: (v) =>
+                  '${_formatSlideDuration(l10n, v.round()).value}',
               onChanged: (value) {
                 onSlideDurationChanged(value.round());
               },
@@ -136,6 +121,18 @@ class SlideshowSection extends StatelessWidget {
         buildScreenOrientationSelector(),
       ],
     );
+  }
+
+  /// Splits a duration into the value and unit shown next to the slider:
+  /// seconds below a minute, minutes below an hour, whole hours above.
+  ({int value, String unit}) _formatSlideDuration(
+    AppLocalizations l10n,
+    int step,
+  ) {
+    final seconds = SlideDurationScale.secondsAt(step);
+    if (seconds < 60) return (value: seconds, unit: l10n.unitSeconds);
+    if (seconds < 3600) return (value: seconds ~/ 60, unit: l10n.unitMinutes);
+    return (value: seconds ~/ 3600, unit: l10n.unitHours);
   }
 
   Widget _buildSectionHeader(BuildContext context, String title) {

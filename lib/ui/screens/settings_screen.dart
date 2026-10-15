@@ -23,6 +23,7 @@ import '../../infrastructure/services/android_runtime_settings_sync.dart';
 import '../../infrastructure/services/native_screen_control_service.dart';
 import '../../infrastructure/services/keep_alive_service.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'settings/slide_duration_scale.dart';
 import 'settings/slideshow_section.dart';
 import 'settings/settings_widgets.dart';
 import 'settings/overlay_section.dart';
@@ -45,51 +46,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     minute: 0,
   );
 
-  // === Slide duration slider scale ===
-  // A single slider covers both units. The first half counts seconds in steps
-  // of five, the second half counts minutes, so short slideshows become
-  // reachable without giving up the long ones.
-  static const int _minSlideSeconds = 5;
-  static const int _maxSlideSeconds = 55;
-  static const int _slideSecondsStep = 5;
-  static const int _minSlideMinutes = 1;
-  static const int _maxSlideMinutes = 20;
-
-  /// Number of second-steps on the first half of the track.
-  static const int _secondSteps =
-      (_maxSlideSeconds - _minSlideSeconds) ~/ _slideSecondsStep + 1; // 11
-
-  /// Number of minute-steps on the second half of the track.
-  static const int _minuteSteps = _maxSlideMinutes - _minSlideMinutes + 1; // 20
-
-  /// Total divisions of the combined slider.
-  static const int _slideDurationDivisions = _secondSteps + _minuteSteps - 1; // 30
-
-  /// Index of the first minute-step on the track.
-  static const int _minutesStartStep = _secondSteps - 1; // 10
-
-  /// Maps a slider position to the duration in seconds it represents.
-  static int _slideDurationSecondsFromStep(int step) {
-    final clamped = step.clamp(0, _slideDurationDivisions);
-    if (clamped <= _minutesStartStep) {
-      return _minSlideSeconds + _slideSecondsStep * clamped;
-    }
-    return (_minSlideMinutes + (clamped - _minutesStartStep - 1)) * 60;
-  }
-
-  /// Maps a duration in seconds to the nearest slider position.
-  static int _slideDurationStepFromSeconds(int seconds) {
-    if (seconds <= _maxSlideSeconds) {
-      final step = ((seconds - _minSlideSeconds) / _slideSecondsStep).round();
-      return step.clamp(0, _minutesStartStep);
-    }
-    final minutes = (seconds / 60).round();
-    return (minutes - _minSlideMinutes + _minutesStartStep + 1)
-        .clamp(_minutesStartStep + 1, _slideDurationDivisions);
-  }
-
-  /// Slide duration as a position on a single slider whose first half is
-  /// seconds (5-55s) and second half is minutes (1-20min).
+  /// Slide duration as a position on the discrete [SlideDurationScale].
   late int _slideDurationStep;
   late double _transitionDurationSeconds;
   late bool _blurBorders;
@@ -195,7 +152,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
     SystemChrome.setPreferredOrientations(DeviceOrientation.values);
     
     final config = context.read<ConfigProvider>();
-    _slideDurationStep = _slideDurationStepFromSeconds(config.slideDurationSeconds);
+    _slideDurationStep = SlideDurationScale.stepForSeconds(config.slideDurationSeconds);
     _transitionDurationSeconds = (config.transitionDurationMs / 1000.0).clamp(0.5, 5.0);
     _blurBorders = config.blurBorders;
     _pairPhotos = config.pairPhotosEnabled;
@@ -416,7 +373,7 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
         _syncType == 'nextcloud_link' && 
         newNextcloudUrl.isNotEmpty;
     
-    config.slideDurationSeconds = _slideDurationSecondsFromStep(_slideDurationStep);
+    config.slideDurationSeconds = SlideDurationScale.secondsAt(_slideDurationStep);
     config.transitionDurationMs = (_transitionDurationSeconds * 1000).round();
     config.blurBorders = _blurBorders;
     config.pairPhotosEnabled = _pairPhotos;
@@ -548,11 +505,6 @@ class _SettingsScreenState extends State<SettingsScreen> with WidgetsBindingObse
               pairPhotos: _pairPhotos,
               photoOrder: _photoOrder,
               screenOrientation: _screenOrientation,
-              minutesStartStep: _minutesStartStep,
-              minSlideSeconds: _minSlideSeconds,
-              slideSecondsStep: _slideSecondsStep,
-              minSlideMinutes: _minSlideMinutes,
-              slideDurationDivisions: _slideDurationDivisions,
               onSlideDurationChanged: (value) => setState(() => _slideDurationStep = value),
               onTransitionDurationChanged: (value) => setState(() => _transitionDurationSeconds = value),
               onBlurBordersChanged: (value) => setState(() => _blurBorders = value),

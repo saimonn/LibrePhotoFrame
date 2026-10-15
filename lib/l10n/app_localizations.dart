@@ -204,6 +204,12 @@ abstract class AppLocalizations {
   /// **'sec'**
   String get unitSeconds;
 
+  /// No description provided for @unitHours.
+  ///
+  /// In en, this message translates to:
+  /// **'h'**
+  String get unitHours;
+
   /// No description provided for @sectionClock.
   ///
   /// In en, this message translates to:

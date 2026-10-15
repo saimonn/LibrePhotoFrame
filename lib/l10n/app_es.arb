@@ -17,6 +17,7 @@
   "photoOrderModification": "Por fecha de modificación del archivo",
   "unitMinutes": "min",
   "unitSeconds": "s",
+  "unitHours": "h",
   "sectionClock": "Reloj",
   "showClock": "Mostrar el reloj",
   "showClockSubtitle": "Mostrar la hora en la presentación",
