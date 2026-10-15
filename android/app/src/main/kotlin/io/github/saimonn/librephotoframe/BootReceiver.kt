@@ -18,17 +18,17 @@ class BootReceiver : BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action == Intent.ACTION_BOOT_COMPLETED || 
-            intent.action == "android.intent.action.QUICKBOOT_POWERON") {
-            
-            Log.d(TAG, "Boot completed received")
-            
-            // Check if autostart is enabled in shared preferences
+        if (intent.action == Intent.ACTION_BOOT_COMPLETED ||
+            intent.action == "android.intent.action.QUICKBOOT_POWERON" ||
+            intent.action == Intent.ACTION_LOCKED_BOOT_COMPLETED) {
+
+            Log.d(TAG, "Boot event received: ${intent.action}")
+
             val prefs: SharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             val autostartEnabled = prefs.getBoolean(AUTOSTART_KEY, false)
-            
+
             Log.d(TAG, "Autostart enabled: $autostartEnabled")
-            
+
             if (autostartEnabled) {
                 Log.d(TAG, "Starting MainActivity")
                 val startIntent = Intent(context, MainActivity::class.java).apply {
