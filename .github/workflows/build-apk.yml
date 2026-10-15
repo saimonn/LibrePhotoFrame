@@ -258,32 +258,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Delete dev-latest release (on tag push)
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: actions/github-script@v7
-        with:
-          script: |
-            try {
-              const release = await github.rest.repos.getReleaseByTag({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                tag: 'dev-latest'
-              });
-              await github.rest.repos.deleteRelease({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                release_id: release.data.id
-              });
-              await github.rest.git.deleteRef({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: 'tags/dev-latest'
-              });
-              console.log('Deleted dev-latest release and tag');
-            } catch (e) {
-              console.log('No dev-latest release to delete');
-            }
-
       - name: Update dev-latest pre-release (on main push)
         if: github.ref == 'refs/heads/main'
         uses: actions/github-script@v7
