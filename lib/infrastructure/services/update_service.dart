@@ -37,11 +37,9 @@ typedef UpdatePromptCallback = void Function(UpdateInfo info);
 /// version, and either installs silently (Device Owner + opt-in) or asks the
 /// UI to prompt the user. Not included in Play Store builds.
 class UpdateService extends ChangeNotifier with WidgetsBindingObserver {
-  UpdateService({
-    required ConfigProvider configProvider,
-    Dio? dio,
-  })  : _config = configProvider,
-        _dio = dio ?? Dio();
+  UpdateService({required ConfigProvider configProvider, Dio? dio})
+    : _config = configProvider,
+      _dio = dio ?? Dio();
 
   static const _owner = 'saimonn';
   static const _repo = 'LibrePhotoFrame';
@@ -131,7 +129,8 @@ class UpdateService extends ChangeNotifier with WidgetsBindingObserver {
         return null;
       }
 
-      if (_config.autoUpdateSilent && await NativeUpdaterService.isDeviceOwner()) {
+      if (_config.autoUpdateSilent &&
+          await NativeUpdaterService.isDeviceOwner()) {
         _log.info('Silently updating to ${info.version}');
         await downloadAndInstall(info);
       } else {
@@ -150,9 +149,9 @@ class UpdateService extends ChangeNotifier with WidgetsBindingObserver {
     final data = await _fetchRelease();
     if (data == null) return null;
 
+    final version = releaseVersion(data);
+    if (version == null) return null;
     final tag = '${data['tag_name'] ?? ''}';
-    if (tag.isEmpty) return null;
-    final version = tag.startsWith('v') ? tag.substring(1) : tag;
 
     final assets = (data['assets'] as List<dynamic>? ?? const [])
         .whereType<Map<String, dynamic>>()
@@ -175,8 +174,9 @@ class UpdateService extends ChangeNotifier with WidgetsBindingObserver {
 
   /// Returns the release to install from. The stable channel asks GitHub for
   /// the latest release, which already excludes prereleases; the opt-in beta
-  /// channel lists the releases and takes the newest version-tagged one
-  /// (prereleases included, moving tags such as `dev-latest` skipped).
+  /// channel lists the releases and takes the newest versioned one
+  /// (prereleases included, moving tags such as `dev-latest` resolved through
+  /// the release name).
   Future<Map<String, dynamic>?> _fetchRelease() async {
     final options = Options(
       responseType: ResponseType.json,
@@ -188,7 +188,7 @@ class UpdateService extends ChangeNotifier with WidgetsBindingObserver {
         'https://api.github.com/repos/$_owner/$_repo/releases?per_page=30',
         options: options,
       );
-      return newestVersionedRelease(res.data as List<dynamic>);
+      return newestRelease(res.data as List<dynamic>);
     }
 
     final res = await _dio.get(
@@ -262,13 +262,33 @@ class UpdateService extends ChangeNotifier with WidgetsBindingObserver {
   }
 }
 
-/// Picks the release the beta channel must install: the first non-draft,
-/// version-tagged release in the list GitHub returns (newest first). Moving
-/// tags such as `dev-latest` and drafts are skipped, prereleases are kept.
-Map<String, dynamic>? newestVersionedRelease(List<dynamic> releases) {
-  for (final release in releases.whereType<Map<String, dynamic>>()) {
-    if (release['draft'] == true) continue;
-    if (isVersionTag('${release['tag_name'] ?? ''}')) return release;
+/// Version carried by a release: its tag when that is a version tag, else its
+/// name when that looks like one (moving tags such as `dev-latest` carry the
+/// version in the release name instead).
+String? releaseVersion(Map<String, dynamic> release) {
+  for (final value in [release['tag_name'], release['name']]) {
+    final candidate = '${value ?? ''}';
+    if (isVersionTag(candidate)) {
+      return candidate.startsWith('v') ? candidate.substring(1) : candidate;
+    }
   }
   return null;
+}
+
+/// Picks the newest non-draft release that carries a version, prereleases
+/// included. The list order is not relied upon: versions are compared so the
+/// moving `dev-latest` release competes fairly with versioned tags.
+Map<String, dynamic>? newestRelease(List<dynamic> releases) {
+  Map<String, dynamic>? best;
+  String? bestVersion;
+  for (final release in releases.whereType<Map<String, dynamic>>()) {
+    if (release['draft'] == true) continue;
+    final version = releaseVersion(release);
+    if (version == null) continue;
+    if (bestVersion == null || compareVersions(version, bestVersion) > 0) {
+      best = release;
+      bestVersion = version;
+    }
+  }
+  return best;
 }

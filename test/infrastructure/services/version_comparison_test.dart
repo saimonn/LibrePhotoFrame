@@ -29,6 +29,15 @@ void main() {
     test('a new beta is newer than the previous stable', () {
       expect(compareVersions('1.14.0-beta.1', '1.13.16'), greaterThan(0));
     });
+
+    test('a dev build of the next patch is newer than the current stable', () {
+      expect(compareVersions('1.13.18-dev.0042', '1.13.17'), greaterThan(0));
+      expect(
+        compareVersions('1.13.18-dev.0043', '1.13.18-dev.0042'),
+        greaterThan(0),
+      );
+      expect(compareVersions('1.13.18', '1.13.18-dev.0042'), greaterThan(0));
+    });
   });
 
   group('isVersionTag', () {
@@ -36,6 +45,7 @@ void main() {
       expect(isVersionTag('v1.14.0'), isTrue);
       expect(isVersionTag('1.14.0'), isTrue);
       expect(isVersionTag('v1.14.0-beta.1'), isTrue);
+      expect(isVersionTag('1.13.18-dev.0042'), isTrue);
     });
 
     test('rejects moving tags', () {
@@ -44,24 +54,52 @@ void main() {
     });
   });
 
-  group('newestVersionedRelease', () {
-    test('returns the first versioned release, prereleases included', () {
-      final releases = [
-        {'tag_name': 'dev-latest', 'draft': false},
-        {'tag_name': 'v1.14.0-beta.2', 'draft': false},
-        {'tag_name': 'v1.13.16', 'draft': false},
-      ];
-      expect(newestVersionedRelease(releases)?['tag_name'], 'v1.14.0-beta.2');
+  group('releaseVersion', () {
+    test('reads the tag when it is a version', () {
+      expect(releaseVersion({'tag_name': 'v1.14.0'}), '1.14.0');
     });
 
-    test('skips drafts and returns null when nothing qualifies', () {
+    test('falls back to the release name for moving tags', () {
       expect(
-        newestVersionedRelease([
+        releaseVersion({'tag_name': 'dev-latest', 'name': '1.13.18-dev.0042'}),
+        '1.13.18-dev.0042',
+      );
+    });
+
+    test('returns null when nothing looks like a version', () {
+      expect(
+        releaseVersion({'tag_name': 'dev-latest', 'name': 'Nightly'}),
+        isNull,
+      );
+    });
+  });
+
+  group('newestRelease', () {
+    test('picks the highest version, prereleases included', () {
+      final releases = [
+        {'tag_name': 'v1.13.17'},
+        {'tag_name': 'dev-latest', 'name': '1.13.19-dev.0042'},
+        {'tag_name': 'v1.14.0-beta.2'},
+      ];
+      expect(newestRelease(releases)?['tag_name'], 'v1.14.0-beta.2');
+    });
+
+    test('skips drafts and releases without a version', () {
+      expect(
+        newestRelease([
           {'tag_name': 'v1.14.0-beta.1', 'draft': true},
-          {'tag_name': 'dev-latest', 'draft': false},
+          {'tag_name': 'dev-latest', 'name': 'Development Build (Latest)'},
         ]),
         isNull,
       );
+    });
+
+    test('prefers a newer dev build over the current stable', () {
+      final releases = [
+        {'tag_name': 'v1.13.17'},
+        {'tag_name': 'dev-latest', 'name': '1.13.18-dev.0042'},
+      ];
+      expect(newestRelease(releases)?['tag_name'], 'dev-latest');
     });
   });
 }

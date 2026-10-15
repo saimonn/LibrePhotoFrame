@@ -187,8 +187,25 @@ jobs:
           storeFile=/tmp/keystore.p12
           EOF
 
+      - name: Compute dev build version (main builds)
+        if: github.ref == 'refs/heads/main'
+        run: |
+          # Development builds pretend to be the next patch release so they
+          # rank above the current stable and below the upcoming one.
+          VERSION=$(grep 'version:' pubspec.yaml | sed 's/version: //' | sed 's/+.*//')
+          IFS='.' read -r -a parts <<< "$VERSION"
+          NEXT="${parts[0]}.${parts[1]}.$((parts[2]+1))"
+          COUNT=$(printf '%04d' "$(git rev-list --count HEAD)")
+          echo "DEV_VERSION=${NEXT}-dev.${COUNT}" >> $GITHUB_ENV
+
       - name: Build Release APK
-        run: flutter build apk --release --split-per-abi
+        run: |
+          BUILD_ARGS=""
+          if [[ -n "${DEV_VERSION:-}" ]]; then
+            BUILD_NUMBER=$(grep 'version:' pubspec.yaml | sed 's/.*+//')
+            BUILD_ARGS="--build-name=${DEV_VERSION} --build-number=${BUILD_NUMBER}"
+          fi
+          flutter build apk --release --split-per-abi ${BUILD_ARGS}
 
       - name: Build Debug APK (dev builds only)
         if: github.ref == 'refs/heads/main'
@@ -198,29 +215,26 @@ jobs:
         run: |
           VERSION=$(grep 'version:' pubspec.yaml | sed 's/version: //' | sed 's/+.*//')
           APK_DIR="build/app/outputs/flutter-apk"
-          
+
           if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
-            # Tag build: use clean version
-            for abi in arm64-v8a armeabi-v7a x86_64; do
-              if [[ -f "${APK_DIR}/app-${abi}-release.apk" ]]; then
-                mv "${APK_DIR}/app-${abi}-release.apk" "${APK_DIR}/LibrePhotoFrame-${VERSION}-${abi}.apk"
-              fi
-            done
-            echo "APK_PATTERN=LibrePhotoFrame-${VERSION}-*.apk" >> $GITHUB_ENV
+            # Tag build: use the released version
+            LABEL="${VERSION}"
+          elif [[ -n "${DEV_VERSION:-}" ]]; then
+            # Main build: use the injected development version
+            LABEL="${DEV_VERSION}"
           else
-            # Branch build: add -dev and commit count
-            COMMIT_COUNT=$(printf "%04d" $(git rev-list --count HEAD))
-            for abi in arm64-v8a armeabi-v7a x86_64; do
-              if [[ -f "${APK_DIR}/app-${abi}-release.apk" ]]; then
-                mv "${APK_DIR}/app-${abi}-release.apk" "${APK_DIR}/LibrePhotoFrame-${VERSION}-dev-${COMMIT_COUNT}-${abi}.apk"
-              fi
-            done
-            # Rename debug APK
-            if [[ -f "${APK_DIR}/app-debug.apk" ]]; then
-              mv "${APK_DIR}/app-debug.apk" "${APK_DIR}/LibrePhotoFrame-${VERSION}-dev-${COMMIT_COUNT}-debug.apk"
-            fi
-            echo "APK_PATTERN=LibrePhotoFrame-${VERSION}-dev-${COMMIT_COUNT}-*.apk" >> $GITHUB_ENV
+            LABEL="${VERSION}-dev-$(printf "%04d" $(git rev-list --count HEAD))"
           fi
+
+          for abi in arm64-v8a armeabi-v7a x86_64; do
+            if [[ -f "${APK_DIR}/app-${abi}-release.apk" ]]; then
+              mv "${APK_DIR}/app-${abi}-release.apk" "${APK_DIR}/LibrePhotoFrame-${LABEL}-${abi}.apk"
+            fi
+          done
+          if [[ -f "${APK_DIR}/app-debug.apk" ]]; then
+            mv "${APK_DIR}/app-debug.apk" "${APK_DIR}/LibrePhotoFrame-${LABEL}-debug.apk"
+          fi
+          echo "APK_PATTERN=LibrePhotoFrame-${LABEL}-*.apk" >> $GITHUB_ENV
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
           echo "APK_DIR=${APK_DIR}" >> $GITHUB_ENV
 
@@ -307,7 +321,8 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 release_id: release.data.id,
-                body: `Latest development build from main branch.\n\nCommit: ${context.sha}\nBuilt: ${new Date().toISOString()}\n\n⚠️ This is an unstable development build. Use at your own risk.`
+                name: process.env.DEV_VERSION,
+                body: `Latest development build from main branch (${process.env.DEV_VERSION}).\n\nCommit: ${context.sha}\nBuilt: ${new Date().toISOString()}\n\n⚠️ This is an unstable development build. Use at your own risk.`
               });
               
               release = release.data;
@@ -318,8 +333,8 @@ jobs:
                 repo: context.repo.repo,
                 tag_name: 'dev-latest',
                 target_commitish: context.sha,
-                name: 'Development Build (Latest)',
-                body: `Latest development build from main branch.\n\nCommit: ${context.sha}\nBuilt: ${new Date().toISOString()}\n\n⚠️ This is an unstable development build. Use at your own risk.`,
+                name: process.env.DEV_VERSION,
+                body: `Latest development build from main branch (${process.env.DEV_VERSION}).\n\nCommit: ${context.sha}\nBuilt: ${new Date().toISOString()}\n\n⚠️ This is an unstable development build. Use at your own risk.`,
                 prerelease: true
               });
               release = newRelease.data;
