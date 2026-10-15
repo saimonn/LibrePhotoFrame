@@ -41,11 +41,17 @@ else
 fi
 
 if [ -z "$NEW_VERSION_INPUT" ]; then
-  IFS='.' read -r -a parts <<< "$CURRENT_VERSION"
-  MAJOR="${parts[0]:-0}"
-  MINOR="${parts[1]:-0}"
-  PATCH="${parts[2]:-0}"
-  NEW_VERSION="${MAJOR}.${MINOR}.$((PATCH+1))"
+  if [[ "$CURRENT_VERSION" == *-* ]]; then
+    # Finalize the pending line: an auto-increment after v1.14.0-beta.2
+    # produces the stable v1.14.0 rather than the next patch.
+    NEW_VERSION="${CURRENT_VERSION%%-*}"
+  else
+    IFS='.' read -r -a parts <<< "$CURRENT_VERSION"
+    MAJOR="${parts[0]:-0}"
+    MINOR="${parts[1]:-0}"
+    PATCH="${parts[2]:-0}"
+    NEW_VERSION="${MAJOR}.${MINOR}.$((PATCH+1))"
+  fi
   echo -e "${GREEN}Auto-increment -> ${NEW_VERSION}${NC}"
 else
   NEW_VERSION=$(echo "$NEW_VERSION_INPUT" | sed 's/^v//')

@@ -3,7 +3,7 @@ name: Build APK
 on:
   push:
     branches:
-      - master
+      - main
     tags:
       - 'v*'
   workflow_dispatch:
@@ -191,7 +191,7 @@ jobs:
         run: flutter build apk --release --split-per-abi
 
       - name: Build Debug APK (dev builds only)
-        if: github.ref == 'refs/heads/master'
+        if: github.ref == 'refs/heads/main'
         run: flutter build apk --debug
 
       - name: Rename APKs
@@ -225,7 +225,7 @@ jobs:
           echo "APK_DIR=${APK_DIR}" >> $GITHUB_ENV
 
       - name: Upload APKs (non-tag branch builds)
-        if: ${{ !startsWith(github.ref, 'refs/tags/') && github.ref != 'refs/heads/master' }}
+        if: ${{ !startsWith(github.ref, 'refs/tags/') && github.ref != 'refs/heads/main' }}
         uses: actions/upload-artifact@v4
         with:
           name: LibrePhotoFrame-apks-${{ github.sha }}
@@ -240,7 +240,7 @@ jobs:
           files: build/app/outputs/flutter-apk/LibrePhotoFrame-*.apk
           generate_release_notes: true
           draft: false
-          prerelease: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -270,8 +270,8 @@ jobs:
               console.log('No dev-latest release to delete');
             }
 
-      - name: Update dev-latest pre-release (on master push)
-        if: github.ref == 'refs/heads/master'
+      - name: Update dev-latest pre-release (on main push)
+        if: github.ref == 'refs/heads/main'
         uses: actions/github-script@v7
         with:
           script: |
@@ -307,7 +307,7 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 release_id: release.data.id,
-                body: `Latest development build from master branch.\n\nCommit: ${context.sha}\nBuilt: ${new Date().toISOString()}\n\n⚠️ This is an unstable development build. Use at your own risk.`
+                body: `Latest development build from main branch.\n\nCommit: ${context.sha}\nBuilt: ${new Date().toISOString()}\n\n⚠️ This is an unstable development build. Use at your own risk.`
               });
               
               release = release.data;
@@ -319,7 +319,7 @@ jobs:
                 tag_name: 'dev-latest',
                 target_commitish: context.sha,
                 name: 'Development Build (Latest)',
-                body: `Latest development build from master branch.\n\nCommit: ${context.sha}\nBuilt: ${new Date().toISOString()}\n\n⚠️ This is an unstable development build. Use at your own risk.`,
+                body: `Latest development build from main branch.\n\nCommit: ${context.sha}\nBuilt: ${new Date().toISOString()}\n\n⚠️ This is an unstable development build. Use at your own risk.`,
                 prerelease: true
               });
               release = newRelease.data;
