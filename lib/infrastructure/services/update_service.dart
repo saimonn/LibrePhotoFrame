@@ -75,6 +75,7 @@ class UpdateService extends ChangeNotifier with WidgetsBindingObserver {
     // Check on every resume (e.g. the frame waking from its night schedule),
     // and once at startup.
     WidgetsBinding.instance.addObserver(this);
+    unawaited(cleanApkCache());
     unawaited(_maybeCheckOpportunistic());
   }
 
@@ -260,6 +261,76 @@ class UpdateService extends ChangeNotifier with WidgetsBindingObserver {
       notifyListeners();
     }
   }
+
+  /// Deletes the update APKs left in the temporary directory.
+  ///
+  /// Every downloaded APK stays there after the install, so they accumulate
+  /// (one per version). Only the newest is kept, and only when it is strictly
+  /// newer than the running build: an install that was downloaded but not
+  /// applied yet is then not fetched again.
+  Future<void> cleanApkCache() async {
+    if (!Platform.isAndroid) return;
+    try {
+      final dir = await getTemporaryDirectory();
+      final apks = (await dir.list().toList())
+          .whereType<File>()
+          .where((file) => apkVersion(_fileName(file)) != null)
+          .toList();
+      if (apks.isEmpty) return;
+
+      final current = (await PackageInfo.fromPlatform()).version;
+      final keep = apkToKeep(apks.map(_fileName), current);
+      for (final apk in apks) {
+        if (_fileName(apk) == keep) continue;
+        await apk.delete();
+        _log.info('Deleted cached APK ${apk.path}');
+      }
+    } catch (e, st) {
+      _log.warning('APK cache cleanup failed', e, st);
+    }
+  }
+}
+
+/// File name of a directory entry.
+String _fileName(File file) => file.uri.pathSegments.last;
+
+/// Prefix of the update APK names published in the GitHub releases.
+const _apkPrefix = 'LibrePhotoFrame-';
+
+/// Suffixes the release workflow appends after the version in an APK name.
+const _apkSuffixes = ['arm64-v8a', 'armeabi-v7a', 'x86_64', 'debug'];
+
+/// Version carried by an update APK name
+/// (`LibrePhotoFrame-1.13.17-arm64-v8a.apk`), or null for another file.
+String? apkVersion(String name) {
+  if (!name.startsWith(_apkPrefix) || !name.endsWith('.apk')) return null;
+  var label = name.substring(_apkPrefix.length, name.length - 4);
+  for (final suffix in _apkSuffixes) {
+    if (label.endsWith('-$suffix')) {
+      label = label.substring(0, label.length - suffix.length - 1);
+      break;
+    }
+  }
+  return isVersionTag(label) ? label : null;
+}
+
+/// Update APK to keep among the cached [names]: the newest, but only when it is
+/// strictly newer than [currentVersion] (an install that is still pending), so
+/// that it does not have to be downloaded again. Returns null when all of them
+/// can be deleted.
+String? apkToKeep(Iterable<String> names, String currentVersion) {
+  String? newest;
+  String? newestVersion;
+  for (final name in names) {
+    final version = apkVersion(name);
+    if (version == null) continue;
+    if (newestVersion == null || compareVersions(version, newestVersion) > 0) {
+      newest = name;
+      newestVersion = version;
+    }
+  }
+  if (newestVersion == null) return null;
+  return compareVersions(newestVersion, currentVersion) > 0 ? newest : null;
 }
 
 /// Version carried by a release: its tag when that is a version tag, else its
