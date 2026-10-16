@@ -124,6 +124,40 @@ void main() {
       );
     });
 
+    test('sorts on the date in the file name when there is no EXIF', () {
+      // Issue 20: a synced photo (WhatsApp) has no EXIF and its file dates are
+      // the sync time, identical for both photos, so only the name differs.
+      final photos = [
+        photo('IMG-20261224-WA0001', modified: day),
+        photo('IMG-20260102-WA0001', modified: day),
+      ];
+      final strategy = SortedPlaylistStrategy(PhotoOrderField.exif);
+
+      expect(
+        [for (var i = 0; i < 2; i++) strategy.nextPhoto(photos)!.file.path],
+        [
+          '/fake/IMG-20260102-WA0001.jpg',
+          '/fake/IMG-20261224-WA0001.jpg',
+        ],
+      );
+    });
+
+    test('prefers the EXIF date over the date in the file name', () {
+      final photos = [
+        photo('IMG-20261224-WA0001', modified: day, captured: day),
+        photo('IMG-20260102-WA0001', modified: day, captured: day.add(const Duration(days: 9))),
+      ];
+      final strategy = SortedPlaylistStrategy(PhotoOrderField.exif);
+
+      expect(
+        [for (var i = 0; i < 2; i++) strategy.nextPhoto(photos)!.file.path],
+        [
+          '/fake/IMG-20261224-WA0001.jpg',
+          '/fake/IMG-20260102-WA0001.jpg',
+        ],
+      );
+    });
+
     test('walks on from the photo on screen when the order is rebuilt', () {
       final photos = [
         photo('a', modified: day),

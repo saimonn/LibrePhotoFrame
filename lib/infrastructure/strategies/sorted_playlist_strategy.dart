@@ -3,7 +3,10 @@ import '../../domain/models/photo_entry.dart';
 
 /// Date a chronological order is based on.
 enum PhotoOrderField {
-  /// EXIF capture date, falling back to the file creation date.
+  /// Capture date, falling back to the file creation date.
+  ///
+  /// Uses [PhotoEntry.bestCaptureDate], so photos without EXIF sort on the date
+  /// encoded in their file name before falling back to the file dates.
   exif('exif', 'By capture time'),
 
   /// File creation date, falling back to the file modification date when the
@@ -21,10 +24,11 @@ enum PhotoOrderField {
   /// Date this order sorts by, falling back to the next date that is known.
   ///
   /// The EXIF capture date is only read when a photo is displayed, so a photo
-  /// that was never shown sorts on its file date until then.
+  /// that was never shown sorts on the date in its file name, then on its file
+  /// date, until EXIF arrives.
   DateTime dateOf(PhotoEntry photo) => switch (this) {
         PhotoOrderField.exif =>
-          photo.captureDate ?? photo.createdAt ?? photo.date,
+          photo.bestCaptureDate ?? photo.createdAt ?? photo.date,
         PhotoOrderField.creation => photo.createdAt ?? photo.date,
         PhotoOrderField.modification => photo.date,
       };

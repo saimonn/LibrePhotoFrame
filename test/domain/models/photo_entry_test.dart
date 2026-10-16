@@ -30,4 +30,38 @@ void main() {
       expect(entry.hasLocation, isTrue);
     });
   });
+
+  group('PhotoEntry file name date', () {
+    test('exposes the date encoded in the name', () {
+      final entry = PhotoEntry(
+        file: File('/kiosk/IMG-20261224-WA0001.jpg'),
+        date: DateTime(2026, 6, 1),
+        sizeBytes: 1024,
+      );
+
+      expect(entry.filenameDate, DateTime(2026, 12, 24));
+      expect(entry.bestCaptureDate, DateTime(2026, 12, 24));
+    });
+
+    test('prefers a known capture date over the name', () {
+      final entry = PhotoEntry(
+        file: File('/kiosk/IMG-20261224-WA0001.jpg'),
+        date: DateTime(2026, 6, 1),
+        sizeBytes: 1024,
+      )..setExifMetadata(captureDate: DateTime(2025, 1, 2, 3, 4, 5));
+
+      expect(entry.bestCaptureDate, DateTime(2025, 1, 2, 3, 4, 5));
+    });
+
+    test('has no name date when the name carries none', () {
+      final entry = PhotoEntry(
+        file: File('/kiosk/frame.jpg'),
+        date: DateTime(2026, 6, 1),
+        sizeBytes: 1024,
+      );
+
+      expect(entry.filenameDate, isNull);
+      expect(entry.bestCaptureDate, isNull);
+    });
+  });
 }

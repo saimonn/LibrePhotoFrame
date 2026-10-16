@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import '../services/filename_date.dart';
+
 /// Shape of a photo, derived from its pixel dimensions.
 ///
 /// Square photos are reported as [PhotoShape.square] so callers can decide
@@ -62,7 +64,21 @@ class PhotoEntry {
   
   /// Returns true if EXIF capture date is available
   bool get hasCaptureDate => _captureDate != null;
-  
+
+  /// Capture date encoded in the file name, null when the name carries none.
+  ///
+  /// A synced file carries the sync time in its timestamps and messaging apps
+  /// strip EXIF, so the name (`IMG-20251224-WA0001.jpg`) is then the only date
+  /// left. Parsed on first use, only the last path segment is looked at.
+  late final DateTime? filenameDate = FilenameDate.parse(file.path);
+
+  /// Date to attribute to the photo: [captureDate] when known, otherwise the
+  /// name-derived [filenameDate].
+  ///
+  /// [captureDate] wins because it survives a rename; this fills the gap left
+  /// by files whose EXIF is missing (WhatsApp) or not loaded yet.
+  DateTime? get bestCaptureDate => captureDate ?? filenameDate;
+
   /// Set EXIF metadata after lazy loading
   void setExifMetadata({DateTime? captureDate, double? latitude, double? longitude}) {
     _exifLoaded = true;

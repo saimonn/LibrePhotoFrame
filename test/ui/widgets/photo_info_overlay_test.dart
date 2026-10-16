@@ -81,4 +81,19 @@ void main() {
 
     expect(find.byType(Text), findsNothing);
   });
+
+  testWidgets('shows the date in the name when there is no EXIF',
+      (tester) async {
+    // Issue 20: a WhatsApp photo synced by Syncthing has no EXIF, and its file
+    // time is the sync time, so the name is the only date left.
+    final entry = PhotoEntry(
+      file: File('/kiosk/IMG-20261224-WA0001.jpg'),
+      date: DateTime(2026, 6, 1),
+      sizeBytes: 1024,
+    )..setExifMetadata();
+
+    await pump(tester, entry);
+
+    expect(find.text('December 24, 2026'), findsOneWidget);
+  });
 }

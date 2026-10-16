@@ -44,9 +44,11 @@ class PhotoInfoOverlay extends StatelessWidget {
     // Build info lines
     final List<String> infoLines = [];
     
-    // Add capture date only if available from EXIF (no fallback to file date)
-    if (photo.captureDate != null) {
-      infoLines.add(_formatDate(context, photo.captureDate!));
+    // The file's own timestamps are the sync time for a synced photo, so the
+    // date shown is the EXIF one or, failing that, the one in the file name.
+    final captureDate = photo.bestCaptureDate;
+    if (captureDate != null) {
+      infoLines.add(_formatDate(context, captureDate));
     }
     
     // Add location if available: the place name when geocoding resolved one,
